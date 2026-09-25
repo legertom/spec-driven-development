@@ -1,0 +1,24 @@
+# The course's own CI gate (see Lesson 6): lint, typecheck, validate the
+# content files, and make sure the site builds. No API key is needed.
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx next typegen
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run validate
+      - run: npm run build

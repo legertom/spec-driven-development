@@ -1,8 +1,8 @@
 ## Talking points
 
-- The opening story is the lesson in miniature: a grader with no definition scored the worst traces a 9. Return to it in every section.
+- The opening story is the lesson in miniature: a grader with no definition scored the worst traces a 9.
 - Humans first is sequencing, not anti-automation. L5 automates exactly the modes this lesson names.
-- The benevolent dictator is a role. One person merges notes and settles boundaries so the taxonomy stays sharp. Ask who it should be at Pip's (Maya, because she knows what correct means).
+- The benevolent dictator is a role. One person merges notes and settles boundaries so the taxonomy stays sharp. At Pip's it is Maya, because she knows what correct means.
 - The four open-coding rules matter in order: whole trace, first failure, plain language, no categories. Most students break rule four by the third trace.
 - The boundary column is the product of axial coding. Without "counts / does not count", two labelers will argue in L5.
 - Saturation is a stopping rule for this sample, not a claim about the agent. Rare modes arrive late, which is the argument for sampling by tag.
