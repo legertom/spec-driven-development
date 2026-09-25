@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withEve } from "eve/next";
 
 const nextConfig: NextConfig = {
   async redirects() {
@@ -11,4 +12,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// withEve mounts the eve agent in agent/ at /eve/v1/* (same origin): in development it
+// starts `eve dev` next to `next dev`; on Vercel it deploys the agent as a service.
+export default withEve(nextConfig);

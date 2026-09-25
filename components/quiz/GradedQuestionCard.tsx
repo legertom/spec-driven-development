@@ -27,7 +27,7 @@ export function GradedQuestionCard({ courseSlug, lessonSlug, questionId, kind, p
   const [error, setError] = useState<string | null>(null);
   const [showModel, setShowModel] = useState(false);
   const previous = attemptsFor(courseSlug, lessonSlug, questionId);
-  const noKey = health !== null && !health.tutor;
+  const noKey = health !== null && !health.grading;
   const words = answer.trim() ? answer.trim().split(/\s+/).length : 0;
 
   async function grade() {

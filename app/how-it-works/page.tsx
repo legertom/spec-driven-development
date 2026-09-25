@@ -95,7 +95,7 @@ export default function HowItWorksPage() {
 
         <Section id="eve" icon={<Sparkles />} title="Eve, the tutor">
           <p>
-            Eve is a tutor built on Claude models, reached through Vercel AI Gateway. She lives in the drawer on the right (the <strong>Ask Eve</strong> button in the top bar opens it on any page). On a lesson page she is given three things: a fixed description of who she is and how to teach, the course you are in (its map, its running example, and course-specific teaching notes), and the <em>full text of the lesson you are reading</em>. That is why she can answer &quot;what does section 3 mean?&quot; without you pasting anything. On the catalog or progress pages she knows which courses exist and can recommend where to start.
+            Eve is an agent built with <a href="https://eve.dev" target="_blank" rel="noreferrer">eve</a>, Vercel&apos;s framework for durable agents, running on Claude models reached through Vercel AI Gateway. She lives in the drawer on the right (the <strong>Ask Eve</strong> button in the top bar opens it on any page). She has a written set of instructions (who she is, how she teaches, what she never does) and five tools of her own: read a lesson, read a course overview, list the courses, look up a glossary term, and read a quiz (without its answers). Every question you send carries the page you are on (the course, the lesson, the course&apos;s teaching notes), so on a lesson page she reads <em>the full text of that lesson</em> with her tool before explaining it. That is why she can answer &quot;what does section 3 mean?&quot; without you pasting anything. On the catalog or progress pages she knows which courses exist and can recommend where to start.
           </p>
           <h3>Highlight to ask</h3>
           <p>
@@ -113,7 +113,7 @@ export default function HowItWorksPage() {
           </ul>
           <h3>Memory</h3>
           <p>
-            Each lesson (and each course page) has its own conversation, kept in this browser tab (session storage). Close the tab and it is gone. Chats are never written to the database. Every request sends the recent conversation back to the server, because the model itself has no memory between calls.
+            Each lesson (and each course page) has its own conversation. It is a durable eve session: the transcript lives with the session on the server, and once Eve has read a lesson it stays in that session&apos;s memory, so later questions do not pay to read it again. Your browser tab only remembers the session id, which is why the conversation picks up where you left it after navigating away or reloading, and why it is gone when the tab closes. Chats are never written to the platform database, and each session has a spending cap, so a runaway conversation cannot cost more than about a dollar. The <em>new conversation</em> button in the drawer starts a fresh session.
           </p>
         </Section>
 
@@ -153,7 +153,7 @@ export default function HowItWorksPage() {
         </Section>
 
         <Section id="hood" icon={<Wrench />} title="Under the hood">
-          <p>The whole platform is one Next.js app. Pages are rendered on the server from each course&apos;s markdown files; the interactive parts (Eve, quizzes, progress) run in the browser and talk to three small API routes.</p>
+          <p>The whole platform is one Next.js app. Pages are rendered on the server from each course&apos;s markdown files; the interactive parts (Eve, quizzes, progress) run in the browser and talk to a few small API routes, and to Eve&apos;s own agent service.</p>
           <div className="not-prose card overflow-x-auto p-4">
             <svg viewBox="0 0 760 300" width="100%" role="img" aria-label="Architecture diagram: the browser talks to Next.js on Vercel, which talks to Claude through Vercel AI Gateway and to Neon Postgres">
               <defs>
@@ -171,10 +171,10 @@ export default function HowItWorksPage() {
                 <rect x="290" y="70" width="190" height="160" rx="12" fill="var(--accent-soft)" stroke="var(--accent)" />
                 <text x="385" y="98" textAnchor="middle" fontWeight="700">Next.js on Vercel</text>
                 <text x="385" y="122" textAnchor="middle" fill="var(--muted)">renders markdown lessons</text>
-                <text x="385" y="146" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12">/api/tutor</text>
+                <text x="385" y="146" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12">/eve/v1 · Eve (eve agent)</text>
                 <text x="385" y="166" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12">/api/grade</text>
                 <text x="385" y="186" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12">/api/progress</text>
-                <text x="385" y="212" textAnchor="middle" fill="var(--muted)">holds the gateway credential</text>
+                <text x="385" y="212" textAnchor="middle" fill="var(--muted)">gateway auth via OIDC</text>
 
                 <rect x="580" y="40" width="160" height="90" rx="12" fill="var(--eve-soft)" stroke="var(--eve)" />
                 <text x="660" y="70" textAnchor="middle" fontWeight="700">Vercel AI Gateway</text>
@@ -195,10 +195,10 @@ export default function HowItWorksPage() {
           <h3>A question to Eve, step by step</h3>
           <ol>
             <li>You highlight a sentence in a lesson and click <strong>Ask Eve</strong>, then pick <em>Explain this simply</em>.</li>
-            <li>The browser sends the course id, the lesson id, the highlighted passage, your question, and the recent conversation to <code>/api/tutor</code>.</li>
-            <li>The server loads the lesson markdown from disk and builds the prompt: Eve&apos;s persona (cached), the course block (cached), the lesson text (cached), then your messages. Caching means repeated questions about the same lesson reuse most of the prompt instead of paying for it again.</li>
-            <li>The server sends the request to Vercel AI Gateway, which forwards it to Claude with streaming on, and each chunk of text is passed to your browser as it arrives. That is why the answer appears word by word.</li>
-            <li>Nothing from that exchange is stored on the server.</li>
+            <li>The browser sends your question to Eve&apos;s agent at <code>/eve/v1/…</code> with the passage quoted inside it and the page context (course, lesson, tutor notes) attached to that one turn. The first message creates a durable session for this lesson; later ones continue it.</li>
+            <li>eve runs the turn as a workflow. Eve&apos;s instructions tell her to read a lesson before explaining it, so she calls her <code>get_lesson</code> tool (you see a small &quot;Reading the lesson&quot; chip), gets the lesson text back, and writes her answer.</li>
+            <li>The model call goes to Vercel AI Gateway, which forwards it to Claude with streaming on, and each chunk of text is streamed to your browser as an event. That is why the answer appears word by word. The session then waits for your next message, with the lesson already in its memory.</li>
+            <li>Only the session id is kept in your browser tab, so coming back to the lesson resumes the same conversation. Nothing from the exchange is written to the platform database.</li>
           </ol>
           <h3>Grading a written answer, step by step</h3>
           <ol>
@@ -219,7 +219,8 @@ export default function HowItWorksPage() {
             <tbody>
               <tr><td>Next.js 16 (App Router)</td><td>The web framework. Pages are React components rendered on the server; API routes run as serverless functions on Vercel.</td></tr>
               <tr><td>Markdown + JSON content</td><td>Each course lives in <code>content/courses/&lt;slug&gt;/</code>: <code>course.json</code>, <code>lessons/*.md</code>, <code>quizzes/*.json</code>, <code>notes/*.md</code>, and <code>glossary.json</code>. Anyone can edit them in a text editor, and a new folder is a new course.</td></tr>
-              <tr><td>Vercel AI SDK + AI Gateway</td><td>Talks to Claude through Vercel&apos;s gateway, so the app holds no provider API key. Eve streams; the grader uses schema-validated output. The model id is configurable with <code>EVE_MODEL</code>.</td></tr>
+              <tr><td>eve</td><td>Vercel&apos;s framework for durable agents. Eve is an eve agent in <code>agent/</code>: instructions in markdown, typed tools, skills, route auth, per-session limits, and evals. <code>withEve()</code> in <code>next.config.ts</code> mounts her at <code>/eve/v1/*</code>, and the browser talks to her with <code>useEveAgent</code>.</td></tr>
+              <tr><td>Vercel AI SDK + AI Gateway</td><td>Every model call, Eve&apos;s and the grader&apos;s, goes through Vercel&apos;s gateway, so the app holds no provider API key. The grader uses schema-validated output. The model id is configurable with <code>EVE_MODEL</code>.</td></tr>
               <tr><td>Neon + Drizzle</td><td>Serverless Postgres and a typed query layer for progress. Optional: without <code>DATABASE_URL</code> the site still works, browser-only.</td></tr>
               <tr><td>Vercel</td><td>Hosting. Push to the repository and it deploys.</td></tr>
             </tbody>
@@ -235,9 +236,9 @@ export default function HowItWorksPage() {
             <li><strong>Edit a lesson:</strong> open <code>content/courses/&lt;course&gt;/lessons/&lt;slug&gt;.md</code>, change the text, save. Callouts use the <code>:::example Title … :::</code> syntax shown above.</li>
             <li><strong>Add a quiz question:</strong> edit <code>content/courses/&lt;course&gt;/quizzes/&lt;slug&gt;.json</code>. Multiple choice needs an <code>answer</code> and an explanation per option; written questions need a <code>rubric</code> and a <code>modelAnswer</code>.</li>
             <li><strong>Add a course:</strong> copy <code>content/courses/_template</code> to a new folder, fill in <code>course.json</code>, and write the lessons. It appears in the catalog on the next build. <code>docs/ADDING_A_COURSE.md</code> walks through it.</li>
-            <li><strong>Change Eve&apos;s personality:</strong> <code>lib/prompts.ts</code>.</li>
-            <li><strong>Run locally:</strong> <code>npm install</code>, put an <code>AI_GATEWAY_API_KEY</code> from the Vercel dashboard in <code>.env.local</code>, <code>npm run dev</code>.</li>
-            <li><strong>Deploy:</strong> import the repository into Vercel and deploy. With OIDC federation enabled on the project, Eve authenticates with the gateway automatically; otherwise add <code>AI_GATEWAY_API_KEY</code>. Add a Neon database whenever you want progress to survive across devices.</li>
+            <li><strong>Change Eve:</strong> her persona and rules in <code>agent/instructions.md</code>, her tools in <code>agent/tools/</code>, her model and limits in <code>agent/agent.ts</code>. Run <code>npm run eve:eval</code> afterwards.</li>
+            <li><strong>Run locally:</strong> Node 24, <code>npm install</code>, put an <code>AI_GATEWAY_API_KEY</code> from the Vercel dashboard in <code>.env.local</code>, <code>npm run dev</code> (this starts the site and the eve dev server together).</li>
+            <li><strong>Deploy:</strong> import the repository into Vercel and deploy; the eve agent deploys as a service of the same project. With OIDC federation enabled on the project, Eve authenticates with the gateway automatically; otherwise add <code>AI_GATEWAY_API_KEY</code>. Add a Neon database whenever you want progress to survive across devices.</li>
           </ul>
           <p>
             The design documents are in the repository: <code>docs/ARCHITECTURE.md</code>, <code>docs/UI_PLAN.md</code>, <code>docs/AUTHOR_BRIEF.md</code> (how to write a lesson), <code>docs/ADDING_A_COURSE.md</code>, and a plan per course under <code>docs/courses/</code>.
@@ -246,7 +247,7 @@ export default function HowItWorksPage() {
 
         <Section id="credits" icon={<BookOpen />} title="Credits">
           <p>
-            Each course page lists its own credits and sources. Eve and the grader run on Claude models from Anthropic, reached through Vercel AI Gateway. The platform itself is built on open source: Next.js, Tailwind CSS, the Vercel AI SDK, Drizzle, and Neon.
+            Each course page lists its own credits and sources. Eve and the grader run on Claude models from Anthropic, reached through Vercel AI Gateway; Eve herself is built with eve, Vercel&apos;s agent framework. The platform itself is built on open source: Next.js, Tailwind CSS, the Vercel AI SDK, Drizzle, and Neon.
           </p>
         </Section>
       </div>

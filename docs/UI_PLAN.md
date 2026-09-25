@@ -71,7 +71,7 @@ Design goal: a calm, readable place to learn, with the tutor one click away. Beg
    - Why does this matter?
    - Quiz me on this
    plus a free-text box.
-4. The request sends the quoted text, the lesson slug, and the conversation so far. Eve streams her answer. The quote chip stays attached to that message.
+4. The question is sent to Eve's eve agent with the quoted passage as a markdown quote and the page context (course, lesson, tutor notes) attached to the turn. Eve reads the lesson with her `get_lesson` tool if she has not already, and streams her answer. The quote chip stays attached to that message.
 5. Escape or clicking elsewhere hides the pill. Selections inside the quiz area also work (students can ask about a question, and Eve is instructed to guide rather than reveal answers).
 
 ## 5. Eve drawer
@@ -81,8 +81,8 @@ Design goal: a calm, readable place to learn, with the tutor one click away. Beg
 - Messages: student (right, muted), Eve (left, markdown rendered, code highlighted).
 - Streaming indicator; "Stop" button while streaming.
 - Input: textarea, Enter to send, Shift+Enter for newline.
-- If the server has no AI Gateway credentials: a friendly banner explaining how to add `AI_GATEWAY_API_KEY` (or rely on OIDC on Vercel), and the input is disabled.
-- Chat history is kept per lesson in `sessionStorage` (cleared when the tab closes), never sent to the database.
+- If the eve agent service is not reachable: a friendly banner explaining how it runs (locally with `npm run dev`, on Vercel as part of the project) and that replies need AI Gateway credentials; the input is disabled. If the service is up but a reply fails (for example, no gateway credentials), the error shows inline with a "Start a new chat" button.
+- Each lesson (and each course page) has its own durable eve session. Only the session id is kept in `sessionStorage` (cleared when the tab closes), so the conversation resumes after navigation or a reload; the transcript lives with the session on the eve service, never in the platform database. Tool calls ("Reading the lesson") show as small chips inside Eve's reply.
 
 ## 6. Design tokens
 
@@ -97,7 +97,8 @@ Design goal: a calm, readable place to learn, with the tutor one click away. Beg
 
 | State | What the user sees |
 |---|---|
-| No AI Gateway credentials | Eve panel shows setup banner; grading buttons show "Grading needs AI Gateway credentials" tooltip and are disabled; everything else works |
+| eve service unreachable | Eve panel shows the setup banner and its input is disabled; everything else works |
+| No AI Gateway credentials | Eve replies fail with an inline error; grading buttons show "Grading needs AI Gateway credentials" tooltip and are disabled; everything else works |
 | No `DATABASE_URL` | Progress saves to this browser only; a small note on the progress page says so |
 | API error / rate limit | Inline error with retry button; nothing lost |
 | Streaming interrupted | Partial answer stays, with a "Continue" button |

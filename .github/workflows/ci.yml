@@ -1,5 +1,7 @@
-# The course's own CI gate (see Lesson 6): lint, typecheck, validate the
-# content files, and make sure the site builds. No API key is needed.
+# The platform's own CI gate (see the first course's Lesson 6): lint, typecheck,
+# validate the content files, make sure the agent compiles and the site builds.
+# No API key is needed. Evals (npm run eve:eval) need AI Gateway credentials, so
+# they are run by hand or against a deployment: npx eve eval --url <deployment>.
 name: CI
 
 on:
@@ -14,11 +16,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run content:bundle -- --check
       - run: npx next typegen
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run validate
+      - run: npx eve build --skip-sandbox-prewarm
       - run: npm run build

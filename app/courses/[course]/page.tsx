@@ -28,7 +28,7 @@ export default async function CoursePage({ params }: PageProps<"/courses/[course
 
   return (
     <main>
-      <EveContext courseSlug={course.slug} courseTitle={course.title} />
+      <EveContext courseSlug={course.slug} courseTitle={course.title} courseNotes={course.tutorNotes} />
 
       <section className="grid items-start gap-8 lg:grid-cols-[1.2fr_1fr]">
         <div>

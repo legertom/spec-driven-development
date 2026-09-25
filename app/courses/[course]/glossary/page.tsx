@@ -21,7 +21,7 @@ export default async function GlossaryPage({ params }: PageProps<"/courses/[cour
   const entries = getGlossary(course.slug);
   return (
     <main className="max-w-[900px]">
-      <EveContext courseSlug={course.slug} courseTitle={course.title} />
+      <EveContext courseSlug={course.slug} courseTitle={course.title} courseNotes={course.tutorNotes} />
       <h1 className="text-3xl font-extrabold tracking-tight">Glossary</h1>
       <p className="mt-2 max-w-prose text-muted">
         Every term in <strong>{course.title}</strong>, in plain English, with an example. Click <strong>Ask Eve</strong> on any term for a fresh explanation, or highlight part of a definition.

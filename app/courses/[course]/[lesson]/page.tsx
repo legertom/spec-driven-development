@@ -52,7 +52,7 @@ export default async function LessonPage({ params }: PageProps<"/courses/[course
 
   return (
     <main className="max-w-[76ch]">
-      <EveContext courseSlug={course.slug} courseTitle={course.title} lessonSlug={lesson.slug} lessonTitle={lesson.title} lessonNumber={lesson.number} />
+      <EveContext courseSlug={course.slug} courseTitle={course.title} courseNotes={course.tutorNotes} lessonSlug={lesson.slug} lessonTitle={lesson.title} lessonNumber={lesson.number} />
       <LessonVisit courseSlug={course.slug} lessonSlug={lesson.slug} />
 
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted">

@@ -6,17 +6,27 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "start:eve": "eve start --port 4274",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
-    "validate": "node scripts/validate-content.mjs"
+    "validate": "node scripts/validate-content.mjs",
+    "content:bundle": "node scripts/bundle-content.mjs",
+    "predev": "node scripts/bundle-content.mjs",
+    "prebuild": "node scripts/bundle-content.mjs",
+    "eve:dev": "eve dev",
+    "eve:build": "eve build",
+    "eve:eval": "eve eval",
+    "eve:info": "eve info"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.92",
     "@neondatabase/serverless": "^1.1.0",
+    "@vercel/connect": "^2.3.2",
     "ai": "^7.0.114",
     "drizzle-orm": "^0.45.3",
+    "eve": "^0.66.3",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.48.0",
     "mdast-util-directive": "^3.1.0",
@@ -43,5 +53,8 @@
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // eve (agent framework) artifacts: compiled manifests and the built agent service.
+    ".eve/**",
+    ".output/**",
   ]),
 ]);
 

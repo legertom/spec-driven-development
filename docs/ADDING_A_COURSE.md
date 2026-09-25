@@ -26,7 +26,7 @@ The folder name is the course's URL slug: `/courses/my-course`.
 | `modules` | The lesson order. Each module has an `id`, `title`, `blurb`, and a list of lesson slugs. |
 | `shortTitles` | Slug to short title, used in the sidebar. |
 | `runningExample` | Optional: the shared fictional world (title, summary, and a tools table). |
-| `tutorNotes` | Course-specific guidance for Eve: the running example, the cast, vocabulary, how to frame answers. This text goes into Eve's system prompt on every page of the course. |
+| `tutorNotes` | Course-specific guidance for Eve: the running example, the cast, vocabulary, how to frame answers. This text travels with every question as page context on every page of the course, and Eve can also read it with her `get_course` tool. |
 | `credits` | Sources and acknowledgements, shown at the bottom of the course page. |
 
 ## 3. Write the lessons
@@ -46,7 +46,8 @@ Lesson frontmatter must repeat the module id and title and may name a `verb` fro
 ## 5. Validate and run
 
 ```bash
-npm run validate    # checks every course: frontmatter, callouts, quizzes, glossary ids
+npm run validate         # checks every course: frontmatter, callouts, quizzes, glossary ids
+npm run content:bundle   # regenerates agent/lib/content.generated.ts, Eve's copy of the courses (also runs before dev and build; commit the result)
 npm run dev         # http://localhost:3000/courses/my-course
 ```
 
@@ -58,7 +59,7 @@ The first course was written from a plan that listed every lesson's objectives, 
 
 ## What Eve knows about your course
 
-On every page of a course, Eve's system prompt contains: the platform persona, your course's title and tagline, the module map, the `verbs`, and `tutorNotes`. On a lesson page it also contains the full lesson text. Write `tutorNotes` as if briefing a new teaching assistant: the running example and its cast, the terms you want used consistently, and anything she should not do (for example, "never reveal quiz answers" is already in the platform persona).
+Eve is an eve agent (`agent/`). On every page of a course, each question carries the course slug and title, `tutorNotes`, and the open lesson's slug and title as per-turn context. Eve reads the lesson text, the course map and running example, the glossary, and the answer-free quiz through her tools (`get_lesson`, `get_course`, `lookup_term`, `get_quiz`), all served from `agent/lib/content.generated.ts`, which `npm run content:bundle` regenerates from `content/courses/` (it runs automatically before `npm run dev` and `npm run build`; commit the generated file, CI checks it is current). Quiz answers, rubrics, model answers, and instructor notes are never in that bundle. Write `tutorNotes` as if briefing a new teaching assistant: the running example and its cast, the terms you want used consistently, and anything she should not do (for example, "never reveal quiz answers" is already in the platform persona).
 
 ## Progress and grading
 
