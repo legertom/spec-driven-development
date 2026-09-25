@@ -107,7 +107,7 @@ Browser
 - One thread per lesson (or per course page, or per other page): `EveDrawer` keys `<EveChat>` by the thread key, so navigating between lessons switches sessions and coming back resumes the earlier one.
 - Nothing about chats is written to the platform database. Session transcripts live in eve's durable store (Vercel Workflow on Vercel).
 - Cost is bounded per session by `limits.maxTokenCostUsdPerSession`; a new chat is a new session.
-- `GET /eve/v1/health` is public and is what `/api/health` uses for the `tutor` flag. `/api/health?probe=eve` creates a session with the `Client` from `eve/client` and reports how the turn ended.
+- `GET /eve/v1/health` is public and is what `/api/health` uses for the `tutor` flag. `/api/health?probe=eve` creates a session with the `Client` from `eve/client` and reports how the turn ended; `?probe=lesson` sends a real lesson question with page context and reports the tools Eve called.
 
 ### Evals
 

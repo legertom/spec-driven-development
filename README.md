@@ -77,7 +77,7 @@ Quiz answers, rubrics, and model answers are stripped from the bundle Eve reads,
 
 **Evals.** `npm run eve:eval` boots a local eve server and runs everything in `evals/`; `npx eve eval --url https://<deployment>` runs the same files against a deployment. The judge model runs through AI Gateway as well.
 
-**Health.** `/api/health` reports `tutor` (the eve service answers its health route), `grading` (gateway credentials are present), and `database`. `/api/health?probe=eve` runs one real turn on the agent and reports how it ended; `/api/health?probe=1` makes one model call on the grading path.
+**Health.** `/api/health` reports `tutor` (the eve service answers its health route), `grading` (gateway credentials are present), and `database`. `/api/health?probe=eve` runs one real turn on the agent and reports how it ended; `/api/health?probe=lesson` asks Eve about the first lesson with the same page context the browser sends and lists the tools she called (expect `get_lesson`); `/api/health?probe=1` makes one model call on the grading path.
 
 ## Environment variables
 
