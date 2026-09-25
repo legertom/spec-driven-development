@@ -53,6 +53,7 @@ Model calls go through [Vercel AI Gateway](https://vercel.com/ai-gateway) using 
 - **Locally:** create an API key in the Vercel dashboard under AI Gateway and set `AI_GATEWAY_API_KEY` in `.env.local`.
 - **On Vercel:** either set the same variable in the project, or enable OIDC federation in the project's security settings and leave it unset; the gateway provider picks up the deployment's OIDC token automatically.
 - **Switch models** with `EVE_MODEL` (any `provider/model` id the gateway lists, for example `anthropic/claude-sonnet-5`). Anthropic-specific options such as prompt caching and effort are forwarded by the gateway.
+- **Check it works:** open `/api/health?probe=1` on the deployed site. It makes a one-word model call and reports `probe.ok`, the latency, and any credential error.
 
 ## Deploy to Vercel
 
