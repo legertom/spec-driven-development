@@ -4,21 +4,21 @@
  * Learner progress, available to any client component via useProgress().
  * localStorage (via progressStore) is the fast local copy; the server (Neon)
  * is the durable copy when DATABASE_URL is configured. Writes go to both;
- * reads merge them.
+ * reads merge them. Every record is scoped to a course.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { progressStore } from "@/lib/progress-store";
-import { EMPTY_PROGRESS, type AttemptRecord, type LessonStatus, type ProgressSnapshot } from "@/lib/progress-types";
+import { EMPTY_PROGRESS, lessonKey, type AttemptRecord, type LessonStatus, type ProgressSnapshot } from "@/lib/progress-types";
 
 interface ProgressApi {
   ready: boolean;
   persisted: boolean | null; // null until the server answers
   snapshot: ProgressSnapshot;
-  lessonStatus(slug: string): LessonStatus | undefined;
-  markLesson(slug: string, status: LessonStatus): void;
+  lessonStatus(courseSlug: string, lessonSlug: string): LessonStatus | undefined;
+  markLesson(courseSlug: string, lessonSlug: string, status: LessonStatus): void;
   recordAttempt(attempt: Omit<AttemptRecord, "createdAt">): void;
-  attemptsFor(slug: string, questionId?: string): AttemptRecord[];
-  bestScore(slug: string, questionId: string): number | undefined;
+  attemptsFor(courseSlug: string, lessonSlug: string, questionId?: string): AttemptRecord[];
+  bestScore(courseSlug: string, lessonSlug: string, questionId: string): number | undefined;
   reset(): void;
 }
 
@@ -27,14 +27,14 @@ const noopSubscribe = () => () => {};
 
 function merge(local: ProgressSnapshot, server: ProgressSnapshot): ProgressSnapshot {
   const lessons = { ...local.lessons };
-  for (const [slug, rec] of Object.entries(server.lessons)) {
-    const cur = lessons[slug];
-    if (!cur || cur.updatedAt < rec.updatedAt) lessons[slug] = rec;
+  for (const [key, rec] of Object.entries(server.lessons)) {
+    const cur = lessons[key];
+    if (!cur || cur.updatedAt < rec.updatedAt) lessons[key] = rec;
   }
-  const seen = new Set(local.attempts.map((a) => `${a.questionId}|${a.createdAt}`));
+  const seen = new Set(local.attempts.map((a) => `${a.courseSlug}|${a.questionId}|${a.createdAt}`));
   const attempts = [...local.attempts];
   for (const a of server.attempts) {
-    const key = `${a.questionId}|${a.createdAt}`;
+    const key = `${a.courseSlug}|${a.questionId}|${a.createdAt}`;
     if (!seen.has(key)) {
       seen.add(key);
       attempts.push(a);
@@ -80,22 +80,23 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const markLesson = useCallback((slug: string, status: LessonStatus) => {
+  const markLesson = useCallback((courseSlug: string, lessonSlug: string, status: LessonStatus) => {
     const updatedAt = new Date().toISOString();
+    const key = lessonKey(courseSlug, lessonSlug);
     let changed = false;
     progressStore.update((s) => {
-      const cur = s.lessons[slug];
+      const cur = s.lessons[key];
       if (cur?.status === "completed" && status === "in_progress") return s; // never downgrade
       if (cur?.status === status) return s;
       changed = true;
-      return { ...s, lessons: { ...s.lessons, [slug]: { lessonSlug: slug, status, updatedAt } } };
+      return { ...s, lessons: { ...s.lessons, [key]: { courseSlug, lessonSlug, status, updatedAt } } };
     });
-    if (changed) void post({ type: "lesson", lessonSlug: slug, status });
+    if (changed) void post({ type: "lesson", courseSlug, lessonSlug, status });
   }, []);
 
   const recordAttempt = useCallback((attempt: Omit<AttemptRecord, "createdAt">) => {
     const full: AttemptRecord = { ...attempt, createdAt: new Date().toISOString() };
-    progressStore.update((s) => ({ ...s, attempts: [full, ...s.attempts].slice(0, 1000) }));
+    progressStore.update((s) => ({ ...s, attempts: [full, ...s.attempts].slice(0, 2000) }));
     void post({ type: "attempt", ...full });
   }, []);
 
@@ -109,13 +110,15 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       ready,
       persisted,
       snapshot,
-      lessonStatus: (slug) => snapshot.lessons[slug]?.status,
+      lessonStatus: (c, l) => snapshot.lessons[lessonKey(c, l)]?.status,
       markLesson,
       recordAttempt,
-      attemptsFor: (slug, questionId) =>
-        snapshot.attempts.filter((a) => a.lessonSlug === slug && (questionId ? a.questionId === questionId : true)),
-      bestScore: (slug, questionId) => {
-        const scores = snapshot.attempts.filter((a) => a.lessonSlug === slug && a.questionId === questionId).map((a) => a.score);
+      attemptsFor: (c, l, questionId) =>
+        snapshot.attempts.filter((a) => a.courseSlug === c && a.lessonSlug === l && (questionId ? a.questionId === questionId : true)),
+      bestScore: (c, l, questionId) => {
+        const scores = snapshot.attempts
+          .filter((a) => a.courseSlug === c && a.lessonSlug === l && a.questionId === questionId)
+          .map((a) => a.score);
         return scores.length ? Math.max(...scores) : undefined;
       },
       reset,

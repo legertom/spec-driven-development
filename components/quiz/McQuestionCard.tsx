@@ -8,18 +8,20 @@ import type { McQuestion } from "@/lib/quiz-types";
 export function McQuestionCard({
   q,
   index,
+  courseSlug,
   lessonSlug,
   onAnswered,
 }: {
   q: McQuestion;
   index: number;
+  courseSlug: string;
   lessonSlug: string;
   onAnswered?: (correct: boolean) => void;
 }) {
   const { recordAttempt, bestScore } = useProgress();
   const [chosen, setChosen] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const best = bestScore(lessonSlug, q.id);
+  const best = bestScore(courseSlug, lessonSlug, q.id);
   const answered = chosen !== null;
   const correct = chosen === q.answer;
 
@@ -27,7 +29,7 @@ export function McQuestionCard({
     if (answered) return;
     setChosen(id);
     const isCorrect = id === q.answer;
-    recordAttempt({ lessonSlug, questionId: q.id, kind: "mc", answer: id, score: isCorrect ? 100 : 0, passed: isCorrect, feedback: { chosen: id, correct: isCorrect } });
+    recordAttempt({ courseSlug, lessonSlug, questionId: q.id, kind: "mc", answer: id, score: isCorrect ? 100 : 0, passed: isCorrect, feedback: { chosen: id, correct: isCorrect } });
     onAnswered?.(isCorrect);
   }
 

@@ -3,12 +3,11 @@
 import { Leaf } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { COURSE_TITLE } from "@/lib/course";
+import { PLATFORM_NAME } from "@/lib/platform";
 import { EveToggle } from "./eve/EveToggle";
 
 const LINKS = [
-  { href: "/course", label: "Course" },
-  { href: "/glossary", label: "Glossary" },
+  { href: "/courses", label: "Courses" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/progress", label: "Progress" },
 ];
@@ -22,8 +21,7 @@ export function TopBar() {
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent text-accent-ink">
             <Leaf size={18} />
           </span>
-          <span className="hidden sm:inline">{COURSE_TITLE}</span>
-          <span className="sm:hidden">SDAE</span>
+          <span>{PLATFORM_NAME}</span>
         </Link>
         <nav className="ml-2 flex items-center gap-1 overflow-x-auto text-sm" aria-label="Main">
           {LINKS.map((l) => {

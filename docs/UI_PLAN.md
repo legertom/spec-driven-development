@@ -1,13 +1,13 @@
 # UI Plan
 
-Design goal: a calm, readable place to learn, with the tutor one click away. Beginners should never wonder where they are or what to do next.
+Design goal: a calm, readable place to learn, with the tutor one click away. Beginners should never wonder where they are or what to do next. The platform hosts several courses; every course uses the same layout.
 
 ## 1. Global layout
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Top bar: 🌱 Spec-Driven AI Engineering   Course · Glossary · How it   │
-│          works · Progress                              [Ask Eve ✨]   │
+│ Top bar: 🌱 Spec-Driven Dev   Courses · How it works · Progress       │
+│                                                        [Ask Eve ✨]   │
 ├───────────────┬──────────────────────────────────────┬───────────────┤
 │ Sidebar       │ Main content (max 72ch)              │ Eve drawer    │
 │ (course pages)│                                      │ (slides in,   │
@@ -23,8 +23,8 @@ Design goal: a calm, readable place to learn, with the tutor one click away. Beg
 └───────────────┴──────────────────────────────────────┴───────────────┘
 ```
 
-- **Top bar** is on every page. The "Ask Eve" button opens the drawer anywhere; on non-lesson pages Eve gets the course overview as context.
-- **Sidebar** appears on `/course` and `/course/[slug]`. Modules are collapsible; each lesson shows a status dot (○ not started, ◐ in progress, ● complete) and a small quiz score badge when one exists. On phones it collapses into a "Lessons" sheet.
+- **Top bar** is on every page: platform name, Courses, How it works, Progress, and the "Ask Eve" button. On non-lesson pages Eve gets the course (or the catalog) as context.
+- **Sidebar** appears on every page under `/courses/[course]`. It starts with the course home and glossary links, then the modules; each lesson shows a status dot (○ not started, ◐ in progress, ● complete) and a small quiz score badge when one exists. On phones it collapses into a "Lessons" sheet.
 - **Main** column is a readable article (about 72 characters wide, 17px base font, 1.7 line-height).
 - **Eve drawer** slides in from the right, pushes content on wide screens, overlays on narrow ones.
 
@@ -32,12 +32,13 @@ Design goal: a calm, readable place to learn, with the tutor one click away. Beg
 
 | Route | Purpose |
 |---|---|
-| `/` | Home: hero, what you will build (Sprout pipeline diagram), module cards with progress, how the course works in three lines, "Start with L0" |
-| `/course` | Syllabus overview: modules, lessons, minutes, status |
-| `/course/[slug]` | A lesson (see §3) |
-| `/glossary` | Searchable glossary with A–Z filter; each term has an "Ask Eve" button and "appears in" links |
-| `/how-it-works` | How the course and the app work, with an architecture diagram |
-| `/progress` | Dashboard: overall %, per-module bars, quiz history, weak spots, reset button |
+| `/` | Platform home: hero, course catalog cards with progress, how the platform works in three lines |
+| `/courses` | The catalog |
+| `/courses/[course]` | Course home: tagline, what you will build (pipeline), phases table, module cards with progress, every lesson, the running example, credits |
+| `/courses/[course]/[lesson]` | A lesson (see §3) |
+| `/courses/[course]/glossary` | The course's searchable glossary with A–Z filter; each term has an "Ask Eve" button and "appears in" links |
+| `/how-it-works` | How the platform and the app work, with an architecture diagram |
+| `/progress` | Dashboard across courses: overall %, per-course and per-module bars, quiz history, weak spots, reset button |
 
 ## 3. The lesson page, top to bottom
 

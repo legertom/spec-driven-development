@@ -11,11 +11,12 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { describeError, FALLBACKS_ENABLED, fallbackParams, getClient, MODEL } from "@/lib/anthropic";
 import { findGradable } from "@/lib/content";
-import { isLessonSlug } from "@/lib/course";
+import { getCourse, isLessonSlug } from "@/lib/courses";
 import { GRADER_SYSTEM, graderUserPrompt } from "@/lib/prompts";
 import type { GradeResult } from "@/lib/quiz-types";
 
 const Body = z.object({
+  courseSlug: z.string().max(100),
   lessonSlug: z.string().max(100),
   questionId: z.string().max(100),
   answer: z.string().min(1).max(20_000),
@@ -49,11 +50,12 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return Response.json({ error: "bad_request", message: "Invalid request body." }, { status: 400 });
   }
-  const { lessonSlug, questionId, answer } = parsed.data;
-  if (!isLessonSlug(lessonSlug)) {
-    return Response.json({ error: "not_found", message: "Unknown lesson." }, { status: 404 });
+  const { courseSlug, lessonSlug, questionId, answer } = parsed.data;
+  const course = getCourse(courseSlug);
+  if (!course || !isLessonSlug(course, lessonSlug)) {
+    return Response.json({ error: "not_found", message: "Unknown course or lesson." }, { status: 404 });
   }
-  const gradable = findGradable(lessonSlug, questionId);
+  const gradable = findGradable(courseSlug, lessonSlug, questionId);
   if (!gradable) {
     return Response.json({ error: "not_found", message: "Unknown question." }, { status: 404 });
   }
@@ -63,7 +65,7 @@ export async function POST(req: NextRequest) {
     model: MODEL,
     max_tokens: 4096,
     system: [{ type: "text" as const, text: GRADER_SYSTEM, cache_control: { type: "ephemeral" as const } }],
-    messages: [{ role: "user" as const, content: graderUserPrompt(gradable, answer) }],
+    messages: [{ role: "user" as const, content: graderUserPrompt(gradable, answer, course.title) }],
     output_config: { format: zodOutputFormat(GradeSchema), effort: "high" as const },
   };
 

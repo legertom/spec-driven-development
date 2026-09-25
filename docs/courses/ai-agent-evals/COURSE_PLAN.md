@@ -1,6 +1,7 @@
-# Spec-Driven AI Engineering — Course Plan
+# Building and Evaluating AI Agents — Course Plan
 
-> **Subtitle:** Build, evaluate, and ship reliable AI agents — from `SPEC.md` to production.
+> **Course slug:** `ai-agent-evals` (content lives in `content/courses/ai-agent-evals/`). This is the first course on the Spec-Driven Development platform.
+> **Tagline:** Build a support agent, make it measurable, find its failures, gate it with tests, red-team it, and improve accuracy and cost.
 > **Audience:** beginner engineers and product managers. You can read simple code and have used a chat assistant. No ML or statistics background is assumed.
 > **Tutor:** Eve, an AI tutor built into every page. Highlight any text and ask her about it.
 > **Structure:** 5 modules, 9 core lessons (L1–L9), a beginner primer (L0), and a bonus interview lesson. Modeled on the structure of the public "AI Evals for Engineers & PMs" syllabus by Hamel Husain and Shreya Shankar; all lesson content, examples, quizzes, and the running example world here are original.

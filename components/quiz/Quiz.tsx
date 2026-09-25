@@ -6,7 +6,7 @@ import type { McQuestion, PublicGradedQuestion, PublicQuiz } from "@/lib/quiz-ty
 import { GradedQuestionCard } from "./GradedQuestionCard";
 import { McQuestionCard } from "./McQuestionCard";
 
-export function Quiz({ quiz, lessonSlug }: { quiz: PublicQuiz; lessonSlug: string }) {
+export function Quiz({ quiz, courseSlug, lessonSlug }: { quiz: PublicQuiz; courseSlug: string; lessonSlug: string }) {
   const mc = quiz.questions.filter((q): q is McQuestion => q.type === "mc");
   const graded = quiz.questions.filter((q): q is PublicGradedQuestion => q.type !== "mc");
   const [results, setResults] = useState<Record<string, boolean>>({});
@@ -21,7 +21,7 @@ export function Quiz({ quiz, lessonSlug }: { quiz: PublicQuiz; lessonSlug: strin
           <p className="mt-1 text-muted">Pick an answer to see why it is right or wrong. These are graded in code, instantly.</p>
           <div className="mt-5 space-y-4">
             {mc.map((q, i) => (
-              <McQuestionCard key={q.id} q={q} index={i + 1} lessonSlug={lessonSlug} onAnswered={(ok) => setResults((r) => ({ ...r, [q.id]: ok }))} />
+              <McQuestionCard key={q.id} q={q} index={i + 1} courseSlug={courseSlug} lessonSlug={lessonSlug} onAnswered={(ok) => setResults((r) => ({ ...r, [q.id]: ok }))} />
             ))}
           </div>
           {answered > 0 ? (
@@ -40,7 +40,7 @@ export function Quiz({ quiz, lessonSlug }: { quiz: PublicQuiz; lessonSlug: strin
           </p>
           <div className="mt-5 space-y-5">
             {graded.map((q) => (
-              <GradedQuestionCard key={q.id} lessonSlug={lessonSlug} questionId={q.id} kind={q.type} prompt={q.prompt} rubricCount={q.rubricCount} maxWords={q.maxWords} />
+              <GradedQuestionCard key={q.id} courseSlug={courseSlug} lessonSlug={lessonSlug} questionId={q.id} kind={q.type} prompt={q.prompt} rubricCount={q.rubricCount} maxWords={q.maxWords} />
             ))}
           </div>
         </div>
@@ -63,7 +63,7 @@ export function Quiz({ quiz, lessonSlug }: { quiz: PublicQuiz; lessonSlug: strin
             ) : null}
           </div>
           <div className="mt-4">
-            <GradedQuestionCard lessonSlug={lessonSlug} questionId={quiz.homework.id} kind="homework" prompt="Paste your homework write-up below. Include every deliverable." rubricCount={quiz.homework.rubricCount} />
+            <GradedQuestionCard courseSlug={courseSlug} lessonSlug={lessonSlug} questionId={quiz.homework.id} kind="homework" prompt="Paste your homework write-up below. Include every deliverable." rubricCount={quiz.homework.rubricCount} />
           </div>
         </div>
       ) : null}

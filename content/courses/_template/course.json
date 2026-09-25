@@ -1,0 +1,28 @@
+{
+  "slug": "my-course",
+  "title": "My Course Title",
+  "shortTitle": "My Course",
+  "tagline": "One sentence on what the learner will be able to do.",
+  "description": "Two or three sentences shown on the course page.",
+  "level": "Beginner",
+  "audience": "Who this is for and what they should already know.",
+  "status": "coming-soon",
+  "order": 99,
+  "verbs": [
+    { "name": "Analyze", "question": "What question does this phase answer?", "lessons": "L1–L2" }
+  ],
+  "pipeline": [
+    { "step": "First thing you build", "verb": "Analyze", "note": "short note" }
+  ],
+  "modules": [
+    { "id": 1, "title": "Module title", "blurb": "What this module covers.", "lessons": ["l1-first-lesson"] }
+  ],
+  "shortTitles": { "l1-first-lesson": "First lesson" },
+  "runningExample": {
+    "title": "Name of the running example",
+    "summary": "The world every lesson shares, in two sentences.",
+    "tools": []
+  },
+  "tutorNotes": "Course-specific guidance for Eve: the running example, the cast, the vocabulary, and how to frame answers.",
+  "credits": ""
+}

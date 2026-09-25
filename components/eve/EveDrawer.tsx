@@ -13,7 +13,7 @@ const QUICK_ACTIONS = [
   { label: "Quiz me on this", prompt: "Ask me one short question to check I understood this passage. Wait for my answer before telling me if I'm right." },
 ];
 
-function suggestionsFor(lessonTitle?: string, pathname?: string): string[] {
+function suggestionsFor(lessonTitle?: string, courseTitle?: string, pathname?: string): string[] {
   if (lessonTitle) {
     return [
       `Give me the main idea of "${lessonTitle}" in two sentences.`,
@@ -21,10 +21,13 @@ function suggestionsFor(lessonTitle?: string, pathname?: string): string[] {
       "What is the most common mistake people make with this topic?",
     ];
   }
-  if (pathname?.startsWith("/glossary")) {
-    return ["What is the difference between pass@k and pass^k?", "Explain TPR and TNR with a tiny example.", "Which terms should I learn first?"];
+  if (pathname?.endsWith("/glossary")) {
+    return ["Which terms in this glossary should I learn first?", "Pick two related terms and explain the difference with an example.", "Quiz me on three terms from this glossary."];
   }
-  return ["Where should I start if I'm a complete beginner?", "What will I be able to do after this course?", "What is spec-driven development in one paragraph?"];
+  if (courseTitle) {
+    return [`What will I be able to do after "${courseTitle}"?`, "Which lesson should I start with, and why?", "Give me the one-paragraph version of this course."];
+  }
+  return ["Which course should I start with if I'm a complete beginner?", "What is spec-driven development in one paragraph?", "How do the quizzes and grading work here?"];
 }
 
 export function EveDrawer() {
@@ -59,7 +62,7 @@ export function EveDrawer() {
     void send(text, pendingHighlight ?? undefined);
   }
 
-  const suggestions = suggestionsFor(context.lessonTitle, pathname);
+  const suggestions = suggestionsFor(context.lessonTitle, context.courseTitle, pathname);
 
   return (
     <aside className="eve-drawer" data-open={open} aria-label="Eve, your tutor" aria-hidden={!open}>
@@ -70,7 +73,11 @@ export function EveDrawer() {
         <div className="min-w-0 flex-1">
           <div className="font-bold leading-tight">Eve · your tutor</div>
           <div className="truncate text-xs text-muted">
-            {context.lessonSlug ? `Reading ${context.lessonNumber} · ${context.lessonTitle}` : "Course-wide questions"}
+            {context.lessonSlug
+              ? `${context.courseTitle ? `${context.courseTitle} · ` : ""}${context.lessonNumber} · ${context.lessonTitle}`
+              : context.courseTitle
+                ? `Course: ${context.courseTitle}`
+                : "Platform-wide questions"}
           </div>
         </div>
         <button type="button" className="btn btn-sm" onClick={clear} aria-label="Clear conversation" title="Clear conversation">

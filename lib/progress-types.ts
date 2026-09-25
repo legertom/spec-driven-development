@@ -3,12 +3,14 @@ import type { AttemptKind } from "./quiz-types";
 export type LessonStatus = "in_progress" | "completed";
 
 export interface LessonProgressRecord {
+  courseSlug: string;
   lessonSlug: string;
   status: LessonStatus;
   updatedAt: string; // ISO
 }
 
 export interface AttemptRecord {
+  courseSlug: string;
   lessonSlug: string;
   questionId: string;
   kind: AttemptKind;
@@ -20,8 +22,13 @@ export interface AttemptRecord {
 }
 
 export interface ProgressSnapshot {
+  /** keyed by `${courseSlug}/${lessonSlug}` */
   lessons: Record<string, LessonProgressRecord>;
   attempts: AttemptRecord[];
 }
 
 export const EMPTY_PROGRESS: ProgressSnapshot = { lessons: {}, attempts: [] };
+
+export function lessonKey(courseSlug: string, lessonSlug: string): string {
+  return `${courseSlug}/${lessonSlug}`;
+}

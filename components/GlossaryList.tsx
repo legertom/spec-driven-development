@@ -3,13 +3,23 @@
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import type { GlossaryEntry } from "@/content/glossary";
-import { SHORT_TITLES } from "@/lib/course";
+import type { GlossaryEntry } from "@/lib/course-types";
 import { AskEveButton } from "./eve/AskEveButton";
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-export function GlossaryList({ entries }: { entries: GlossaryEntry[] }) {
+export function GlossaryList({
+  courseSlug,
+  entries,
+  shortTitles,
+  exampleHint,
+}: {
+  courseSlug: string;
+  entries: GlossaryEntry[];
+  shortTitles: Record<string, string>;
+  /** Name of the course's running example, used in the Ask Eve prompt. */
+  exampleHint?: string;
+}) {
   const [query, setQuery] = useState("");
   const [letter, setLetter] = useState<string | null>(null);
 
@@ -70,7 +80,7 @@ export function GlossaryList({ entries }: { entries: GlossaryEntry[] }) {
           <article key={e.id} id={e.id} className="card scroll-mt-24 p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h2 className="text-lg font-bold">{e.term}</h2>
-              <AskEveButton size="sm" label="Ask Eve" prompt={`Explain "${e.term}" with a new example from Pip's Plant Shop, then tell me why it matters.`} />
+              <AskEveButton size="sm" label="Ask Eve" prompt={`Explain "${e.term}" with a new example${exampleHint ? ` from ${exampleHint}` : ""}, then tell me why it matters.`} />
             </div>
             <p className="mt-2">{e.definition}</p>
             <p className="mt-2 text-sm">
@@ -84,8 +94,8 @@ export function GlossaryList({ entries }: { entries: GlossaryEntry[] }) {
                   {e.lessons.map((slug, i) => (
                     <span key={slug}>
                       {i > 0 ? ", " : ""}
-                      <Link href={`/course/${slug}`} className="underline">
-                        {slug.slice(0, 2).toUpperCase()} {SHORT_TITLES[slug] ?? slug}
+                      <Link href={`/courses/${courseSlug}/${slug}`} className="underline">
+                        {slug.slice(0, 2).toUpperCase()} {shortTitles[slug] ?? slug}
                       </Link>
                     </span>
                   ))}

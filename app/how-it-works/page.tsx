@@ -4,7 +4,7 @@ import Link from "next/link";
 import { AskEveButton } from "@/components/eve/AskEveButton";
 import { HighlightMenu } from "@/components/eve/HighlightMenu";
 import { Markdown } from "@/components/Markdown";
-import { COURSE_TITLE, MODULES } from "@/lib/course";
+import { PLATFORM_LONG_NAME, PLATFORM_TAGLINE } from "@/lib/platform";
 
 export const metadata: Metadata = { title: "How it works" };
 
@@ -67,28 +67,12 @@ export default function HowItWorksPage() {
       </nav>
 
       <div id="how-content" className="mt-10 space-y-14">
-        <Section id="course" icon={<BookOpen />} title="The course">
+        <Section id="course" icon={<BookOpen />} title="The platform and its courses">
           <p>
-            <strong>{COURSE_TITLE}</strong> teaches one loop, and every lesson is a step in it: write a spec that says what &quot;correct&quot; means, build the agent so its behavior can be measured, look at what it actually does and name the failures, turn each failure into a test, gate deployments on those tests, red-team it, and then improve accuracy and cost with evidence. The spec comes first; everything else is derived from it. That is what &quot;spec-driven&quot; means here.
+            <strong>{PLATFORM_LONG_NAME}</strong> is a small learning platform: {PLATFORM_TAGLINE.toLowerCase()} It hosts several courses, and every course follows the same shape so you never have to learn a new interface. Each course is a folder of markdown lessons, JSON quizzes, instructor notes, and a glossary, with a <code>course.json</code> that lists its modules and lesson order. The <Link href="/courses">catalog</Link> lists what is available now and what is coming.
           </p>
-          <p>Every lesson belongs to one of three verbs, and the page header tells you which one you are doing:</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Verb</th>
-                <th>Question it answers</th>
-                <th>Lessons</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td><strong>Analyze</strong></td><td>What is the agent actually doing, and where does it fail?</td><td>L0–L4</td></tr>
-              <tr><td><strong>Measure</strong></td><td>How often does each failure happen, and can we detect it automatically?</td><td>L5–L7</td></tr>
-              <tr><td><strong>Improve</strong></td><td>Which change fixes it at the lowest cost, and did it really help?</td><td>L8–L9</td></tr>
-            </tbody>
-          </table>
-          <p>
-            The modules follow that order: {MODULES.map((m) => `Module ${m.id} (${m.title})`).join(", ")}. Every lesson uses the same running example, <strong>Pip&apos;s Plant Shop</strong> and its support agent <strong>Sprout</strong>, so you learn the ideas, not a new setting each time. The <Link href="/course">syllabus</Link> lists every lesson with its objectives and reading time.
-          </p>
+          <p>The idea that runs through every course is spec-driven development: write down what &quot;correct&quot; means before you build, build so the result can be measured, and then improve with evidence instead of vibes. Courses organize their lessons into phases (for example Analyze, Measure, Improve), and each lesson page tells you which phase you are in.</p>
+          <p>Every course also has a running example, a small fictional world that every lesson reuses so you learn the ideas rather than a new setting each time. The course page introduces it, and Eve uses it in her explanations.</p>
         </Section>
 
         <Section id="lesson" icon={<ListChecks />} title="What a lesson looks like">
@@ -111,7 +95,7 @@ export default function HowItWorksPage() {
 
         <Section id="eve" icon={<Sparkles />} title="Eve, the tutor">
           <p>
-            Eve is a tutor built on the Anthropic API. She lives in the drawer on the right (the <strong>Ask Eve</strong> button in the top bar opens it on any page). On a lesson page she is given three things: a fixed description of who she is and how to teach, the course map, and the <em>full text of the lesson you are reading</em>. That is why she can answer &quot;what does section 3 mean?&quot; without you pasting anything.
+            Eve is a tutor built on the Anthropic API. She lives in the drawer on the right (the <strong>Ask Eve</strong> button in the top bar opens it on any page). On a lesson page she is given three things: a fixed description of who she is and how to teach, the course you are in (its map, its running example, and course-specific teaching notes), and the <em>full text of the lesson you are reading</em>. That is why she can answer &quot;what does section 3 mean?&quot; without you pasting anything. On the catalog or progress pages she knows which courses exist and can recommend where to start.
           </p>
           <h3>Highlight to ask</h3>
           <p>
@@ -129,12 +113,12 @@ export default function HowItWorksPage() {
           </ul>
           <h3>Memory</h3>
           <p>
-            Each lesson has its own conversation, kept in this browser tab (session storage). Close the tab and it is gone. Chats are never written to the database. Every request sends the recent conversation back to the server, because the model itself has no memory between calls.
+            Each lesson (and each course page) has its own conversation, kept in this browser tab (session storage). Close the tab and it is gone. Chats are never written to the database. Every request sends the recent conversation back to the server, because the model itself has no memory between calls.
           </p>
         </Section>
 
         <Section id="grading" icon={<GraduationCap />} title="How grading works">
-          <p>The course practices what it teaches in Lesson 5. There are two kinds of questions, and they are graded two different ways on purpose.</p>
+          <p>Every course uses the same two kinds of questions, graded two different ways on purpose. (The AI agents course teaches exactly this distinction in its Lesson 5, so the platform practices what that course preaches.)</p>
           <table>
             <thead>
               <tr>
@@ -148,7 +132,7 @@ export default function HowItWorksPage() {
               <tr><td>Short answer, free response, homework</td><td><strong>An LLM judge</strong> (Eve) on the server</td><td>Your wording is open-ended, so the answer needs interpretation. That is exactly when Lesson 5 says to use a judge.</td></tr>
             </tbody>
           </table>
-          <p>The judge is set up the way Lesson 5 recommends:</p>
+          <p>The judge is set up the way a good evaluation should be:</p>
           <ul>
             <li><strong>Binary criteria.</strong> Each question has a rubric of three to six criteria. The judge marks each one <em>met</em> or <em>not met</em>, with a one-sentence note. No 1–5 scores.</li>
             <li><strong>The score is computed in code.</strong> Score = criteria met ÷ total criteria. You pass at 70% or more. The model never picks the number.</li>
@@ -162,14 +146,14 @@ export default function HowItWorksPage() {
         <Section id="data" icon={<Database />} title="Your progress and your data">
           <ul>
             <li><strong>No login.</strong> The first time you open the site, the server sets an anonymous cookie with a random id. That id is the only thing tying your progress together.</li>
-            <li><strong>Two copies of progress.</strong> Your browser keeps a copy in local storage so the site feels instant. If the course is deployed with a Neon Postgres database, the server keeps the durable copy too, and the two are merged when you load a page (newest wins).</li>
-            <li><strong>What is stored:</strong> which lessons you started or completed, and each quiz attempt (question id, your answer, score, pass/fail, and the feedback). <strong>What is not stored:</strong> your chats with Eve, your name, your email.</li>
+            <li><strong>Two copies of progress.</strong> Your browser keeps a copy in local storage so the site feels instant. If the platform is deployed with a Neon Postgres database, the server keeps the durable copy too, and the two are merged when you load a page (newest wins).</li>
+            <li><strong>What is stored:</strong> which lessons you started or completed in each course, and each quiz attempt (course, question id, your answer, score, pass/fail, and the feedback). <strong>What is not stored:</strong> your chats with Eve, your name, your email.</li>
             <li><strong>Reset</strong> from the <Link href="/progress">progress page</Link> erases both copies.</li>
           </ul>
         </Section>
 
         <Section id="hood" icon={<Wrench />} title="Under the hood">
-          <p>The whole thing is one Next.js app. Pages are rendered on the server from markdown files; the interactive parts (Eve, quizzes, progress) run in the browser and talk to three small API routes.</p>
+          <p>The whole platform is one Next.js app. Pages are rendered on the server from each course&apos;s markdown files; the interactive parts (Eve, quizzes, progress) run in the browser and talk to three small API routes.</p>
           <div className="not-prose card overflow-x-auto p-4">
             <svg viewBox="0 0 760 300" width="100%" role="img" aria-label="Architecture diagram: the browser talks to Next.js on Vercel, which talks to the Anthropic API and Neon Postgres">
               <defs>
@@ -210,15 +194,15 @@ export default function HowItWorksPage() {
           </div>
           <h3>A question to Eve, step by step</h3>
           <ol>
-            <li>You highlight a sentence in L4 and click <strong>Ask Eve</strong>, then pick <em>Explain this simply</em>.</li>
-            <li>The browser sends the lesson id, the highlighted passage, your question, and the recent conversation to <code>/api/tutor</code>.</li>
-            <li>The server loads the L4 markdown from disk and builds the prompt: Eve&apos;s persona (cached), the lesson text (cached), then your messages. Caching means repeated questions about the same lesson reuse most of the prompt instead of paying for it again.</li>
+            <li>You highlight a sentence in a lesson and click <strong>Ask Eve</strong>, then pick <em>Explain this simply</em>.</li>
+            <li>The browser sends the course id, the lesson id, the highlighted passage, your question, and the recent conversation to <code>/api/tutor</code>.</li>
+            <li>The server loads the lesson markdown from disk and builds the prompt: Eve&apos;s persona (cached), the course block (cached), the lesson text (cached), then your messages. Caching means repeated questions about the same lesson reuse most of the prompt instead of paying for it again.</li>
             <li>The server calls the Anthropic API with streaming on, and forwards each chunk of text to your browser as it arrives. That is why the answer appears word by word.</li>
             <li>Nothing from that exchange is stored on the server.</li>
           </ol>
           <h3>Grading a written answer, step by step</h3>
           <ol>
-            <li>The browser sends the lesson id, question id, and your answer to <code>/api/grade</code>.</li>
+            <li>The browser sends the course id, lesson id, question id, and your answer to <code>/api/grade</code>.</li>
             <li>The server looks up the rubric and model answer for that question (they never leave the server).</li>
             <li>It asks the model for a strictly structured JSON result: one met / not-met verdict per rubric criterion, a feedback paragraph, strengths, and improvements. The request uses structured outputs, so the shape is guaranteed.</li>
             <li>The server computes the score from the verdicts, decides pass / fail at 70%, and returns everything along with the model answer.</li>
@@ -234,7 +218,7 @@ export default function HowItWorksPage() {
             </thead>
             <tbody>
               <tr><td>Next.js 16 (App Router)</td><td>The web framework. Pages are React components rendered on the server; API routes run as serverless functions on Vercel.</td></tr>
-              <tr><td>Markdown + JSON content</td><td>Lessons are <code>content/lessons/*.md</code>, quizzes are <code>content/quizzes/*.json</code>, notes are <code>content/notes/*.md</code>. Anyone can edit them in a text editor.</td></tr>
+              <tr><td>Markdown + JSON content</td><td>Each course lives in <code>content/courses/&lt;slug&gt;/</code>: <code>course.json</code>, <code>lessons/*.md</code>, <code>quizzes/*.json</code>, <code>notes/*.md</code>, and <code>glossary.json</code>. Anyone can edit them in a text editor, and a new folder is a new course.</td></tr>
               <tr><td>Anthropic SDK</td><td>Talks to Claude. Eve streams; the grader uses structured outputs. The model id is configurable with <code>EVE_MODEL</code>.</td></tr>
               <tr><td>Neon + Drizzle</td><td>Serverless Postgres and a typed query layer for progress. Optional: without <code>DATABASE_URL</code> the site still works, browser-only.</td></tr>
               <tr><td>Vercel</td><td>Hosting. Push to the repository and it deploys.</td></tr>
@@ -242,26 +226,27 @@ export default function HowItWorksPage() {
           </table>
           <h3>Cost</h3>
           <p>
-            A tutor turn or a grading call with the default model costs on the order of a cent or two, thanks to prompt caching and short answers. Finishing the whole course with heavy tutor use is a few dollars. The owner can set a spending limit in the Anthropic console.
+            A tutor turn or a grading call with the default model costs on the order of a cent or two, thanks to prompt caching and short answers. Finishing a whole course with heavy tutor use is a few dollars. The owner can set a spending limit in the Anthropic console.
           </p>
         </Section>
 
         <Section id="change" icon={<Shield />} title="Running and changing it yourself">
           <ul>
-            <li><strong>Edit a lesson:</strong> open <code>content/lessons/&lt;slug&gt;.md</code>, change the text, save. Callouts use the <code>:::example Title … :::</code> syntax shown above.</li>
-            <li><strong>Add a quiz question:</strong> edit <code>content/quizzes/&lt;slug&gt;.json</code>. Multiple choice needs an <code>answer</code> and an explanation per option; written questions need a <code>rubric</code> and a <code>modelAnswer</code>.</li>
+            <li><strong>Edit a lesson:</strong> open <code>content/courses/&lt;course&gt;/lessons/&lt;slug&gt;.md</code>, change the text, save. Callouts use the <code>:::example Title … :::</code> syntax shown above.</li>
+            <li><strong>Add a quiz question:</strong> edit <code>content/courses/&lt;course&gt;/quizzes/&lt;slug&gt;.json</code>. Multiple choice needs an <code>answer</code> and an explanation per option; written questions need a <code>rubric</code> and a <code>modelAnswer</code>.</li>
+            <li><strong>Add a course:</strong> copy <code>content/courses/_template</code> to a new folder, fill in <code>course.json</code>, and write the lessons. It appears in the catalog on the next build. <code>docs/ADDING_A_COURSE.md</code> walks through it.</li>
             <li><strong>Change Eve&apos;s personality:</strong> <code>lib/prompts.ts</code>.</li>
             <li><strong>Run locally:</strong> <code>npm install</code>, put <code>ANTHROPIC_API_KEY</code> in <code>.env.local</code>, <code>npm run dev</code>.</li>
             <li><strong>Deploy:</strong> import the repository into Vercel, add the environment variables, deploy. Add a Neon database whenever you want progress to survive across devices.</li>
           </ul>
           <p>
-            The design documents are in the repository: <code>docs/COURSE_PLAN.md</code> (every lesson&apos;s objectives, sections, and assessments), <code>docs/UI_PLAN.md</code>, <code>docs/ARCHITECTURE.md</code>, and <code>docs/AUTHOR_BRIEF.md</code> (how to write a new lesson).
+            The design documents are in the repository: <code>docs/ARCHITECTURE.md</code>, <code>docs/UI_PLAN.md</code>, <code>docs/AUTHOR_BRIEF.md</code> (how to write a lesson), <code>docs/ADDING_A_COURSE.md</code>, and a plan per course under <code>docs/courses/</code>.
           </p>
         </Section>
 
         <Section id="credits" icon={<BookOpen />} title="Credits">
           <p>
-            The module and lesson structure follows the public syllabus of the &quot;AI Evals for Engineers &amp; PMs&quot; course by Hamel Husain and Shreya Shankar. All lesson text, examples, quizzes, the glossary, and the Pip&apos;s Plant Shop world were written for this course. Eve and the grader run on Claude models from Anthropic.
+            Each course page lists its own credits and sources. Eve and the grader run on Claude models from Anthropic. The platform itself is open source: Next.js, Tailwind CSS, Drizzle, and Neon.
           </p>
         </Section>
       </div>

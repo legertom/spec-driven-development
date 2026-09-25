@@ -1,16 +1,16 @@
 # Author brief — writing lessons, quizzes, and instructor notes
 
-You are writing original course content for **Spec-Driven AI Engineering**, a beginner-friendly course with an AI tutor named Eve. Read `docs/COURSE_PLAN.md` fully first (sections 3, 5, 6, 7 are essential) and `docs/GLOSSARY_TERMS.md` for the only allowed glossary ids.
+You are writing original content for a course on the **Spec-Driven Development** platform, a beginner-friendly learning site with an AI tutor named Eve. Every course lives in `content/courses/<course-slug>/`. Before writing, read the course's plan under `docs/courses/<course-slug>/` (for the first course: `COURSE_PLAN.md`, sections 3, 5, 6, 7 are essential, and `GLOSSARY_TERMS.md` lists the only allowed glossary ids). The course's `course.json` defines the module order and the lesson slugs.
 
 ## Files you produce per lesson
 
 | File | What |
 |---|---|
-| `content/lessons/<slug>.md` | The lesson body with YAML frontmatter |
-| `content/quizzes/<slug>.json` | The quiz (multiple choice + short + free, plus homework where the plan says so) |
-| `content/notes/<slug>.md` | Instructor notes (no frontmatter) |
+| `content/courses/<course>/lessons/<slug>.md` | The lesson body with YAML frontmatter |
+| `content/courses/<course>/quizzes/<slug>.json` | The quiz (multiple choice + short + free, plus homework where the plan says so) |
+| `content/courses/<course>/notes/<slug>.md` | Instructor notes (no frontmatter) |
 
-Slugs (exact):
+Slugs for the first course (`ai-agent-evals`), exact:
 
 ```
 l0-foundations-for-beginners
@@ -47,7 +47,7 @@ keyTerms: ["spec", "tool-contract"]   # ids from docs/GLOSSARY_TERMS.md only
 ---
 ```
 
-Module numbers and titles: 0 "Start Here", 1 "Building Agents", 2 "Error Analysis", 3 "CI/CD", 4 "Security, Safety, and Governance", 5 "Improving Agents", 6 "Bonus". Verb for the bonus lesson is `Bonus`.
+Module numbers and titles come from the course's `course.json` (for the first course: 0 "Start Here", 1 "Building Agents", 2 "Error Analysis", 3 "CI/CD", 4 "Security, Safety, and Governance", 5 "Improving Agents", 6 "Bonus"). The `verb` must be one of the course's `verbs` names, or `Bonus`.
 
 2. **Body structure.** Do not repeat the title as an H1. Do not write a "What you'll learn" section (the app renders objectives from frontmatter). Do not write a "Key terms" section (the app renders `keyTerms`). Do not put quiz questions in the markdown.
 
@@ -202,7 +202,7 @@ Other frameworks may be *mentioned* (OpenAI Agents SDK, Claude Agent SDK, Langfu
 - `homework` only for `l5-measuring-with-evaluators` (HW1) and `l9-improving-cost` (HW2); omit the key otherwise.
 - Rubric items are binary criteria a grader can check ("Names at least one precondition"), 3–6 per question.
 - Question ids: `<lessonPrefix>-q<n>` with prefix `l0`…`l9`, `b1`.
-- Validate with `node -e "JSON.parse(require('fs').readFileSync('content/quizzes/<slug>.json','utf8'))"`.
+- Validate with `npm run validate`, which checks every course.
 
 ## Instructor notes rules
 
@@ -219,7 +219,7 @@ Other frameworks may be *mentioned* (OpenAI Agents SDK, Claude Agent SDK, Langfu
 ## Definition of done
 
 - Files exist at the exact paths; frontmatter parses; JSON validates.
-- Every `keyTerms` id exists in `docs/GLOSSARY_TERMS.md`.
+- Every `keyTerms` id exists in the course's `glossary.json`.
 - Every section in the course plan for your lesson is covered, in order.
 - Six or more `:::example` callouts; all callouts closed with `:::` on its own line.
 - Word count within range (check with `wc -w`).

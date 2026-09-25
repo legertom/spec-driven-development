@@ -8,15 +8,18 @@ CREATE TABLE IF NOT EXISTS learners (
 CREATE TABLE IF NOT EXISTS lesson_progress (
   id SERIAL PRIMARY KEY,
   learner_id TEXT NOT NULL REFERENCES learners(id) ON DELETE CASCADE,
+  course_slug TEXT NOT NULL,
   lesson_slug TEXT NOT NULL,
   status TEXT NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE UNIQUE INDEX IF NOT EXISTS lesson_progress_learner_lesson ON lesson_progress (learner_id, lesson_slug);
+CREATE UNIQUE INDEX IF NOT EXISTS lesson_progress_learner_course_lesson
+  ON lesson_progress (learner_id, course_slug, lesson_slug);
 
 CREATE TABLE IF NOT EXISTS quiz_attempts (
   id SERIAL PRIMARY KEY,
   learner_id TEXT NOT NULL REFERENCES learners(id) ON DELETE CASCADE,
+  course_slug TEXT NOT NULL,
   lesson_slug TEXT NOT NULL,
   question_id TEXT NOT NULL,
   kind TEXT NOT NULL,
@@ -26,4 +29,4 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
   feedback JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS quiz_attempts_learner ON quiz_attempts (learner_id, lesson_slug);
+CREATE INDEX IF NOT EXISTS quiz_attempts_learner_course ON quiz_attempts (learner_id, course_slug);

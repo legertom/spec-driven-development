@@ -1,19 +1,20 @@
 /**
  * POST /api/tutor — streams Eve's reply as plain text chunks.
  *
- * Body: { lessonSlug?: string, page?: string, messages: [{ role, content }] }
- * The lesson body is loaded on the server and placed in the system prompt with
- * a cache breakpoint, so repeated questions about the same lesson reuse the cache.
+ * Body: { courseSlug?: string, lessonSlug?: string, page?: string, messages: [{ role, content }] }
+ * The course and lesson text are loaded on the server and placed in the system
+ * prompt behind cache breakpoints, so repeated questions reuse the cached prefix.
  */
 import Anthropic from "@anthropic-ai/sdk";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { describeError, EVE_EFFORT, FALLBACKS_ENABLED, fallbackParams, getClient, MODEL } from "@/lib/anthropic";
 import { getLesson } from "@/lib/content";
-import { isLessonSlug } from "@/lib/course";
-import { EVE_PERSONA, lessonContextBlock, pageContextBlock } from "@/lib/prompts";
+import { getCourse, getCourses, isLessonSlug } from "@/lib/courses";
+import { courseContextBlock, lessonContextBlock, pageContextBlock, PLATFORM_PERSONA } from "@/lib/prompts";
 
 const Body = z.object({
+  courseSlug: z.string().max(100).optional(),
   lessonSlug: z.string().max(100).optional(),
   page: z.string().max(200).optional(),
   messages: z
@@ -40,20 +41,22 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return Response.json({ error: "bad_request", message: "Invalid request body." }, { status: 400 });
   }
-  const { lessonSlug, page, messages } = parsed.data;
+  const { courseSlug, lessonSlug, page, messages } = parsed.data;
   if (messages[messages.length - 1].role !== "user") {
     return Response.json({ error: "bad_request", message: "The last message must be from the learner." }, { status: 400 });
   }
 
-  // Stable prefix first (persona), then the lesson, both cacheable.
+  // Stable prefix first (platform persona), then course, then lesson: all cacheable.
   const system: Anthropic.TextBlockParam[] = [
-    { type: "text", text: EVE_PERSONA, cache_control: { type: "ephemeral" } },
+    { type: "text", text: PLATFORM_PERSONA, cache_control: { type: "ephemeral" } },
   ];
-  const lesson = lessonSlug && isLessonSlug(lessonSlug) ? getLesson(lessonSlug) : null;
+  const course = courseSlug ? getCourse(courseSlug) : null;
+  const lesson = course && lessonSlug && isLessonSlug(course, lessonSlug) ? getLesson(course.slug, lessonSlug) : null;
+  if (course) system.push({ type: "text", text: courseContextBlock(course), cache_control: { type: "ephemeral" } });
   if (lesson) {
     system.push({ type: "text", text: lessonContextBlock(lesson), cache_control: { type: "ephemeral" } });
   } else {
-    system.push({ type: "text", text: pageContextBlock(page ?? "/") });
+    system.push({ type: "text", text: pageContextBlock(page ?? "/", getCourses()) });
   }
 
   const params = {

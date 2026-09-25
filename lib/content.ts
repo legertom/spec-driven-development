@@ -1,23 +1,15 @@
 /**
- * Content loader. SERVER ONLY (reads the filesystem).
- * Lessons:  content/lessons/<slug>.md   (markdown + YAML frontmatter)
- * Quizzes:  content/quizzes/<slug>.json
- * Notes:    content/notes/<slug>.md     (instructor notes)
+ * Lesson, quiz, and notes loader. SERVER ONLY (reads the filesystem).
+ *   content/courses/<course>/lessons/<slug>.md    markdown + YAML frontmatter
+ *   content/courses/<course>/quizzes/<slug>.json
+ *   content/courses/<course>/notes/<slug>.md      instructor notes (optional)
  */
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { z } from "zod";
-import { LESSON_ORDER, SHORT_TITLES, moduleForLesson } from "./course";
-import type {
-  GradedQuestion,
-  Homework,
-  McQuestion,
-  PublicQuiz,
-  Quiz,
-} from "./quiz-types";
-
-const CONTENT_DIR = path.join(process.cwd(), "content");
+import { courseDir, getCourse, moduleForLesson, shortTitle } from "./courses";
+import type { GradedQuestion, Homework, McQuestion, PublicQuiz, Quiz } from "./quiz-types";
 
 const FrontmatterSchema = z.object({
   slug: z.string(),
@@ -25,7 +17,7 @@ const FrontmatterSchema = z.object({
   title: z.string(),
   module: z.number(),
   moduleTitle: z.string(),
-  verb: z.enum(["Analyze", "Measure", "Improve", "Bonus"]),
+  verb: z.string(),
   minutes: z.number(),
   prereqs: z.array(z.string()).default([]),
   summary: z.string(),
@@ -34,6 +26,7 @@ const FrontmatterSchema = z.object({
 });
 
 export type LessonMeta = z.infer<typeof FrontmatterSchema> & {
+  courseSlug: string;
   shortTitle: string;
   available: boolean; // false when the markdown file is missing
 };
@@ -43,56 +36,58 @@ export interface Lesson extends LessonMeta {
   wordCount: number;
 }
 
-function lessonPath(slug: string) {
-  return path.join(CONTENT_DIR, "lessons", `${slug}.md`);
-}
-
-function placeholderMeta(slug: string): LessonMeta {
-  const mod = moduleForLesson(slug);
+function placeholderMeta(courseSlug: string, slug: string): LessonMeta {
+  const course = getCourse(courseSlug);
+  const mod = course ? moduleForLesson(course, slug) : undefined;
+  const short = course ? shortTitle(course, slug) : slug;
   return {
+    courseSlug,
     slug,
     number: slug.slice(0, 2).toUpperCase(),
-    title: SHORT_TITLES[slug] ?? slug,
+    title: short,
     module: mod?.id ?? 0,
     moduleTitle: mod?.title ?? "",
-    verb: "Analyze",
+    verb: "",
     minutes: 0,
     prereqs: [],
     summary: "This lesson is being written.",
     objectives: [],
     keyTerms: [],
-    shortTitle: SHORT_TITLES[slug] ?? slug,
+    shortTitle: short,
     available: false,
   };
 }
 
-export function getLesson(slug: string): Lesson | null {
-  const file = lessonPath(slug);
+export function getLesson(courseSlug: string, slug: string): Lesson | null {
+  const file = path.join(courseDir(courseSlug), "lessons", `${slug}.md`);
   if (!fs.existsSync(file)) return null;
-  const raw = fs.readFileSync(file, "utf8");
-  const parsed = matter(raw);
+  const parsed = matter(fs.readFileSync(file, "utf8"));
   const fm = FrontmatterSchema.parse({ ...parsed.data, slug });
   const body = parsed.content.trim();
+  const course = getCourse(courseSlug);
   return {
     ...fm,
-    shortTitle: SHORT_TITLES[slug] ?? fm.title,
+    courseSlug,
+    shortTitle: course ? shortTitle(course, slug) : fm.title,
     available: true,
     body,
     wordCount: body.split(/\s+/).filter(Boolean).length,
   };
 }
 
-export function getLessonMeta(slug: string): LessonMeta {
-  const lesson = getLesson(slug);
-  if (!lesson) return placeholderMeta(slug);
+export function getLessonMeta(courseSlug: string, slug: string): LessonMeta {
+  const lesson = getLesson(courseSlug, slug);
+  if (!lesson) return placeholderMeta(courseSlug, slug);
   const meta: LessonMeta & { body?: string; wordCount?: number } = { ...lesson };
   delete meta.body;
   delete meta.wordCount;
   return meta;
 }
 
-export function getAllLessonMeta(): LessonMeta[] {
-  return LESSON_ORDER.map(getLessonMeta);
+export function getAllLessonMeta(courseSlug: string): LessonMeta[] {
+  const course = getCourse(courseSlug);
+  if (!course) return [];
+  return course.lessonOrder.map((slug) => getLessonMeta(courseSlug, slug));
 }
 
 /* ---------- Quizzes ---------- */
@@ -126,12 +121,12 @@ const QuizSchema = z.object({
   homework: HomeworkSchema.optional(),
 });
 
-export function getQuiz(slug: string): Quiz | null {
-  const file = path.join(CONTENT_DIR, "quizzes", `${slug}.json`);
+export function getQuiz(courseSlug: string, slug: string): Quiz | null {
+  const file = path.join(courseDir(courseSlug), "quizzes", `${slug}.json`);
   if (!fs.existsSync(file)) return null;
   const parsed = QuizSchema.safeParse(JSON.parse(fs.readFileSync(file, "utf8")));
   if (!parsed.success) {
-    console.error(`Quiz ${slug} failed validation:`, parsed.error.issues);
+    console.error(`Quiz ${courseSlug}/${slug} failed validation:`, parsed.error.issues);
     return null;
   }
   return parsed.data as Quiz;
@@ -161,9 +156,9 @@ export type GradableItem =
   | { kind: "short" | "free"; item: GradedQuestion }
   | { kind: "homework"; item: Homework };
 
-/** Find a gradable question (never MC) by id, on the server, so rubrics stay private. */
-export function findGradable(slug: string, questionId: string): GradableItem | null {
-  const quiz = getQuiz(slug);
+/** Find a gradable question (never MC) on the server, so rubrics stay private. */
+export function findGradable(courseSlug: string, lessonSlug: string, questionId: string): GradableItem | null {
+  const quiz = getQuiz(courseSlug, lessonSlug);
   if (!quiz) return null;
   for (const q of quiz.questions) {
     if (q.id === questionId && q.type !== "mc") return { kind: q.type, item: q as GradedQuestion };
@@ -172,23 +167,16 @@ export function findGradable(slug: string, questionId: string): GradableItem | n
   return null;
 }
 
-export function findMc(slug: string, questionId: string): McQuestion | null {
-  const quiz = getQuiz(slug);
+export function findMc(courseSlug: string, lessonSlug: string, questionId: string): McQuestion | null {
+  const quiz = getQuiz(courseSlug, lessonSlug);
   const q = quiz?.questions.find((x) => x.id === questionId);
   return q && q.type === "mc" ? q : null;
 }
 
 /* ---------- Instructor notes ---------- */
 
-export function getNotes(slug: string): string | null {
-  const file = path.join(CONTENT_DIR, "notes", `${slug}.md`);
+export function getNotes(courseSlug: string, slug: string): string | null {
+  const file = path.join(courseDir(courseSlug), "notes", `${slug}.md`);
   if (!fs.existsSync(file)) return null;
   return fs.readFileSync(file, "utf8").trim();
-}
-
-/** How many questions the quiz for a lesson has (for progress math). */
-export function quizQuestionCount(slug: string): number {
-  const quiz = getQuiz(slug);
-  if (!quiz) return 0;
-  return quiz.questions.length + (quiz.homework ? 1 : 0);
 }

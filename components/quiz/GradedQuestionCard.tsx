@@ -8,6 +8,7 @@ import { useProgress } from "@/components/progress/ProgressProvider";
 import type { AttemptKind, GradeResult } from "@/lib/quiz-types";
 
 interface Props {
+  courseSlug: string;
   lessonSlug: string;
   questionId: string;
   kind: AttemptKind; // short | free | homework
@@ -17,7 +18,7 @@ interface Props {
   label?: string;
 }
 
-export function GradedQuestionCard({ lessonSlug, questionId, kind, prompt, rubricCount, maxWords, label }: Props) {
+export function GradedQuestionCard({ courseSlug, lessonSlug, questionId, kind, prompt, rubricCount, maxWords, label }: Props) {
   const { recordAttempt, attemptsFor } = useProgress();
   const { askWith, health } = useEve();
   const [answer, setAnswer] = useState("");
@@ -25,7 +26,7 @@ export function GradedQuestionCard({ lessonSlug, questionId, kind, prompt, rubri
   const [result, setResult] = useState<GradeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showModel, setShowModel] = useState(false);
-  const previous = attemptsFor(lessonSlug, questionId);
+  const previous = attemptsFor(courseSlug, lessonSlug, questionId);
   const noKey = health !== null && !health.anthropic;
   const words = answer.trim() ? answer.trim().split(/\s+/).length : 0;
 
@@ -39,12 +40,12 @@ export function GradedQuestionCard({ lessonSlug, questionId, kind, prompt, rubri
       const res = await fetch("/api/grade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lessonSlug, questionId, answer }),
+        body: JSON.stringify({ courseSlug, lessonSlug, questionId, answer }),
       });
       const data = (await res.json()) as GradeResult & { message?: string };
       if (!res.ok) throw new Error(data.message || `Grading failed (${res.status})`);
       setResult(data);
-      recordAttempt({ lessonSlug, questionId, kind, answer, score: data.score, passed: data.passed, feedback: data });
+      recordAttempt({ courseSlug, lessonSlug, questionId, kind, answer, score: data.score, passed: data.passed, feedback: data });
     } catch (err) {
       setError((err as Error).message);
     } finally {

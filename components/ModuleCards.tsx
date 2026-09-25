@@ -3,16 +3,16 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { LessonMeta } from "@/lib/content";
-import { MODULES } from "@/lib/course";
+import type { Course } from "@/lib/course-types";
 import { useProgress } from "./progress/ProgressProvider";
 
-export function ModuleCards({ lessons }: { lessons: LessonMeta[] }) {
+export function ModuleCards({ course, lessons }: { course: Course; lessons: LessonMeta[] }) {
   const { lessonStatus } = useProgress();
   const bySlug = new Map(lessons.map((l) => [l.slug, l]));
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {MODULES.map((m) => {
-        const done = m.lessons.filter((s) => lessonStatus(s) === "completed").length;
+      {course.modules.map((m) => {
+        const done = m.lessons.filter((s) => lessonStatus(course.slug, s) === "completed").length;
         const minutes = m.lessons.reduce((acc, s) => acc + (bySlug.get(s)?.minutes ?? 0), 0);
         const first = m.lessons[0];
         return (
@@ -23,13 +23,13 @@ export function ModuleCards({ lessons }: { lessons: LessonMeta[] }) {
             <ul className="mt-3 space-y-1 text-sm">
               {m.lessons.map((s) => {
                 const l = bySlug.get(s);
-                const st = lessonStatus(s);
+                const st = lessonStatus(course.slug, s);
                 return (
                   <li key={s} className="flex items-center gap-2">
                     <span className="status-dot" data-status={st} />
-                    <Link href={`/course/${s}`} className="hover:underline">
+                    <Link href={`/courses/${course.slug}/${s}`} className="hover:underline">
                       <span className="mr-1 text-xs text-muted">{l?.number}</span>
-                      {l?.shortTitle ?? s}
+                      {l?.shortTitle ?? course.shortTitles[s] ?? s}
                     </Link>
                   </li>
                 );
@@ -39,7 +39,7 @@ export function ModuleCards({ lessons }: { lessons: LessonMeta[] }) {
               <span>
                 {done}/{m.lessons.length} done · {minutes} min
               </span>
-              <Link href={`/course/${first}`} className="inline-flex items-center gap-1 font-semibold text-accent">
+              <Link href={`/courses/${course.slug}/${first}`} className="inline-flex items-center gap-1 font-semibold text-accent">
                 {done === 0 ? "Start" : done === m.lessons.length ? "Review" : "Continue"} <ArrowRight size={14} />
               </Link>
             </div>

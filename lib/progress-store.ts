@@ -5,7 +5,7 @@
  */
 import { EMPTY_PROGRESS, type ProgressSnapshot } from "./progress-types";
 
-const STORAGE_KEY = "sdd:progress:v1";
+const STORAGE_KEY = "sdd:progress:v2"; // v2: records carry a courseSlug
 const listeners = new Set<() => void>();
 let state: ProgressSnapshot = EMPTY_PROGRESS;
 let initialized = false;

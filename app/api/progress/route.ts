@@ -11,15 +11,17 @@ import { z } from "zod";
 import { learners, lessonProgress, quizAttempts } from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { getOrCreateLearnerId } from "@/lib/learner";
-import type { AttemptRecord, LessonProgressRecord } from "@/lib/progress-types";
+import { lessonKey, type AttemptRecord, type LessonProgressRecord } from "@/lib/progress-types";
 
 const LessonUpdate = z.object({
   type: z.literal("lesson"),
+  courseSlug: z.string().max(100),
   lessonSlug: z.string().max(100),
   status: z.enum(["in_progress", "completed"]),
 });
 const AttemptUpdate = z.object({
   type: z.literal("attempt"),
+  courseSlug: z.string().max(100),
   lessonSlug: z.string().max(100),
   questionId: z.string().max(100),
   kind: z.enum(["mc", "short", "free", "homework"]),
@@ -49,13 +51,15 @@ export async function GET() {
 
   const lessons: Record<string, LessonProgressRecord> = {};
   for (const row of lessonRows) {
-    lessons[row.lessonSlug] = {
+    lessons[lessonKey(row.courseSlug, row.lessonSlug)] = {
+      courseSlug: row.courseSlug,
       lessonSlug: row.lessonSlug,
       status: row.status as LessonProgressRecord["status"],
       updatedAt: row.updatedAt.toISOString(),
     };
   }
   const attempts: AttemptRecord[] = attemptRows.map((row) => ({
+    courseSlug: row.courseSlug,
     lessonSlug: row.lessonSlug,
     questionId: row.questionId,
     kind: row.kind as AttemptRecord["kind"],
@@ -84,14 +88,15 @@ export async function POST(req: NextRequest) {
     if (body.type === "lesson") {
       await db
         .insert(lessonProgress)
-        .values({ learnerId: id, lessonSlug: body.lessonSlug, status: body.status, updatedAt: new Date() })
+        .values({ learnerId: id, courseSlug: body.courseSlug, lessonSlug: body.lessonSlug, status: body.status, updatedAt: new Date() })
         .onConflictDoUpdate({
-          target: [lessonProgress.learnerId, lessonProgress.lessonSlug],
+          target: [lessonProgress.learnerId, lessonProgress.courseSlug, lessonProgress.lessonSlug],
           set: { status: body.status, updatedAt: new Date() },
         });
     } else if (body.type === "attempt") {
       await db.insert(quizAttempts).values({
         learnerId: id,
+        courseSlug: body.courseSlug,
         lessonSlug: body.lessonSlug,
         questionId: body.questionId,
         kind: body.kind,

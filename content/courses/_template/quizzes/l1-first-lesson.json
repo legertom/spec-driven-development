@@ -1,0 +1,32 @@
+{
+  "lessonSlug": "l1-first-lesson",
+  "questions": [
+    {
+      "id": "l1-q1",
+      "type": "mc",
+      "prompt": "A multiple-choice question?",
+      "options": [
+        { "id": "a", "text": "Wrong option" },
+        { "id": "b", "text": "Right option" },
+        { "id": "c", "text": "Wrong option" }
+      ],
+      "answer": "b",
+      "explanations": { "a": "Why a is wrong.", "b": "Why b is right.", "c": "Why c is wrong." }
+    },
+    {
+      "id": "l1-q2",
+      "type": "short",
+      "prompt": "A short-answer question graded by Eve.",
+      "rubric": ["Criterion one", "Criterion two"],
+      "modelAnswer": "A strong answer.",
+      "maxWords": 150
+    },
+    {
+      "id": "l1-q3",
+      "type": "free",
+      "prompt": "A longer question graded by Eve.",
+      "rubric": ["Criterion one", "Criterion two", "Criterion three"],
+      "modelAnswer": "A strong answer."
+    }
+  ]
+}

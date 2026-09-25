@@ -21,6 +21,8 @@ export interface EveMessage {
 }
 
 export interface EveContextInfo {
+  courseSlug?: string;
+  courseTitle?: string;
   lessonSlug?: string;
   lessonTitle?: string;
   lessonNumber?: string;
@@ -98,7 +100,11 @@ export function EveProvider({ children }: { children: React.ReactNode }) {
     threadsRef.current = threads;
   }, [threads]);
 
-  const threadKey = context.lessonSlug ? `lesson:${context.lessonSlug}` : `page:${pathname}`;
+  const threadKey = context.lessonSlug
+    ? `lesson:${context.courseSlug ?? ""}/${context.lessonSlug}`
+    : context.courseSlug
+      ? `course:${context.courseSlug}`
+      : `page:${pathname}`;
   // false during server render and hydration, true afterwards: lets us read sessionStorage safely.
   const hydrated = useSyncExternalStore(noopSubscribe, () => true, () => false);
   const messages = useMemo<EveMessage[]>(
@@ -123,7 +129,7 @@ export function EveProvider({ children }: { children: React.ReactNode }) {
 
   const setContext = useCallback((c: EveContextInfo) => {
     setContextState((prev) =>
-      prev.lessonSlug === c.lessonSlug && prev.lessonTitle === c.lessonTitle ? prev : c,
+      prev.courseSlug === c.courseSlug && prev.lessonSlug === c.lessonSlug && prev.lessonTitle === c.lessonTitle ? prev : c,
     );
   }, []);
 
@@ -170,6 +176,7 @@ export function EveProvider({ children }: { children: React.ReactNode }) {
           headers: { "Content-Type": "application/json" },
           signal: ac.signal,
           body: JSON.stringify({
+            courseSlug: context.courseSlug,
             lessonSlug: context.lessonSlug,
             page: pathname,
             messages: [...history, { role: "user", content }].slice(-30),
@@ -202,7 +209,7 @@ export function EveProvider({ children }: { children: React.ReactNode }) {
         setStreaming(false);
       }
     },
-    [threadKey, context.lessonSlug, pathname, patchThread],
+    [threadKey, context.courseSlug, context.lessonSlug, pathname, patchThread],
   );
 
   const stop = useCallback(() => abortRef.current?.abort(), []);
