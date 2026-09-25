@@ -81,7 +81,7 @@ Design goal: a calm, readable place to learn, with the tutor one click away. Beg
 - Messages: student (right, muted), Eve (left, markdown rendered, code highlighted).
 - Streaming indicator; "Stop" button while streaming.
 - Input: textarea, Enter to send, Shift+Enter for newline.
-- If the server has no API key: a friendly banner explaining how to add `ANTHROPIC_API_KEY`, and the input is disabled.
+- If the server has no AI Gateway credentials: a friendly banner explaining how to add `AI_GATEWAY_API_KEY` (or rely on OIDC on Vercel), and the input is disabled.
 - Chat history is kept per lesson in `sessionStorage` (cleared when the tab closes), never sent to the database.
 
 ## 6. Design tokens
@@ -97,7 +97,7 @@ Design goal: a calm, readable place to learn, with the tutor one click away. Beg
 
 | State | What the user sees |
 |---|---|
-| No `ANTHROPIC_API_KEY` | Eve panel shows setup banner; grading buttons show "Grading needs an API key" tooltip and are disabled; everything else works |
+| No AI Gateway credentials | Eve panel shows setup banner; grading buttons show "Grading needs AI Gateway credentials" tooltip and are disabled; everything else works |
 | No `DATABASE_URL` | Progress saves to this browser only; a small note on the progress page says so |
 | API error / rate limit | Inline error with retry button; nothing lost |
 | Streaming interrupted | Partial answer stays, with a "Continue" button |

@@ -57,7 +57,7 @@ export function pageContextBlock(page: string, courses: Course[]): string {
   const known: Record<string, string> = {
     "/": "the platform home page (the course catalog)",
     "/courses": "the course catalog",
-    "/how-it-works": `the How It Works page, which explains how the platform is built: Next.js, markdown courses, an anonymous progress cookie, Neon Postgres for progress, and you (${TUTOR_NAME}) powered by the Anthropic API with code-graded multiple choice and rubric-graded written answers`,
+    "/how-it-works": `the How It Works page, which explains how the platform is built: Next.js, markdown courses, an anonymous progress cookie, Neon Postgres for progress, and you (${TUTOR_NAME}), a Claude model reached through Vercel AI Gateway, with code-graded multiple choice and rubric-graded written answers`,
     "/progress": "their progress dashboard across courses",
   };
   const catalog = courses.map((c) => `- "${c.title}" (${c.status === "available" ? `${c.lessonCount} lessons` : "coming soon"}): ${c.tagline}`).join("\n");

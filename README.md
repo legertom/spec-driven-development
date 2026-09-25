@@ -3,7 +3,7 @@
 > Hands-on courses for engineers building with AI.
 > A small learning platform with a built-in AI tutor (Eve), AI-graded assessments, and lots of small examples. Each course is a folder of markdown; adding a course is adding a folder.
 
-Built with **Next.js 16** (Node), **Tailwind CSS 4**, the **Anthropic SDK**, **Neon Postgres** (optional), and deployed on **Vercel**.
+Built with **Next.js 16** (Node), **Tailwind CSS 4**, the **Vercel AI SDK** with **Vercel AI Gateway** (Claude models, no provider keys to manage), **Neon Postgres** (optional), and deployed on **Vercel**.
 
 ## What's inside
 
@@ -21,11 +21,11 @@ Built with **Next.js 16** (Node), **Tailwind CSS 4**, the **Anthropic SDK**, **N
 
 ```bash
 npm install
-cp .env.example .env.local      # then put your ANTHROPIC_API_KEY in .env.local
+cp .env.example .env.local      # then put your AI_GATEWAY_API_KEY in .env.local (Vercel dashboard → AI Gateway → API keys)
 npm run dev                     # http://localhost:3000
 ```
 
-Without an API key the whole course still renders; Eve and the written-answer grading show a "needs an API key" notice.
+Without gateway credentials every course still renders; Eve and the written-answer grading show a "not connected yet" notice.
 
 Other scripts:
 
@@ -41,23 +41,30 @@ npm run db:push     # push the Drizzle schema to DATABASE_URL (Neon)
 
 | Name | Required | Purpose |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | For Eve and grading | Anthropic API key. Never exposed to the browser. |
-| `EVE_MODEL` | No | Model id for Eve and the grader. Default `claude-opus-5`. |
+| `AI_GATEWAY_API_KEY` | For Eve and grading, unless OIDC is available | Vercel AI Gateway key. Never exposed to the browser. On Vercel deployments the gateway can authenticate with the project's OIDC token instead. |
+| `EVE_MODEL` | No | Gateway model id for Eve and the grader. Default `anthropic/claude-opus-5`. |
 | `EVE_EFFORT` | No | `low` / `medium` / `high`. Default `medium`. |
-| `ANTHROPIC_FALLBACKS` | No | `off` disables server-side refusal fallbacks. Default on. |
 | `DATABASE_URL` | No | Neon Postgres connection string. Without it, progress is browser-only. |
+
+## Vercel AI Gateway
+
+Model calls go through [Vercel AI Gateway](https://vercel.com/ai-gateway) using the AI SDK's `gateway` provider, so the app never holds an Anthropic key. Billing, usage, and model routing live in the Vercel dashboard.
+
+- **Locally:** create an API key in the Vercel dashboard under AI Gateway and set `AI_GATEWAY_API_KEY` in `.env.local`.
+- **On Vercel:** either set the same variable in the project, or enable OIDC federation in the project's security settings and leave it unset; the gateway provider picks up the deployment's OIDC token automatically.
+- **Switch models** with `EVE_MODEL` (any `provider/model` id the gateway lists, for example `anthropic/claude-sonnet-5`). Anthropic-specific options such as prompt caching and effort are forwarded by the gateway.
 
 ## Deploy to Vercel
 
 One click (Vercel will fork the repo and ask for the environment variables):
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flegertom%2Fspec-driven-development&env=ANTHROPIC_API_KEY&envDescription=Anthropic%20API%20key%20for%20Eve%20and%20grading&project-name=spec-driven-ai-engineering)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flegertom%2Fspec-driven-development&project-name=spec-driven-development)
 
 Or by hand:
 
 1. Push this repository to GitHub.
 2. In Vercel, **Add New → Project → Import** the repository. Framework is auto-detected (Next.js). No build settings to change.
-3. Under **Environment Variables**, add `ANTHROPIC_API_KEY` (and `DATABASE_URL` if you set up Neon, see below).
+3. Under **Environment Variables**, add `AI_GATEWAY_API_KEY` unless you enable OIDC federation for the project (see "Vercel AI Gateway" above), and `DATABASE_URL` if you set up Neon (see below).
 4. Deploy. Every later push to the production branch redeploys.
 
 ## Set up Neon (optional, for durable progress)
@@ -94,7 +101,7 @@ content/courses/
     lessons/*.md              lesson text (markdown + frontmatter)
     quizzes/*.json            quizzes and homework with rubrics
     notes/*.md                instructor notes
-lib/                          course registry, content loader, prompts, Anthropic + DB helpers
+lib/                          course registry, content loader, prompts, AI Gateway + DB helpers
 db/                           Drizzle schema and SQL migration
 docs/                         adding a course, author brief, architecture, UI plan, per-course plans
 scripts/validate-content.mjs  content checks (also run in CI)
@@ -111,11 +118,11 @@ scripts/validate-content.mjs  content checks (also run in CI)
 
 ## How grading and the tutor work
 
-See the in-app [How It Works](/how-it-works) page, or `docs/ARCHITECTURE.md`. In short: MC is graded by code; written answers are graded by a rubric-based LLM judge whose criteria are binary and whose score is computed in code (the same discipline the first course's Lesson 5 teaches). Eve gets the platform persona, the course block (map, running example, tutor notes), and the full lesson text, with prompt caching so repeated questions are cheap.
+See the in-app [How It Works](/how-it-works) page, or `docs/ARCHITECTURE.md`. In short: MC is graded by code; written answers are graded by a rubric-based LLM judge whose criteria are binary and whose score is computed in code (the same discipline the first course's Lesson 5 teaches). Eve gets the platform persona, the course block (map, running example, tutor notes), and the full lesson text, with prompt caching so repeated questions are cheap. Every call goes through Vercel AI Gateway.
 
 ## Cost
 
-With the default model, a tutor turn or a grading call is roughly a cent or two. A learner who finishes a whole course with heavy tutor use costs a few dollars. Set a spend limit in the Anthropic console.
+With the default model, a tutor turn or a grading call is roughly a cent or two. A learner who finishes a whole course with heavy tutor use costs a few dollars. Usage and spend show up in the Vercel dashboard under AI Gateway, where you can also set limits.
 
 ## Credits
 

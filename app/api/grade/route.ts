@@ -2,14 +2,14 @@
  * POST /api/grade — grades one short / free / homework answer against its rubric.
  *
  * The rubric and model answer are looked up on the server (never trusted from the
- * client). The grader is an LLM judge with a strict JSON output: each rubric
- * criterion is met or not met (binary), and the score is computed in code.
+ * client). The grader is an LLM judge, reached through Vercel AI Gateway, with a
+ * schema-validated JSON output: each rubric criterion is met or not met (binary),
+ * and the score is computed in code.
  */
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { NextRequest } from "next/server";
+import { generateText, Output, type ModelMessage } from "ai";
 import { z } from "zod";
-import { describeError, FALLBACKS_ENABLED, fallbackParams, getClient, MODEL } from "@/lib/anthropic";
+import { CACHED, describeError, getModel, hasGatewayAuth } from "@/lib/ai";
 import { findGradable } from "@/lib/content";
 import { getCourse, isLessonSlug } from "@/lib/courses";
 import { GRADER_SYSTEM, graderUserPrompt } from "@/lib/prompts";
@@ -38,10 +38,9 @@ const GradeSchema = z.object({
 export const PASS_THRESHOLD = 70;
 
 export async function POST(req: NextRequest) {
-  const client = getClient();
-  if (!client) {
+  if (!hasGatewayAuth()) {
     return Response.json(
-      { error: "no_api_key", message: "Grading needs an ANTHROPIC_API_KEY on the server." },
+      { error: "no_gateway", message: "Grading needs Vercel AI Gateway credentials on the server (AI_GATEWAY_API_KEY, or OIDC on Vercel)." },
       { status: 503 },
     );
   }
@@ -60,37 +59,21 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "not_found", message: "Unknown question." }, { status: 404 });
   }
 
-  // Not annotated on purpose: the parse helper infers the output type from `output_config.format`.
-  const params = {
-    model: MODEL,
-    max_tokens: 4096,
-    system: [{ type: "text" as const, text: GRADER_SYSTEM, cache_control: { type: "ephemeral" as const } }],
-    messages: [{ role: "user" as const, content: graderUserPrompt(gradable, answer, course.title) }],
-    output_config: { format: zodOutputFormat(GradeSchema), effort: "high" as const },
-  };
+  const messages: ModelMessage[] = [
+    { role: "system", content: GRADER_SYSTEM, providerOptions: CACHED },
+    { role: "user", content: graderUserPrompt(gradable, answer, course.title) },
+  ];
 
   try {
-    let response;
-    try {
-      response = await client.beta.messages.parse({ ...params, ...fallbackParams() });
-    } catch (err) {
-      if (FALLBACKS_ENABLED && err instanceof Anthropic.BadRequestError) {
-        response = await client.beta.messages.parse(params);
-      } else {
-        throw err;
-      }
-    }
-
-    if (response.stop_reason === "refusal") {
-      return Response.json(
-        { error: "refusal", message: "The grader declined to grade this answer. Try rephrasing it." },
-        { status: 422 },
-      );
-    }
-    const out = response.parsed_output;
-    if (!out) {
-      return Response.json({ error: "parse", message: "The grader returned an unreadable result. Try again." }, { status: 502 });
-    }
+    const result = await generateText({
+      model: getModel(),
+      messages,
+      allowSystemInMessages: true,
+      maxOutputTokens: 4096,
+      output: Output.object({ schema: GradeSchema }),
+      providerOptions: { anthropic: { effort: "high" } },
+    });
+    const out = result.output;
 
     // Align results to the server-side rubric, in order; missing entries count as not met.
     const rubric = gradable.item.rubric;
@@ -101,7 +84,7 @@ export async function POST(req: NextRequest) {
     const met = rubricResults.filter((r) => r.met).length;
     const score = Math.round((met / rubric.length) * 100);
 
-    const result: GradeResult = {
+    const response: GradeResult = {
       questionId,
       score,
       passed: score >= PASS_THRESHOLD,
@@ -111,7 +94,7 @@ export async function POST(req: NextRequest) {
       rubricResults,
       modelAnswer: gradable.kind === "homework" ? "" : gradable.item.modelAnswer,
     };
-    return Response.json(result);
+    return Response.json(response);
   } catch (err) {
     const d = describeError(err);
     console.error("grade error:", d.code, err);

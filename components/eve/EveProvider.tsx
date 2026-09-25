@@ -29,7 +29,8 @@ export interface EveContextInfo {
 }
 
 export interface Health {
-  anthropic: boolean;
+  /** Eve and grading are available (the server can reach Vercel AI Gateway). */
+  tutor: boolean;
   database: boolean;
   model: string;
 }
@@ -124,7 +125,7 @@ export function EveProvider({ children }: { children: React.ReactNode }) {
     fetch("/api/health")
       .then((r) => (r.ok ? r.json() : null))
       .then((h) => h && setHealth(h as Health))
-      .catch(() => setHealth({ anthropic: false, database: false, model: "" }));
+      .catch(() => setHealth({ tutor: false, database: false, model: "" }));
   }, []);
 
   const setContext = useCallback((c: EveContextInfo) => {

@@ -95,7 +95,7 @@ export default function HowItWorksPage() {
 
         <Section id="eve" icon={<Sparkles />} title="Eve, the tutor">
           <p>
-            Eve is a tutor built on the Anthropic API. She lives in the drawer on the right (the <strong>Ask Eve</strong> button in the top bar opens it on any page). On a lesson page she is given three things: a fixed description of who she is and how to teach, the course you are in (its map, its running example, and course-specific teaching notes), and the <em>full text of the lesson you are reading</em>. That is why she can answer &quot;what does section 3 mean?&quot; without you pasting anything. On the catalog or progress pages she knows which courses exist and can recommend where to start.
+            Eve is a tutor built on Claude models, reached through Vercel AI Gateway. She lives in the drawer on the right (the <strong>Ask Eve</strong> button in the top bar opens it on any page). On a lesson page she is given three things: a fixed description of who she is and how to teach, the course you are in (its map, its running example, and course-specific teaching notes), and the <em>full text of the lesson you are reading</em>. That is why she can answer &quot;what does section 3 mean?&quot; without you pasting anything. On the catalog or progress pages she knows which courses exist and can recommend where to start.
           </p>
           <h3>Highlight to ask</h3>
           <p>
@@ -155,7 +155,7 @@ export default function HowItWorksPage() {
         <Section id="hood" icon={<Wrench />} title="Under the hood">
           <p>The whole platform is one Next.js app. Pages are rendered on the server from each course&apos;s markdown files; the interactive parts (Eve, quizzes, progress) run in the browser and talk to three small API routes.</p>
           <div className="not-prose card overflow-x-auto p-4">
-            <svg viewBox="0 0 760 300" width="100%" role="img" aria-label="Architecture diagram: the browser talks to Next.js on Vercel, which talks to the Anthropic API and Neon Postgres">
+            <svg viewBox="0 0 760 300" width="100%" role="img" aria-label="Architecture diagram: the browser talks to Next.js on Vercel, which talks to Claude through Vercel AI Gateway and to Neon Postgres">
               <defs>
                 <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
@@ -174,11 +174,11 @@ export default function HowItWorksPage() {
                 <text x="385" y="146" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12">/api/tutor</text>
                 <text x="385" y="166" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12">/api/grade</text>
                 <text x="385" y="186" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12">/api/progress</text>
-                <text x="385" y="212" textAnchor="middle" fill="var(--muted)">holds the API key</text>
+                <text x="385" y="212" textAnchor="middle" fill="var(--muted)">holds the gateway credential</text>
 
                 <rect x="580" y="40" width="160" height="90" rx="12" fill="var(--eve-soft)" stroke="var(--eve)" />
-                <text x="660" y="70" textAnchor="middle" fontWeight="700">Anthropic API</text>
-                <text x="660" y="92" textAnchor="middle" fill="var(--muted)">Eve · the grader</text>
+                <text x="660" y="70" textAnchor="middle" fontWeight="700">Vercel AI Gateway</text>
+                <text x="660" y="92" textAnchor="middle" fill="var(--muted)">→ Claude: Eve · the grader</text>
                 <text x="660" y="110" textAnchor="middle" fill="var(--muted)">streaming, cached prompts</text>
 
                 <rect x="580" y="170" width="160" height="90" rx="12" fill="var(--surface-2)" stroke="var(--border)" />
@@ -197,7 +197,7 @@ export default function HowItWorksPage() {
             <li>You highlight a sentence in a lesson and click <strong>Ask Eve</strong>, then pick <em>Explain this simply</em>.</li>
             <li>The browser sends the course id, the lesson id, the highlighted passage, your question, and the recent conversation to <code>/api/tutor</code>.</li>
             <li>The server loads the lesson markdown from disk and builds the prompt: Eve&apos;s persona (cached), the course block (cached), the lesson text (cached), then your messages. Caching means repeated questions about the same lesson reuse most of the prompt instead of paying for it again.</li>
-            <li>The server calls the Anthropic API with streaming on, and forwards each chunk of text to your browser as it arrives. That is why the answer appears word by word.</li>
+            <li>The server sends the request to Vercel AI Gateway, which forwards it to Claude with streaming on, and each chunk of text is passed to your browser as it arrives. That is why the answer appears word by word.</li>
             <li>Nothing from that exchange is stored on the server.</li>
           </ol>
           <h3>Grading a written answer, step by step</h3>
@@ -219,14 +219,14 @@ export default function HowItWorksPage() {
             <tbody>
               <tr><td>Next.js 16 (App Router)</td><td>The web framework. Pages are React components rendered on the server; API routes run as serverless functions on Vercel.</td></tr>
               <tr><td>Markdown + JSON content</td><td>Each course lives in <code>content/courses/&lt;slug&gt;/</code>: <code>course.json</code>, <code>lessons/*.md</code>, <code>quizzes/*.json</code>, <code>notes/*.md</code>, and <code>glossary.json</code>. Anyone can edit them in a text editor, and a new folder is a new course.</td></tr>
-              <tr><td>Anthropic SDK</td><td>Talks to Claude. Eve streams; the grader uses structured outputs. The model id is configurable with <code>EVE_MODEL</code>.</td></tr>
+              <tr><td>Vercel AI SDK + AI Gateway</td><td>Talks to Claude through Vercel&apos;s gateway, so the app holds no provider API key. Eve streams; the grader uses schema-validated output. The model id is configurable with <code>EVE_MODEL</code>.</td></tr>
               <tr><td>Neon + Drizzle</td><td>Serverless Postgres and a typed query layer for progress. Optional: without <code>DATABASE_URL</code> the site still works, browser-only.</td></tr>
               <tr><td>Vercel</td><td>Hosting. Push to the repository and it deploys.</td></tr>
             </tbody>
           </table>
           <h3>Cost</h3>
           <p>
-            A tutor turn or a grading call with the default model costs on the order of a cent or two, thanks to prompt caching and short answers. Finishing a whole course with heavy tutor use is a few dollars. The owner can set a spending limit in the Anthropic console.
+            A tutor turn or a grading call with the default model costs on the order of a cent or two, thanks to prompt caching and short answers. Finishing a whole course with heavy tutor use is a few dollars. Usage and spend are visible in the Vercel dashboard under AI Gateway, where the owner can set limits.
           </p>
         </Section>
 
@@ -236,8 +236,8 @@ export default function HowItWorksPage() {
             <li><strong>Add a quiz question:</strong> edit <code>content/courses/&lt;course&gt;/quizzes/&lt;slug&gt;.json</code>. Multiple choice needs an <code>answer</code> and an explanation per option; written questions need a <code>rubric</code> and a <code>modelAnswer</code>.</li>
             <li><strong>Add a course:</strong> copy <code>content/courses/_template</code> to a new folder, fill in <code>course.json</code>, and write the lessons. It appears in the catalog on the next build. <code>docs/ADDING_A_COURSE.md</code> walks through it.</li>
             <li><strong>Change Eve&apos;s personality:</strong> <code>lib/prompts.ts</code>.</li>
-            <li><strong>Run locally:</strong> <code>npm install</code>, put <code>ANTHROPIC_API_KEY</code> in <code>.env.local</code>, <code>npm run dev</code>.</li>
-            <li><strong>Deploy:</strong> import the repository into Vercel, add the environment variables, deploy. Add a Neon database whenever you want progress to survive across devices.</li>
+            <li><strong>Run locally:</strong> <code>npm install</code>, put an <code>AI_GATEWAY_API_KEY</code> from the Vercel dashboard in <code>.env.local</code>, <code>npm run dev</code>.</li>
+            <li><strong>Deploy:</strong> import the repository into Vercel and deploy. With OIDC federation enabled on the project, Eve authenticates with the gateway automatically; otherwise add <code>AI_GATEWAY_API_KEY</code>. Add a Neon database whenever you want progress to survive across devices.</li>
           </ul>
           <p>
             The design documents are in the repository: <code>docs/ARCHITECTURE.md</code>, <code>docs/UI_PLAN.md</code>, <code>docs/AUTHOR_BRIEF.md</code> (how to write a lesson), <code>docs/ADDING_A_COURSE.md</code>, and a plan per course under <code>docs/courses/</code>.
@@ -246,7 +246,7 @@ export default function HowItWorksPage() {
 
         <Section id="credits" icon={<BookOpen />} title="Credits">
           <p>
-            Each course page lists its own credits and sources. Eve and the grader run on Claude models from Anthropic. The platform itself is open source: Next.js, Tailwind CSS, Drizzle, and Neon.
+            Each course page lists its own credits and sources. Eve and the grader run on Claude models from Anthropic, reached through Vercel AI Gateway. The platform itself is built on open source: Next.js, Tailwind CSS, the Vercel AI SDK, Drizzle, and Neon.
           </p>
         </Section>
       </div>

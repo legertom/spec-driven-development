@@ -27,7 +27,7 @@ export function GradedQuestionCard({ courseSlug, lessonSlug, questionId, kind, p
   const [error, setError] = useState<string | null>(null);
   const [showModel, setShowModel] = useState(false);
   const previous = attemptsFor(courseSlug, lessonSlug, questionId);
-  const noKey = health !== null && !health.anthropic;
+  const noKey = health !== null && !health.tutor;
   const words = answer.trim() ? answer.trim().split(/\s+/).length : 0;
 
   async function grade() {
@@ -76,12 +76,12 @@ export function GradedQuestionCard({ courseSlug, lessonSlug, questionId, kind, p
         disabled={loading}
       />
       <div className="mt-2 flex flex-wrap items-center gap-3">
-        <button type="button" className="btn btn-primary" onClick={grade} disabled={loading || !answer.trim() || noKey} title={noKey ? "Grading needs an ANTHROPIC_API_KEY on the server" : undefined}>
+        <button type="button" className="btn btn-primary" onClick={grade} disabled={loading || !answer.trim() || noKey} title={noKey ? "Grading needs Vercel AI Gateway credentials on the server" : undefined}>
           {loading ? <LoaderCircle size={16} className="animate-spin" /> : <Sparkles size={16} />}
           {loading ? "Grading…" : result ? "Grade again" : "Grade with Eve"}
         </button>
         <span className="text-sm text-muted">{words} words</span>
-        {noKey ? <span className="text-sm text-muted">Grading needs an API key on the server.</span> : null}
+        {noKey ? <span className="text-sm text-muted">Grading needs AI Gateway credentials on the server.</span> : null}
         <button type="button" className="btn btn-sm" onClick={() => askWith(`I'm working on this question and would like a hint (not the answer): "${prompt.slice(0, 400)}"`)}>
           Ask Eve for a hint
         </button>

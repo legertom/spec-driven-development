@@ -36,7 +36,7 @@ export function EveDrawer() {
   const { open, setOpen, context, messages, streaming, send, stop, clear, pendingHighlight, setPendingHighlight, draft, setDraft, health, focusSignal } = eve;
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const noKey = health !== null && !health.anthropic;
+  const noKey = health !== null && !health.tutor;
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -92,8 +92,8 @@ export function EveDrawer() {
         <div className="m-3 rounded-lg border border-border bg-surface-2 p-3 text-sm">
           <div className="font-semibold">Eve is not connected yet</div>
           <p className="mt-1 text-muted">
-            Add an <code>ANTHROPIC_API_KEY</code> environment variable on the server (locally in <code>.env.local</code>, on Vercel under
-            Settings → Environment Variables) and redeploy. Everything else in the course works without it.
+            Eve runs through Vercel AI Gateway. Add an <code>AI_GATEWAY_API_KEY</code> environment variable on the server (locally in{" "}
+            <code>.env.local</code>; on Vercel it can also authenticate automatically with OIDC) and restart. Everything else works without it.
           </p>
         </div>
       ) : null}

@@ -8,7 +8,7 @@
 | Styling | Tailwind CSS v4 + a small set of CSS variables | Fast to build, easy to theme, dark mode for free |
 | Content | One folder per course: `course.json`, markdown lessons with YAML frontmatter, JSON quizzes, JSON glossary | Beginners can edit lessons in any text editor; adding a course is adding a folder; no CMS |
 | Markdown | `react-markdown` + `remark-gfm` + `remark-directive` + `rehype-highlight` | Tables, callout containers, syntax highlighting |
-| Tutor and grader | Anthropic SDK (`@anthropic-ai/sdk`), model `claude-opus-5` by default | Streaming chat for Eve; structured outputs for grading |
+| Tutor and grader | Vercel AI SDK (`ai`) with the AI Gateway provider (`@ai-sdk/gateway`), model `anthropic/claude-opus-5` by default | Streaming chat for Eve; schema-validated output for grading; no provider keys in the app |
 | Database | Neon Postgres via `@neondatabase/serverless` + Drizzle ORM | Serverless-friendly Postgres; optional (localStorage fallback) |
 | Hosting | Vercel | Git push to deploy; API routes run as serverless functions |
 
@@ -40,7 +40,7 @@ lib/
   course-types.ts                   zod schemas for course.json and glossary.json
   courses.ts                        course registry: reads content/courses/*/course.json (server only)
   content.ts                        load + parse lessons, quizzes, notes for a course (server only)
-  anthropic.ts                      client, model id, fallback-aware helpers
+  ai.ts                             AI Gateway model, auth check, error mapping
   prompts.ts                        platform persona, course block, lesson block, grader prompt
   db.ts, learner.ts                 Neon + Drizzle connection; anonymous learner cookie
   progress-types.ts, progress-store.ts  progress records (course-scoped) and the localStorage store
@@ -66,21 +66,21 @@ Browser ──POST /api/tutor {courseSlug, lessonSlug, messages}──▶ Route 
   1. load the course definition and the lesson markdown (server, from disk)
   2. system = [platform persona (cached)] + [course block: map, running example, tutor notes (cached)] + [lesson body (cached)]
   3. user turn = optional quoted highlight + the question
-  4. client.beta.messages.stream({ model, system, messages, fallbacks: "default" })
-  5. pipe text deltas back as a streamed response
+  4. streamText({ model: gateway(MODEL), messages, providerOptions: { anthropic: { effort } } })
+  5. pipe the text stream back as a plain-text streamed response
 Browser ◀── chunks ── renders markdown progressively
 ```
 
-- Prompt caching: the persona, course, and lesson blocks carry `cache_control`, so repeated questions on the same lesson reuse the cached prefix (three of the four allowed breakpoints).
+- Prompt caching: the persona, course, and lesson system messages carry `providerOptions.anthropic.cacheControl`, which the gateway forwards to Anthropic as `cache_control`, so repeated questions on the same lesson reuse the cached prefix (three of the four allowed breakpoints).
 - The conversation is kept in the browser (sessionStorage) and resent each turn; nothing is stored server-side.
-- If `ANTHROPIC_API_KEY` is missing the route returns `503 { error: "no_api_key" }` and the UI shows setup help.
+- If the server has no gateway credentials (`AI_GATEWAY_API_KEY`, or OIDC on Vercel) the route returns `503 { error: "no_gateway" }` and the UI shows setup help.
 
 ### Grading
 
 ```
 Browser ──POST /api/grade {courseSlug, lessonSlug, questionId, answer}──▶ Route handler
   1. look up the question + rubric + model answer on the server (never trust the client's rubric)
-  2. client.beta.messages.parse({ output_config: { format: zodOutputFormat(GradeSchema) } })
+  2. generateText({ model: gateway(MODEL), output: Output.object({ schema: GradeSchema }) })
   3. return { score, passed, feedback, strengths, improvements, rubricResults, modelAnswer }
 ```
 
@@ -112,20 +112,20 @@ quiz_attempts   id serial PK · learner_id → learners · course_slug · lesson
 
 | Name | Required | Purpose |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | For Eve and grading | Anthropic API key |
-| `EVE_MODEL` | No | Overrides the model id (default `claude-opus-5`) |
+| `AI_GATEWAY_API_KEY` | For Eve and grading, unless OIDC is available on Vercel | Vercel AI Gateway key |
+| `EVE_MODEL` | No | Overrides the gateway model id (default `anthropic/claude-opus-5`) |
 | `DATABASE_URL` | No | Neon connection string; without it progress stays in the browser |
 
 ## Security notes
 
-- The API key never reaches the browser; all model calls happen in route handlers.
+- No provider key exists in the app; the gateway credential never reaches the browser, and all model calls happen in route handlers.
 - Rubrics and model answers are read on the server, so a client cannot submit a fake rubric.
 - Request bodies are validated with Zod; message history is capped (last 20 turns) and each message is capped in length.
 - Eve's system prompt tells her to guide on quiz questions rather than hand over the answer.
 
 ## Cost
 
-Rough per-request cost with `claude-opus-5` ($5 / M input, $25 / M output): a tutor turn with a 5k-token cached lesson is roughly a cent or two; a grading call is similar. A learner completing a whole course with generous tutor use costs on the order of a few dollars. Set a spend limit in the Anthropic console.
+Rough per-request cost with `anthropic/claude-opus-5` at list prices: a tutor turn with a 5k-token cached lesson is roughly a cent or two; a grading call is similar. A learner completing a whole course with generous tutor use costs on the order of a few dollars. Spend is visible, and can be capped, in the Vercel dashboard under AI Gateway.
 
 ## Adding a course
 
