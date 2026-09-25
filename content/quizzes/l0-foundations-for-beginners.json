@@ -1,0 +1,121 @@
+{
+  "lessonSlug": "l0-foundations-for-beginners",
+  "questions": [
+    {
+      "id": "l0-q1",
+      "type": "mc",
+      "prompt": "Dev asks Sprout the same question twice and gets two differently worded answers. What is the most likely explanation?",
+      "options": [
+        { "id": "a", "text": "The order database changed between the two requests." },
+        { "id": "b", "text": "The model samples each next token, so two runs can take different paths." },
+        { "id": "c", "text": "The model remembered the first answer and chose to vary it." },
+        { "id": "d", "text": "The tool returned different results each time." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Possible in principle, but nothing in the scenario changed the data. Variety in wording comes from sampling, not from the database.",
+        "b": "Correct. A language model predicts the next token and samples it. Two runs with the same input can produce different output. This is nondeterminism.",
+        "c": "The model has no memory between requests. It only sees what your code sends it each time.",
+        "d": "Tools are ordinary functions. lookup_order returns the same record for the same id unless the data changed."
+      }
+    },
+    {
+      "id": "l0-q2",
+      "type": "mc",
+      "prompt": "Sprout replies with a tool call for lookup_order with order_id \"1042\". Who actually runs the lookup_order function?",
+      "options": [
+        { "id": "a", "text": "The model, which has direct access to the shop's database." },
+        { "id": "b", "text": "The customer's browser." },
+        { "id": "c", "text": "Your code, which reads the tool call, decides whether to allow it, runs the function, and sends the result back." },
+        { "id": "d", "text": "Nobody. The model already knows the order status." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "The model never touches your database. It writes a small JSON request naming the tool and the arguments.",
+        "b": "The browser only shows the conversation. The agent loop runs on your server.",
+        "c": "Correct. The tool call is a request. Your harness code runs the real function and returns a tool result to the model.",
+        "d": "The model has no knowledge of your orders. Without a tool result, any status it states is invented."
+      }
+    },
+    {
+      "id": "l0-q3",
+      "type": "mc",
+      "prompt": "What is a trace?",
+      "options": [
+        { "id": "a", "text": "The system prompt that tells Sprout how to behave." },
+        { "id": "b", "text": "The complete, ordered record of one conversation: messages, model calls, tool calls, and results, with timestamps." },
+        { "id": "c", "text": "The model's memory of previous conversations with the same customer." },
+        { "id": "d", "text": "A list of the bugs found in the agent so far." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The system prompt is one input to the model. A trace records that input alongside everything else that happened.",
+        "b": "Correct. A trace is the flight recorder: every step of one conversation, as spans, in order.",
+        "c": "The model has no memory between requests. A trace is stored by your code, not by the model.",
+        "d": "Traces record everything, good and bad. A list of bugs is something you build later by reading traces."
+      }
+    },
+    {
+      "id": "l0-q4",
+      "type": "mc",
+      "prompt": "The test assert reply == \"Your order ships Tuesday.\" fails, but a human reads the reply and says it is correct. Why did the test fail?",
+      "options": [
+        { "id": "a", "text": "Correct answers can be worded many ways, so an exact-match assertion rejects good replies." },
+        { "id": "b", "text": "The tool must have returned not_found." },
+        { "id": "c", "text": "The context window was too small." },
+        { "id": "d", "text": "The test ran before the model finished." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. \"Order #1042 is scheduled to ship on Tuesday\" is right and does not match the string. You need to check properties of the answer, not its exact text.",
+        "b": "If the tool had returned not_found, the reply would be wrong, and the human would not have called it correct.",
+        "c": "A context-window problem would produce a bad or missing reply, not a good reply in different words.",
+        "d": "The agent loop returns the reply only when the model has finished. Timing is not the issue here."
+      }
+    },
+    {
+      "id": "l0-q5",
+      "type": "mc",
+      "prompt": "In spec-driven development, what is the spec for?",
+      "options": [
+        { "id": "a", "text": "Making the model deterministic so tests always pass." },
+        { "id": "b", "text": "Storing the traces from every conversation." },
+        { "id": "c", "text": "Writing down what correct means before you build, so the prompt, the code, and the evaluations can all be derived from it." },
+        { "id": "d", "text": "Replacing the need for testing." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "No document can remove sampling. The spec accepts variety and defines which properties must hold anyway.",
+        "b": "Traces live in a trace store. The spec is the document that says what a correct trace looks like.",
+        "c": "Correct. Decide what correct means first. Then build, measure against it, and improve.",
+        "d": "The spec makes testing possible. Its rules become the checks you run over many traces."
+      }
+    },
+    {
+      "id": "l0-q6",
+      "type": "short",
+      "prompt": "In your own words, what is an agent? Use Sprout as your example.",
+      "rubric": [
+        "Describes an agent as a model running in a loop that repeats until it is done",
+        "States that the model can call tools (functions) such as lookup_order",
+        "States that your code (the harness), not the model, runs the tool and sends the result back",
+        "Gives a concrete Sprout example (an order question that leads to a tool call and an answer)"
+      ],
+      "modelAnswer": "An agent is a language model placed in a loop that can call tools. On each pass the model reads the conversation so far and either answers in words or asks for a tool. If it asks for a tool, my code, not the model, runs the function and appends the result to the messages, then calls the model again. The loop ends when the model answers in words. For example, when Alex asks Sprout where order #1042 is, the model requests lookup_order with order_id 1042, my code runs it and returns the shipped status, and the model then replies that the order shipped on September 21.",
+      "maxWords": 150
+    },
+    {
+      "id": "l0-q7",
+      "type": "free",
+      "prompt": "Jordan writes to Sprout: \"Can I return my fern?\" Write the first three steps of the trace for this turn. For each step give the span name, its input, and its output. Use Sprout's real tool names. Assume Jordan's order is #1077 and was delivered five days ago.",
+      "rubric": [
+        "Step 1 is the customer message (a turn span or equivalent) with the exact question as its input",
+        "Includes a model-call span whose output is a tool call, not a final answer",
+        "The tool call uses a real Sprout tool (lookup_order or search_care_guide) with a plausible argument",
+        "The tool-call span's output contains facts consistent with the scenario (order #1077, delivered, a date) or a named error",
+        "No step states a return decision that has not come from a tool result or the written policy"
+      ],
+      "modelAnswer": "Step 1, span `turn`. Input: Jordan's message, \"Can I return my fern?\" Output: not yet known; this span stays open until Sprout replies.\n\nStep 2, span `model_call`. Input: the system prompt, Jordan's message, and the six tool schemas. Output: a tool call, `lookup_order` with `{ \"order_id\": \"1077\" }`. The model needs the order before it can say anything about returns, because the policy depends on when the plant was delivered and whether it arrived damaged.\n\nStep 3, span `tool_call:lookup_order`. Input: `{ \"order_id\": \"1077\" }`. Output: `{ \"status\": \"delivered\", \"items\": [\"Boston fern\"], \"delivered_at\": \"2026-09-20\" }`. Metadata: tier T0, permission allowed.\n\nWhat comes next, step 4, would be a second model call that reads the delivery date, sees the order is inside the 30-day window, and asks Jordan whether the fern arrived damaged, since returns are only accepted for damaged plants. Sprout must not promise a refund. It can explain the policy and offer to escalate to a human for approval. Every fact in the eventual reply, the delivery date and the 30-day window, traces back to the tool result or the written policy, not to the model's imagination."
+    }
+  ]
+}

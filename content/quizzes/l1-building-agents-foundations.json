@@ -1,0 +1,119 @@
+{
+  "lessonSlug": "l1-building-agents-foundations",
+  "questions": [
+    {
+      "id": "l1-q1",
+      "type": "mc",
+      "prompt": "The spec says Sprout must escalate when a customer mentions a lawyer. Sprout does this nine times out of ten, but when a customer writes \"my attorney\" it keeps chatting. Which gulf is this?",
+      "options": [
+        { "id": "a", "text": "The gulf of comprehension" },
+        { "id": "b", "text": "The gulf of specification" },
+        { "id": "c", "text": "The gulf of generalization" }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Comprehension is about not knowing what users actually ask. Here Dev knows the case and has written the rule; the model applies it unevenly.",
+        "b": "Specification is about failing to tell the model what you want. The rule is written and mostly followed, so the gap is not in the instruction.",
+        "c": "Correct. The model does the right thing most of the time but not consistently across inputs. Closing this gap is the Improve work of L8 and L9."
+      }
+    },
+    {
+      "id": "l1-q2",
+      "type": "mc",
+      "prompt": "Which risk tier is issue_refund, and what does that tier require?",
+      "options": [
+        { "id": "a", "text": "T0, because it reads the order before doing anything." },
+        { "id": "b", "text": "T1, because a refund can be reversed by charging the customer again." },
+        { "id": "c", "text": "T2, because it moves money and cannot be undone, so it never runs without human approval." },
+        { "id": "d", "text": "T2, which means the model must ask the customer to confirm first." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "T0 is read-only. issue_refund writes and moves money, so reading the order first does not make it T0.",
+        "b": "Charging a customer again is a new transaction, not an undo, and it may not even be possible. Money movement is treated as irreversible.",
+        "c": "Correct. T2 covers irreversible actions and anything involving money. The rule is human-in-the-loop approval, enforced in code.",
+        "d": "The customer is the person asking for the money. Approval must come from a support_agent or admin role, decided by your code."
+      }
+    },
+    {
+      "id": "l1-q3",
+      "type": "mc",
+      "prompt": "Where should the rule \"customers cannot trigger issue_refund\" be enforced so that it holds even when the model ignores its instructions?",
+      "options": [
+        { "id": "a", "text": "In the system prompt, stated firmly." },
+        { "id": "b", "text": "In the tool's description field in the schema." },
+        { "id": "c", "text": "In code, in canCall inside runTool, with the denial returned to the model as a tool result." },
+        { "id": "d", "text": "By asking the customer to confirm that they are allowed." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "The prompt should state the rule, but a prompt is a request, not a lock. Text can be ignored or talked around.",
+        "b": "The description helps the model plan. It is still text the model reads, and it has no power to stop a call.",
+        "c": "Correct. Every tool call passes through runTool, the role comes from the session, and canCall decides. The model can only ask.",
+        "d": "The customer is not a trustworthy source of their own permissions. Roles are established by your code at login."
+      }
+    },
+    {
+      "id": "l1-q4",
+      "type": "mc",
+      "prompt": "Which item belongs in the tool contract for cancel_order?",
+      "options": [
+        { "id": "a", "text": "The name of the model that will call it." },
+        { "id": "b", "text": "The precondition that the order status is processing, and the error already_shipped." },
+        { "id": "c", "text": "The customer's name and email address." },
+        { "id": "d", "text": "The temperature setting for the agent." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A contract describes the tool, not the caller. Any model, or a human, should be able to use it under the same rules.",
+        "b": "Correct. Preconditions and named error cases are the heart of a contract. They become checks in code and tests in your suite.",
+        "c": "Those are data that flow through the tool at run time, not part of the agreement about what the tool does.",
+        "d": "Temperature is a model parameter. It has nothing to do with what cancel_order accepts, does, or returns."
+      }
+    },
+    {
+      "id": "l1-q5",
+      "type": "mc",
+      "prompt": "What is escalate_to_human for?",
+      "options": [
+        { "id": "a", "text": "Reporting a bug in Sprout to Dev." },
+        { "id": "b", "text": "Retrying a tool call that returned an error." },
+        { "id": "c", "text": "Ending the conversation once the customer is satisfied." },
+        { "id": "d", "text": "Handing the conversation to Maya when a trigger fires: legal words, an angry customer, an out-of-scope request, or a refund request." }
+      ],
+      "answer": "d",
+      "explanations": {
+        "a": "Bugs are found by reading traces (L2 and L4). Escalation is about the customer's conversation, not the engineering process.",
+        "b": "A tool error is reported to the model as a tool result. Retrying is a harness decision, not an escalation.",
+        "c": "A satisfied customer needs no human. Escalation is the designed exit for cases the agent should not handle alone.",
+        "d": "Correct. Escalation is not a failure. It is the planned handoff for the situations the spec lists, with a summary so Maya has context."
+      }
+    },
+    {
+      "id": "l1-q6",
+      "type": "short",
+      "prompt": "Write a tool contract for cancel_order. Cover inputs, outputs, at least one precondition, the error cases, and the risk tier.",
+      "rubric": [
+        "Names the input (order_id) and the output (a status or an error)",
+        "States at least one precondition (the order has not shipped, or its status is processing)",
+        "Names at least one error case (not_found or already_shipped)",
+        "States the side effect and that it is reversible (T1)"
+      ],
+      "modelAnswer": "cancel_order(order_id). Input: order_id, a string. Preconditions: the order exists, it belongs to the customer in the session, and its status is processing, meaning it has not shipped. Effect: the order is marked cancelled and the customer is emailed a confirmation. This is reversible, because the customer can place the order again, so the tool is T1: any role may call it, and every call is logged. Output on success: { status: \"cancelled\", order_id }. Errors: not_found when no order has that id; already_shipped when the status is shipped or delivered, in which case Sprout should explain the return policy or escalate instead of guessing.",
+      "maxWords": 150
+    },
+    {
+      "id": "l1-q7",
+      "type": "free",
+      "prompt": "Write the Risk Tiers and Escalation Rules sections of a SPEC.md for a pizza-delivery support agent. Invent four to six tools, assign each a tier, and list the escalation triggers.",
+      "rubric": [
+        "Defines T0, T1, and T2 in one line each",
+        "Assigns each invented tool a tier that matches its reversibility (read-only tools T0, changes that can be undone T1, money or irreversible actions T2)",
+        "States that T2 tools never run without human approval and names the approver role",
+        "Lists at least three escalation triggers",
+        "Says what the escalation summary must contain (order id, the issue, what the customer wants)"
+      ],
+      "modelAnswer": "```markdown\n## Risk tiers\n- T0 read-only: any role may call. Tools: lookup_order(order_id), get_driver_location(order_id), search_menu(query), escalate_to_human(summary).\n- T1 reversible write: any role may call, always logged. Tools: update_delivery_note(order_id, note), cancel_order(order_id) while status is preparing. A cancelled order can be placed again, and a note can be edited.\n- T2 irreversible or money: never runs without approval from a manager. Tools: issue_refund(order_id, amount, reason), send_free_pizza(order_id). Once a pizza leaves the kitchen or money leaves the account, nobody can call it back.\n\n## Escalation rules\nCall escalate_to_human when any of these is true:\n- The customer mentions a lawyer, food poisoning, an allergy reaction, or a chargeback\n- The customer is still angry after two replies\n- The driver has not moved for 20 minutes and the customer asks twice\n- A refund or free replacement is requested\n- The request is outside scope (catering quotes, franchise questions, job applications)\n\nThe summary must include the order id, what went wrong in one sentence, what the customer is asking for, and the time of the last driver update if the issue is delivery. The agent must not promise a refund or a replacement. It says a manager will confirm.\n```\n\nThe tiers follow one test: can another tool undo this? A note or a cancellation before cooking can be undone, so T1. Money and food that has left the building cannot, so T2 with a named human approver. The triggers cover the legal and safety words, anger, the most common delivery failure, and everything that costs money."
+    }
+  ]
+}

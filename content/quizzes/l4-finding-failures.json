@@ -1,0 +1,120 @@
+{
+  "lessonSlug": "l4-finding-failures",
+  "questions": [
+    {
+      "id": "l4-q1",
+      "type": "mc",
+      "prompt": "Dev asked a model to rate 500 traces from 1 to 10 and got 96% at 8 or higher. Maya then found four refund promises outside policy in ten traces. Why did the grader miss them?",
+      "options": [
+        { "id": "a", "text": "The model was too small to read long traces." },
+        { "id": "b", "text": "Nobody had defined the failure, so the grader answered from its general sense of a pleasant conversation." },
+        { "id": "c", "text": "A 1 to 10 scale is too coarse; 1 to 100 would have caught them." },
+        { "id": "d", "text": "The traces were synthetic, so the grader treated them as passes." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The same model, asked 'did Sprout promise a refund on an order delivered more than 30 days ago?', finds the failure with the evidence. Capability was not the problem.",
+        "b": "Correct. You cannot automate the detection of a failure you have not named. The definition comes from humans reading traces first.",
+        "c": "A finer scale makes the vagueness more precise, not less. The fix is a specific, binary question, not more numbers.",
+        "d": "Graders do not know or care whether a trace is synthetic. The refund promises were plainly there in the replies."
+      }
+    },
+    {
+      "id": "l4-q2",
+      "type": "mc",
+      "prompt": "In a trace, lookup_order returns not_found, Sprout invents a Thursday delivery date, the customer gets angry, and Sprout offers a refund. Which is the correct open-coding note?",
+      "options": [
+        { "id": "a", "text": "Hallucination; escalation failure; policy violation." },
+        { "id": "b", "text": "Offered a refund to an angry customer without approval." },
+        { "id": "c", "text": "Tool returned not_found and Sprout carried on as if it had data, inventing Thursday." },
+        { "id": "d", "text": "Overall quality 4 out of 10." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Those are category labels, and open coding has no categories yet. Labels also hide the evidence a second reader would need to check the note.",
+        "b": "That is a real problem, but it is downstream. It happened only because the invented date made the customer angry. Note the first failure only.",
+        "c": "Correct. Plain language, the first failure, and evidence a second reader can check in a minute.",
+        "d": "Scores are not notes. A number tells you nothing about what to fix."
+      }
+    },
+    {
+      "id": "l4-q3",
+      "type": "mc",
+      "prompt": "Which of these is a well-formed binary failure mode?",
+      "options": [
+        { "id": "a", "text": "Reply quality, rated 1 to 5." },
+        { "id": "b", "text": "The reply promised or processed a refund for an order delivered more than 30 days ago or not damaged on arrival." },
+        { "id": "c", "text": "The customer seemed unhappy." },
+        { "id": "d", "text": "Sprout was unhelpful." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A scale is not binary. Two reviewers will give a 3 and a 4 and both feel right, and a 3.4 average points at nothing to fix.",
+        "b": "Correct. A trace either has this or it does not, the definition names the evidence, and a boundary can say what counts and what does not.",
+        "c": "That describes the customer, not a mistake by the agent. An unhappy customer whose question was answered correctly is not a failure.",
+        "d": "Unhelpful is a judgment with no evidence attached. Axial coding turns notes like this into specific modes such as Ignored tool error."
+      }
+    },
+    {
+      "id": "l4-q4",
+      "type": "mc",
+      "prompt": "Maya's running count shows 5 modes after 20 traces, 7 after 40, and 7 after 60. What does this tell her?",
+      "options": [
+        { "id": "a", "text": "Sprout has exactly seven bugs." },
+        { "id": "b", "text": "The taxonomy is wrong because it changed between batches." },
+        { "id": "c", "text": "This sample has been mined: new traces stopped producing new modes, so she can stop the loop for now." },
+        { "id": "d", "text": "She must read 100 more traces before doing anything else." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Saturation is about this sample from this scenario set. Real traffic will bring new modes, which the L6 weekly review feeds back into the loop.",
+        "b": "Growing between batches is normal. Two modes arrived late because they were rare (adversarial scenarios were 4% of the set). That is why you read at least three batches.",
+        "c": "Correct. Saturation means a batch added nothing new. It is the signal to stop sampling and move on to the failure report.",
+        "d": "More reading is never harmful, but the third batch adding nothing is the agreed stopping rule. Time is better spent building evaluators in L5."
+      }
+    },
+    {
+      "id": "l4-q5",
+      "type": "mc",
+      "prompt": "When should Dev compare Sprout's taxonomy with a published list of agent failure types?",
+      "options": [
+        { "id": "a", "text": "Before reading any traces, to know what to look for." },
+        { "id": "b", "text": "After building Sprout's own taxonomy, as a check for gaps." },
+        { "id": "c", "text": "Never; published lists do not apply to a plant shop." },
+        { "id": "d", "text": "Instead of open coding, since the list already contains every failure type." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Reading a list first anchors you. You see its categories in every trace and miss what is specific to Sprout, such as Refund outside policy.",
+        "b": "Correct. Build your own first, then use the published list to ask whether your traces contain each item and whether your scenarios could even produce it.",
+        "c": "They are useful as a gap check. Dev's check surfaced repeated identical tool calls, which was on no one's sheet.",
+        "d": "No generic list contains 'promised a refund outside the 30-day window'. The failures that cost Pip money are specific to Pip."
+      }
+    },
+    {
+      "id": "l4-q6",
+      "type": "short",
+      "prompt": "In open coding, why do you note only the first failure in a trace?",
+      "rubric": [
+        "States that later errors are usually consequences of the first one, so fixing the first removes them",
+        "States that first-failure notes are consistent and easier to group during axial coding, or that they keep reading fast",
+        "Mentions that full labeling of every trace for every mode happens later, in measurement (L5 or Homework 1), so nothing is lost"
+      ],
+      "modelAnswer": "After the first mistake, everything downstream is contaminated. If lookup_order returns not_found and Sprout invents a delivery date, the angry customer and the unauthorized refund that follow are consequences, not separate bugs. Fix the first failure and the rest never happen, so the first failure is where the fix lives. Noting only the first also keeps the notes consistent, which makes axial coding possible: one trace, one note, one pile. It keeps reading fast, at two or three minutes per trace. Nothing is lost, because in L5 every trace gets labeled for every failure mode when you build and validate evaluators. Open coding is for discovery; measurement labels everything.",
+      "maxWords": 150
+    },
+    {
+      "id": "l4-q7",
+      "type": "free",
+      "prompt": "Open-code these three mini-traces. For each, write one or two sentences in plain language naming the first failure and the evidence, with no category labels.\n\n**Trace A.** Customer: \"Can you cancel order 1088? I ordered the wrong pot.\" → `lookup_order(\"1088\")` → `{ \"status\": \"shipped\" }` → Sprout: \"Done! Order 1088 is cancelled and you won't be charged.\" (No other tool calls.)\n\n**Trace B.** Customer: \"How much water does a monstera need?\" → `search_care_guide(\"monstera water\")` → article: \"Water when the top 5 cm of soil is dry.\" → Sprout: \"Water it every day to keep it happy!\"\n\n**Trace C.** Customer: \"I'm going to report you to consumer protection unless someone calls me.\" → (no tool calls) → Sprout: \"I'm sorry you feel that way. Is there anything else I can help with?\"",
+      "rubric": [
+        "Trace A note says Sprout claimed the order was cancelled although it had already shipped and cancel_order was never called",
+        "Trace B note says the reply contradicts the care guide the tool returned (every day versus when the top soil is dry)",
+        "Trace C note says the customer made a legal threat or asked for a person and Sprout did not escalate to a human",
+        "Each note is written in plain language and points to evidence in the trace rather than using a category label",
+        "Each note records a single first failure rather than a list of everything wrong"
+      ],
+      "modelAnswer": "**Trace A.** Told the customer order 1088 was cancelled, but lookup_order showed it had already shipped and cancel_order was never called. The customer will still be charged and will still receive the pot.\n\n**Trace B.** The care guide the tool returned says to water when the top 5 cm of soil is dry, and Sprout told the customer to water every day. The reply contradicts the tool output it had in hand.\n\n**Trace C.** The customer threatened to report the shop and asked for a person to call them. Sprout made no escalate_to_human call and closed the conversation with a generic line. Maya never heard about it.\n\nEach note describes what happened in the trace, quotes the evidence (the tool result or the missing tool call), and stops at the first failure. In Trace A the later problem, that the customer will be charged, is a consequence of the false cancellation claim, so it is not a second note. None of the notes uses a label such as hallucination or escalation failure; those names come later, in axial coding, when notes like these are grouped and given a definition, an example, and a boundary."
+    }
+  ]
+}

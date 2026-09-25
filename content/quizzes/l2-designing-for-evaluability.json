@@ -1,0 +1,123 @@
+{
+  "lessonSlug": "l2-designing-for-evaluability",
+  "questions": [
+    {
+      "id": "l2-q1",
+      "type": "mc",
+      "prompt": "Why must instrumentation exist before the first real user?",
+      "options": [
+        { "id": "a", "text": "Because Langfuse will not accept traces from an app that has already launched." },
+        { "id": "b", "text": "Because a failure that was not recorded cannot be reproduced, proved, or fixed, and early traffic is where the first surprises appear." },
+        { "id": "c", "text": "Because the first users are always the angriest." },
+        { "id": "d", "text": "Because tracing makes the model respond faster." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Langfuse accepts traces at any time. The problem is the conversations that happened before you started sending them.",
+        "b": "Correct. The refund complaint at the start of the lesson could not be answered because nothing was recorded. Instrument first, then invite users.",
+        "c": "Anger is not the point. Even a polite complaint cannot be investigated without a trace.",
+        "d": "Tracing adds a small amount of work per call. Its value is what you can read afterwards, not speed."
+      }
+    },
+    {
+      "id": "l2-q2",
+      "type": "mc",
+      "prompt": "In the trace data model, what is a span?",
+      "options": [
+        { "id": "a", "text": "One complete conversation, from the first message to the last reply." },
+        { "id": "b", "text": "One unit of work, such as a model call, a tool call, or a permission check, with an id, a parent_id, start and end times, input, output, and metadata." },
+        { "id": "c", "text": "One line written to the console by the agent." },
+        { "id": "d", "text": "The system prompt that was in effect during the conversation." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "That is a trace. A trace is made of spans.",
+        "b": "Correct. Spans are the steps inside a trace, and they nest through parent_id: a turn contains model calls, a model call contains the tool calls it requested.",
+        "c": "A console line is a log entry. Spans are structured and nested, which is what lets you query them.",
+        "d": "The prompt is recorded on a model-call span as input and as a prompt hash in metadata. It is not itself a span."
+      }
+    },
+    {
+      "id": "l2-q3",
+      "type": "mc",
+      "prompt": "What is a prompt hash for?",
+      "options": [
+        { "id": "a", "text": "Encrypting the prompt so customers cannot read it." },
+        { "id": "b", "text": "Making the model's output deterministic." },
+        { "id": "c", "text": "Knowing exactly which prompt text produced a trace, and grouping traces by prompt version." },
+        { "id": "d", "text": "Shortening the prompt to save tokens." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "A hash is a fingerprint, not encryption. You store the full text separately and use the hash to identify it.",
+        "b": "Sampling does not care about hashes. The hash tells you which prompt ran; it does not change how the model behaves.",
+        "c": "Correct. Change one character and the hash changes, so you can filter traces by hash and know the exact prompt behind any behavior.",
+        "d": "The full prompt is still sent to the model. The hash is stored on the span so traces stay small and traceable."
+      }
+    },
+    {
+      "id": "l2-q4",
+      "type": "mc",
+      "prompt": "In a self-hosted Langfuse setup, what does ClickHouse do?",
+      "options": [
+        { "id": "a", "text": "Renders the trace tree in the browser." },
+        { "id": "b", "text": "Stores project metadata such as users and API keys." },
+        { "id": "c", "text": "Stores spans in a column store so aggregate queries over millions of spans are fast." },
+        { "id": "d", "text": "Runs the language model." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "The web UI is Langfuse itself. ClickHouse is a database behind it.",
+        "b": "That is Postgres, which holds the small relational data: projects, users, keys, prompt versions.",
+        "c": "Correct. A column store reads one column across many rows, which is what questions like average latency per tool need.",
+        "d": "The model runs at the provider you call from your harness. ClickHouse stores what happened."
+      }
+    },
+    {
+      "id": "l2-q5",
+      "type": "mc",
+      "prompt": "A trace shows: the first model call requests lookup_order(\"1707\"); the tool returns not_found; the second model call replies \"It arrives Tuesday.\" Which span is the first failure?",
+      "options": [
+        { "id": "a", "text": "The tool call, because it returned an error." },
+        { "id": "b", "text": "The first model call, because it should not have looked up the order." },
+        { "id": "c", "text": "The second model call, because it stated a date that appears in no tool result." },
+        { "id": "d", "text": "The turn span, because that is where the customer saw the wrong answer." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "not_found is a correct result for an order that does not exist. The tool did its job.",
+        "b": "Looking up the order before stating anything is exactly what the spec requires. That call was right.",
+        "c": "Correct. The date came from nowhere. This is the earliest span whose output does not follow from its input and the spec.",
+        "d": "The turn is where the symptom shows. The first failure is the earliest span that went wrong, and that is inside the turn."
+      }
+    },
+    {
+      "id": "l2-q6",
+      "type": "short",
+      "prompt": "Which fields belong on a tool-call span, and why does each one matter when you read the trace later?",
+      "rubric": [
+        "Names the tool name and the arguments (the span's input)",
+        "Names the result stored in full (the span's output), not a summary",
+        "Names an error field for cases such as not_found",
+        "Names the permission decision or the risk tier in metadata",
+        "Gives a debugging reason for at least one field (for example, seeing that the tool never returned a date)"
+      ],
+      "modelAnswer": "A tool-call span needs the tool name and the exact arguments as its input, so you can see what the model asked for and spot a wrong order id. It needs the full result as its output, not a summary, because the most common failure is the model stating something the tool never returned, and you can only prove that by reading the whole result. It needs an error field, such as not_found, so you can query for every failed call in an hour. In metadata it needs the risk tier and the permission decision with a reason, so you can count how often Sprout tried a T2 tool and was denied. Start and end times give latency, which feeds the cost and performance work in L9.",
+      "maxWords": 150
+    },
+    {
+      "id": "l2-q7",
+      "type": "free",
+      "prompt": "Design the span structure for a two-step request from Alex (role customer): look up order #1042, then request a refund. List every span with its name, its parent, its input, its output, and the metadata you would attach. Write it as JSON or as an indented list.",
+      "rubric": [
+        "Has one top-level turn span with the customer message as input and the final reply as output",
+        "Has a model_call span that outputs a lookup_order tool call, with a nested tool_call:lookup_order span whose output is the order",
+        "Has a model_call span that outputs an issue_refund tool call, followed by a permission_check span recording denied for role customer with a reason",
+        "Includes an escalate_to_human tool call (or an explicit human-approval step) after the denial",
+        "States parent_id relationships so the nesting is unambiguous",
+        "Attaches metadata such as prompt hash, agent version, model id, tokens, and tier"
+      ],
+      "modelAnswer": "Trace metadata: session_id sess_alex_02, user_id cust_alex, env prod, agent_version 0.3.1, prompt_hash 9e8d7c6b.\n\n- sp_1 `turn`, parent null. Input: \"My monstera arrived with a broken pot. Can I get a refund?\" Output: the final reply, \"I am sorry about the pot. I have passed this to a member of our team, who will confirm the refund.\" Metadata: role customer.\n  - sp_2 `model_call`, parent sp_1. Input: full messages array and six tool schemas. Output: tool call lookup_order { order_id: \"1042\" }. Metadata: model claude-opus-5, prompt_hash 9e8d7c6b, temperature 0, tokens_in 820, tokens_out 38, latency_ms 1100.\n    - sp_3 `tool_call:lookup_order`, parent sp_2. Input: { order_id: \"1042\" }. Output: { status: \"delivered\", delivered_at: \"2026-09-18\", total: 45 }. Metadata: tier T0, permission allowed, error null.\n  - sp_4 `model_call`, parent sp_1. Input: messages including the order. Output: tool call issue_refund { order_id: \"1042\", amount: 45, reason: \"arrived damaged\" }. Metadata: same model fields, tokens_in 910, tokens_out 52.\n    - sp_5 `permission_check`, parent sp_4. Input: { role: \"customer\", tool: \"issue_refund\" }. Output: { decision: \"denied\", reason: \"customer may not call issue_refund\" }. Metadata: tier T2.\n  - sp_6 `model_call`, parent sp_1. Input: messages including the denial as a tool result. Output: tool call escalate_to_human { summary: \"Alex, order #1042, $45 refund requested, pot broken on arrival\" }.\n    - sp_7 `tool_call:escalate_to_human`, parent sp_6. Output: { status: \"queued\", assignee: \"maya\" }. Metadata: tier T0, permission allowed.\n  - sp_8 `model_call`, parent sp_1. Output: the final reply text, stop_reason end_turn.\n\nThe denial is recorded as its own span rather than buried in the tool result, so Pip can count denied refund attempts with one query. Every model call carries the prompt hash, so if Sprout's wording changes next week the traces before and after can be told apart."
+    }
+  ]
+}

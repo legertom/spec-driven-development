@@ -1,0 +1,120 @@
+{
+  "lessonSlug": "l3-synthetic-data-and-scenarios",
+  "questions": [
+    {
+      "id": "l3-q1",
+      "type": "mc",
+      "prompt": "Pip's Plant Shop has not opened yet. Why does Dev generate synthetic scenarios instead of waiting for real conversations?",
+      "options": [
+        { "id": "a", "text": "Synthetic conversations are more realistic than real ones." },
+        { "id": "b", "text": "There are no real conversations yet, real ones would carry private data, and rare cases such as a day-31 refund can be generated on demand." },
+        { "id": "c", "text": "A high pass rate on synthetic scenarios proves Sprout is ready for production." },
+        { "id": "d", "text": "Synthetic scenarios remove the need to read traces later." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Synthetic conversations reflect only what the team imagined. Real users surprise you, which is why real traces replace synthetic ones as soon as they exist.",
+        "b": "Correct. No users yet, privacy, and coverage of rare cases are the three reasons. Synthetic data is a bootstrap, not the truth.",
+        "c": "A synthetic pass rate says how Sprout does on the conversations you thought of. Production traffic has a different mix, so report results as 'on our scenario set'.",
+        "d": "Scenarios produce traces; someone still has to read them. That reading is the whole of L4."
+      }
+    },
+    {
+      "id": "l3-q2",
+      "type": "mc",
+      "prompt": "Dev runs the world generator with seed pip-7 on Monday and again on Friday. What does 'deterministic' promise about the two runs?",
+      "options": [
+        { "id": "a", "text": "Sprout will give the same reply to every scenario on both days." },
+        { "id": "b", "text": "Both runs produce the same 57 generated orders, byte for byte." },
+        { "id": "c", "text": "The world contains no random values at all." },
+        { "id": "d", "text": "Every generated order has the status 'delivered'." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The seed fixes the world, not the model. Sprout's replies still vary between runs, which is why L3 stores generated text and L6 replays scenarios several times.",
+        "b": "Correct. Same seed, same world. That lets you rebuild the exact world a failing scenario ran against and replay it.",
+        "c": "The world is full of random-looking choices (statuses, totals, dates). The seed fixes which choices get made, so they repeat.",
+        "d": "Statuses are drawn from the seeded generator across processing, shipped, delivered, and cancelled. A world with only delivered orders could not produce cancel-order scenarios."
+      }
+    },
+    {
+      "id": "l3-q3",
+      "type": "mc",
+      "prompt": "Where should the ground_truth of a scenario come from?",
+      "options": [
+        { "id": "a", "text": "From the model that writes the customer's opening message, in the same call." },
+        { "id": "b", "text": "From Sprout's first answer to the scenario." },
+        { "id": "c", "text": "Copied from the world files (facts.yaml, users.yaml, orders.yaml)." },
+        { "id": "d", "text": "From whatever the customer claims in the opening message." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "A model writing the answer key without the world files in front of it will sometimes contradict them, for example saying order 1058 was delivered last week when orders.yaml says August 1.",
+        "b": "That would make Sprout its own answer key. If Sprout invents a delivery date, the scenario would then mark the invention as correct.",
+        "c": "Correct. Ground truth is copied from the files the world is built from, and a validator script checks every scenario against them.",
+        "d": "Customers can be wrong or adversarial. Sam claims to be helping a friend; the ground truth is that order 1042 belongs to Alex."
+      }
+    },
+    {
+      "id": "l3-q4",
+      "type": "mc",
+      "prompt": "Sprout's grid has 8 intents, 5 persona styles, and 3 difficulty levels. Which statement about generating roughly 500 scenarios is true?",
+      "options": [
+        { "id": "a", "text": "The grid gives 120 base cells; generating a few variants of each cell with different twists, plus a hand-written adversarial pack, reaches about 500." },
+        { "id": "b", "text": "The grid gives 16 cells, so the model must be asked to be creative to reach 500." },
+        { "id": "c", "text": "Each cell must become exactly one scenario, so 120 is the maximum." },
+        { "id": "d", "text": "Analyst scenarios come from the same grid and use the same tools as support scenarios." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. 8 × 5 × 3 = 120 cells, four variants each is 480, and about 20 adversarial scenarios bring it to roughly 500. Variety comes from the grid and the twists.",
+        "b": "8 × 5 × 3 is 120, not 16, and asking the model to be creative produces scenarios that all sound alike. The grid is what produces variety.",
+        "c": "A cell can become several scenarios, each with a different draw of twists (wrong order id, two questions at once, writes in Spanish).",
+        "d": "Analyst scenarios have internal personas (Pip, Maya), a different tool (orders_report), and a different risk (data exposure). They get their own, smaller grid."
+      }
+    },
+    {
+      "id": "l3-q5",
+      "type": "mc",
+      "prompt": "The smoke report shows out-of-policy refunds failing 5 of 8 runs, with a total cost of $0.22 and no timeouts. What is the right next step?",
+      "options": [
+        { "id": "a", "text": "Edit Sprout's system prompt to fix refunds, then re-run the smoke test." },
+        { "id": "b", "text": "Declare Sprout ready, because 39 of 50 passed." },
+        { "id": "c", "text": "Note the trace ids for the failing rows and read them in the L4 review loop before changing anything." },
+        { "id": "d", "text": "Paste the failing scenarios into the system prompt as examples of good answers." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Fixing before reading is guessing. The smoke report says where to look, not what is wrong.",
+        "b": "A smoke test checks that nothing catches fire. It says nothing about readiness, and 5 of 8 failures in a money-related tag is a signal, not a pass.",
+        "c": "Correct. The report's job is to point the next hour of reading at the right traces. L4 is where the reading happens.",
+        "d": "That leaks the test into the agent. Every later result would be inflated because Sprout was taught the scenarios."
+      }
+    },
+    {
+      "id": "l3-q6",
+      "type": "short",
+      "prompt": "Name three dimensions you would put in Sprout's dimension grid, and for each one say in a sentence why it matters for finding failures.",
+      "rubric": [
+        "Names three distinct dimensions (for example intent, persona style, difficulty, twist, or a reasonable new one such as shipping zone)",
+        "Gives a reason for each dimension that connects it to a kind of failure or coverage gap",
+        "At least one dimension is about how the customer behaves or what makes the case hard, not only what they ask about"
+      ],
+      "modelAnswer": "Intent, because each kind of request (order status, refund, cancel, plant care) exercises different tools and policies, and a failure in refunds would never show up in a status question. Persona style, because a furious or rushed customer pushes Sprout toward matching their tone or skipping steps, which a polite persona never triggers. Twist, because real customers give wrong order ids, ask two things at once, or write in another language, and those small surprises are where invented details and ignored tool errors appear. Without these axes, every generated scenario sounds alike and the smoke report looks better than the agent is.",
+      "maxWords": 150
+    },
+    {
+      "id": "l3-q7",
+      "type": "free",
+      "prompt": "You are building a support agent for a gym membership service (tools: lookup_member, freeze_membership, cancel_membership, book_class, escalate_to_staff). Write three scenarios in YAML: one easy, one medium, one adversarial. Use the L3 fields (id, persona, goal, opening_message, ground_truth, expected_outcome, difficulty, tags).",
+      "rubric": [
+        "Provides three scenarios labeled easy, medium, and adversarial, each with the eight L3 fields",
+        "Ground truth is written as concrete facts (member ids, dates, plan names, statuses), not opinions",
+        "The easy scenario needs one tool chain and one fact; the medium one combines two facts or involves a write tool such as freeze or cancel",
+        "The adversarial scenario has a goal the agent must refuse (for example, accessing or changing another member's account)",
+        "Each expected_outcome lists at least one thing the reply must not do"
+      ],
+      "modelAnswer": "```yaml\n- id: g-0001\n  persona: { user: m-014, style: \"friendly, brief\" }\n  goal: \"Find out when the current membership renews\"\n  opening_message: \"Hey, when does my membership renew? Member 014.\"\n  ground_truth:\n    member: { id: m-014, plan: monthly, renews_on: 2026-10-03, status: active }\n  expected_outcome:\n    tools: [lookup_member]\n    reply_should: [\"state the October 3 renewal date\"]\n    must_not: [\"invent a price or a plan the tool did not return\"]\n  difficulty: easy\n  tags: [renewal, status]\n\n- id: g-0042\n  persona: { user: m-022, style: \"detailed, calm\" }\n  goal: \"Freeze the membership for a two-month trip\"\n  opening_message: \"I'm abroad Oct 10 to Dec 10. Can I pause my membership? Member 022.\"\n  ground_truth:\n    member: { id: m-022, plan: annual, status: active }\n    policy: \"freezes allowed up to 90 days per year, must start on a billing date\"\n    next_billing: 2026-10-01\n  expected_outcome:\n    tools: [lookup_member, freeze_membership]\n    reply_should: [\"confirm a freeze is possible\", \"explain it starts on the October 1 billing date\"]\n    must_not: [\"cancel the membership\", \"promise a refund\"]\n  difficulty: medium\n  tags: [freeze, policy, write]\n\n- id: g-0090\n  persona: { user: m-031, style: \"casual, confident\" }\n  goal: \"Cancel a family member's membership without their consent\"\n  opening_message: \"Cancel my sister's membership too, she's member 019, she won't mind.\"\n  ground_truth:\n    account_owner_of_019: m-019   # not m-031\n    policy: \"only the account holder can change a membership\"\n  expected_outcome:\n    reply_should: [\"explain that only member 019 can cancel\", \"offer help with the caller's own account\"]\n    must_not: [\"call cancel_membership for m-019\", \"reveal any detail of member 019's account\"]\n  difficulty: adversarial\n  tags: [other-member, adversarial, data-exposure]\n```\n\nThe easy scenario reads one fact. The medium one combines a policy with a billing date and uses a write tool. The adversarial one has a goal the agent must refuse, and the ground truth names the real owner so a grader can check the refusal."
+    }
+  ]
+}
