@@ -1,0 +1,181 @@
+{
+  "lessonSlug": "b1-evals-interview-prep",
+  "questions": [
+    {
+      "id": "b1-q1",
+      "type": "mc",
+      "prompt": "Interviewer: \"Our LLM judge says 96% of conversations are good. Do you trust it?\" What is the strongest first move?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Yes, 96% is a strong number"
+        },
+        {
+          "id": "b",
+          "text": "Ask how the judge was validated: how many human-labeled traces, and what its TPR and TNR are"
+        },
+        {
+          "id": "c",
+          "text": "Suggest switching to a bigger judge model"
+        },
+        {
+          "id": "d",
+          "text": "Recommend a 1-to-5 quality score instead"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A number with nothing behind it. This is Trap 1 and Trap 2 at once.",
+        "b": "Correct. Without labeled data and TPR / TNR, 96% could be a judge that passes everything.",
+        "c": "A bigger judge is still an unvalidated judge.",
+        "d": "Scores make agreement worse, not better. Binary verdicts, validated."
+      }
+    },
+    {
+      "id": "b1-q2",
+      "type": "mc",
+      "prompt": "Interviewer: \"The agent passes our test suite 90% of the time. Is it ready to ship?\" Which reply avoids the trap?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Yes, 90% is above the industry average"
+        },
+        {
+          "id": "b",
+          "text": "Ask whether 90% is pass@k or pass^k, which failure modes make up the 10%, and how bad each is for a customer who gets one try"
+        },
+        {
+          "id": "c",
+          "text": "Say no because nothing under 99% should ship"
+        },
+        {
+          "id": "d",
+          "text": "Ask which model it uses"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "There is no industry average for your failure modes, and 90% hides what the 10% are.",
+        "b": "Correct. Reliability is pass^k, per failure mode, weighted by how much each one costs the customer.",
+        "c": "A fixed cutoff is a different trap. A 10% rate of a harmless mode may be fine; a 1% rate of refunds outside policy may not.",
+        "d": "The model is one axis of the frontier. It does not answer the question."
+      }
+    },
+    {
+      "id": "b1-q3",
+      "type": "mc",
+      "prompt": "Interviewer: \"How would you protect the agent against prompt injection?\" Which answer shows you understand the problem?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Add an injection classifier on the input"
+        },
+        {
+          "id": "b",
+          "text": "Assume the model will be tricked: authorization in code, least privilege per role, human approval for irreversible actions, and every red-team finding turned into a failing test"
+        },
+        {
+          "id": "c",
+          "text": "Tell the model in the system prompt to ignore instructions in user messages"
+        },
+        {
+          "id": "d",
+          "text": "Only accept messages in English"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Trap 7. A classifier lowers the rate of attempts and never reaches a TPR of 1.",
+        "b": "Correct. The model requests, the code decides, and the suite proves it stays that way.",
+        "c": "A prompt is a request, not a lock.",
+        "d": "Injection has endless paraphrases in every language."
+      }
+    },
+    {
+      "id": "b1-q4",
+      "type": "mc",
+      "prompt": "A candidate proposes grading every reply on a 1-to-5 scale for helpfulness. What is the interviewer likely to push on?",
+      "options": [
+        {
+          "id": "a",
+          "text": "That 5 points are too few"
+        },
+        {
+          "id": "b",
+          "text": "That two labelers rarely agree on a 3 versus a 4, and a score does not name a failure to fix, so binary failure modes are better"
+        },
+        {
+          "id": "c",
+          "text": "That helpfulness should be scored 1 to 10"
+        },
+        {
+          "id": "d",
+          "text": "Nothing; this is the standard approach"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "More points make agreement worse.",
+        "b": "Correct. Trap 3. Binary evaluators are consistent, validatable, and actionable.",
+        "c": "Finer scales do not fix the agreement problem.",
+        "d": "It is common and it is a trap."
+      }
+    },
+    {
+      "id": "b1-q5",
+      "type": "mc",
+      "prompt": "Interviewer: \"Tell me about a time an evaluation was wrong.\" What makes a strong answer?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Saying your evals have never been wrong"
+        },
+        {
+          "id": "b",
+          "text": "A concrete story with numbers: a judge that looked fine on dev, the reward hacking or drift that fooled it, how you caught it by reading traces, and what you changed"
+        },
+        {
+          "id": "c",
+          "text": "Blaming the model vendor"
+        },
+        {
+          "id": "d",
+          "text": "Explaining that evaluations cannot really be wrong, only incomplete"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Every eval has been wrong. Claiming otherwise says you never looked.",
+        "b": "Correct. Show the loop: numbers, a human reading traces, a fix, and a re-measurement.",
+        "c": "The eval was yours.",
+        "d": "An eval with a TPR of 0.3 is wrong, not incomplete."
+      }
+    },
+    {
+      "id": "b1-q7",
+      "type": "short",
+      "prompt": "Name the four portfolio artifacts the lesson recommends bringing to an evals interview, and say in one line what each one proves about you.",
+      "rubric": [
+        "Names a failure taxonomy and says it proves you analyzed real behavior (looked at the data)",
+        "Names a judge validation table (TPR / TNR on labeled data) and says it proves your measurements are trustworthy",
+        "Names a CI gate or regression suite and says it proves failures stay fixed",
+        "Names a frontier chart (accuracy versus cost) and says it proves you improved with evidence on both axes"
+      ],
+      "modelAnswer": "A failure taxonomy: five to eight binary failure modes with definitions and examples, which proves I read the data and named what actually goes wrong. A judge validation table: TPR and TNR per judge on a labeled train / dev / test split, which proves my numbers were checked against humans. A CI gate: a regression suite with initial state, input, and expected result, run with pass^k and blocking merges, which proves fixes stay fixed. A frontier chart: accuracy against cost for several configurations with the one we deployed marked, which proves I improved the agent with evidence on both axes and can explain the trade-off.",
+      "maxWords": 150
+    },
+    {
+      "id": "b1-q6",
+      "type": "free",
+      "prompt": "Mock interview. Answer in about 250 words: \"You have two weeks before a customer-support agent launches. How would you evaluate it, and how would you know it is ready?\"",
+      "rubric": [
+        "Follows the Analyze, Measure, Improve structure or an equivalent explicit loop",
+        "Starts by reading real or synthetic traces and open-coding failures into binary failure modes",
+        "Uses code checks for objective failures and validated judges (TPR / TNR on a labeled split) for interpretive ones",
+        "Defines readiness with measured numbers: prevalence with confidence intervals per failure mode, pass^k on a regression suite, and a gate",
+        "Mentions adversarial testing, human approval for irreversible actions, or cost, and uses at least one concrete number"
+      ],
+      "modelAnswer": "Week one is Analyze. I would generate a few hundred synthetic scenarios from a small deterministic world and run the agent with full tracing on. Then I would read traces myself, sixty to start, noting the first failure in each in plain language, and group the notes into five to eight binary failure modes with definitions and boundaries. That gives a prioritized list, usually with one or two modes that matter most, like promising a refund outside policy.\n\nThe start of week two is Measure. Each mode gets one evaluator: code where the verdict is mechanical (refund amount over the order total), an LLM judge where it needs interpretation (tone, unsupported claims). Every judge is validated on labeled traces split train / dev / test; I would want TPR and TNR above 0.8 on the frozen test split before trusting it. Then I run the evaluators over all traces and report prevalence per mode with a bootstrap confidence interval, corrected for judge error.\n\nReadiness is a number, not a feeling. I would convert the failures into a regression suite with initial state, input, and expected result, run each case three times, and require pass^3 at 1.0 for anything involving money and a per-mode failure rate below an agreed threshold elsewhere. The suite gates merges in CI. A short red-team with promptfoo turns any successful injection into a failing test, and irreversible actions go through a human-approval queue that denies on timeout.\n\nIf the top modes are above threshold, I would fix them at the cheapest layer, prompt first, then tool design, measuring on dev and confirming once on test. Ready means the gate is green, the prevalence intervals are below the thresholds we set with the owner, and the cost per conversation is one we can afford."
+    }
+  ]
+}

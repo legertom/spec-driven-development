@@ -1,0 +1,232 @@
+{
+  "lessonSlug": "l9-improving-cost",
+  "questions": [
+    {
+      "id": "l9-q1",
+      "type": "mc",
+      "prompt": "10,000 conversations, each 53,500 input tokens at $5 per million and 1,300 output tokens at $25 per million. Where does most of the bill come from?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Output tokens, because they cost five times more each"
+        },
+        {
+          "id": "b",
+          "text": "Input tokens, about 89% of the bill, because the whole conversation is resent on every call"
+        },
+        {
+          "id": "c",
+          "text": "They are about equal"
+        },
+        {
+          "id": "d",
+          "text": "Tool calls, which are billed separately"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Per token, yes. But there are forty times more input tokens than output tokens.",
+        "b": "Correct. Input is $2,675 and output is $325 of a $3,000 bill. Shrinking input matters most.",
+        "c": "Run the multiplication: 535 million input tokens against 13 million output tokens.",
+        "d": "Tool calls are not a separate line. Their schemas and results are input tokens."
+      }
+    },
+    {
+      "id": "l9-q2",
+      "type": "mc",
+      "prompt": "Why does the cost of one conversation grow roughly with the square of its length rather than in a straight line?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Longer replies are priced higher per token"
+        },
+        {
+          "id": "b",
+          "text": "Every call resends the entire history, so turn n pays for turns 1 to n again"
+        },
+        {
+          "id": "c",
+          "text": "The model thinks longer as the conversation grows"
+        },
+        {
+          "id": "d",
+          "text": "Retrieval returns more documents later in a conversation"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Price per token is flat. Count is the issue.",
+        "b": "Correct. Six turns pay for the first turn six times, the second five times, and so on. That is why history trimming and caching matter.",
+        "c": "Thinking depth can vary, but the square comes from resent history.",
+        "d": "Retrieval depth is a separate suspect, and it is usually constant per call."
+      }
+    },
+    {
+      "id": "l9-q3",
+      "type": "mc",
+      "prompt": "What must be true for prompt caching to save money?",
+      "options": [
+        {
+          "id": "a",
+          "text": "The temperature is set to 0"
+        },
+        {
+          "id": "b",
+          "text": "A stable, byte-identical prefix (system prompt, tool schemas) comes first, and the changing content comes after it"
+        },
+        {
+          "id": "c",
+          "text": "The conversation is shorter than 1,000 tokens"
+        },
+        {
+          "id": "d",
+          "text": "The same customer asks the same question"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Sampling settings have nothing to do with caching.",
+        "b": "Correct. Caching is a prefix match. A timestamp or a reordered tool list at the top invalidates everything after it.",
+        "c": "Short prompts may be below the minimum cacheable size; long stable prefixes are where the savings are.",
+        "d": "The cache is about the prefix you send, not about who is asking."
+      }
+    },
+    {
+      "id": "l9-q4",
+      "type": "mc",
+      "prompt": "You build a cascade: a cheap model answers first and a frontier model takes over when the cheap one is unsure. How do you pick the routing threshold?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Set it so that exactly half of requests go to each model"
+        },
+        {
+          "id": "b",
+          "text": "Calibrate it on labeled data: find the score below which the cheap model's answers stop being correct, then measure the whole cascade with the suite"
+        },
+        {
+          "id": "c",
+          "text": "Ask the cheap model whether it is confident"
+        },
+        {
+          "id": "d",
+          "text": "Use the threshold from a blog post"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A 50/50 split is a guess about traffic, not about correctness.",
+        "b": "Correct. Labeled cases tell you where the cheap model is actually right. Without them a cascade saves money by silently getting worse.",
+        "c": "Self-reported confidence is one input to the router, but it must be checked against labels.",
+        "d": "Someone else's workload is not yours. Calibrate on your labeled data."
+      }
+    },
+    {
+      "id": "l9-q5",
+      "type": "mc",
+      "prompt": "When is the weights track (distillation, SFT, RL) justified?",
+      "options": [
+        {
+          "id": "a",
+          "text": "As soon as the bill is above budget"
+        },
+        {
+          "id": "b",
+          "text": "When prompt search is flat, the remaining failures are true capability limits, and the savings pay for owning a model"
+        },
+        {
+          "id": "c",
+          "text": "Whenever a smaller model is available"
+        },
+        {
+          "id": "d",
+          "text": "Never; prompts can always be improved"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Caching, trimming, and routing usually cut the bill first at a fraction of the effort.",
+        "b": "Correct. Training weights adds a whole new system to maintain, so all three conditions should hold.",
+        "c": "Availability is not a reason. Measured need is.",
+        "d": "Sometimes a failure really is a capability limit. Then weights are the right rung, after everything cheaper."
+      }
+    },
+    {
+      "id": "l9-q6",
+      "type": "mc",
+      "prompt": "A new frontier model ships. What does the upgrade drill say to do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Switch production to it immediately, because newer is better"
+        },
+        {
+          "id": "b",
+          "text": "Re-run the full suite on every stored frontier config including the new model, redraw the frontier, and decide what to deploy, keep, or retire"
+        },
+        {
+          "id": "c",
+          "text": "Wait a year for it to stabilize"
+        },
+        {
+          "id": "d",
+          "text": "Only re-run the cost profile"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Newer is not measured. Some upgrades cost more for the same accuracy on your suite.",
+        "b": "Correct. Configs are files, so the drill is a re-run, a chart, and a written decision.",
+        "c": "Waiting has a cost too. The drill is cheap once the suite exists.",
+        "d": "Cost without the accuracy readout is half an experiment."
+      }
+    },
+    {
+      "id": "l9-q7",
+      "type": "short",
+      "prompt": "Why must a cascade be calibrated on labeled data before it goes live?",
+      "rubric": [
+        "Explains that a cascade routes to a cheap model first and escalates to an expensive one",
+        "States that the threshold has to come from measured correctness of the cheap model on labeled cases",
+        "Says that without calibration the cascade can cut cost while silently lowering accuracy",
+        "Mentions measuring the whole cascade on the suite with both readouts (dollars and accuracy)"
+      ],
+      "modelAnswer": "A cascade sends every request to a cheap model first and escalates to the frontier model only when the router says the cheap answer is not trustworthy. The router's threshold is a claim about where the cheap model stops being right, and the only way to know that is to run the cheap model on labeled cases and see where its correct answers end. If you guess the threshold, the cascade will cut the bill and quietly hand wrong answers to customers, and nobody will notice because cost went down. So calibrate on labels, then run the whole cascade on the suite and read both numbers, dollars and accuracy, before deploying.",
+      "maxWords": 150
+    },
+    {
+      "id": "l9-q8",
+      "type": "free",
+      "prompt": "Dev profiles one average Sprout conversation: 6 model calls; per call the system prompt is 2,000 tokens, the tool schemas 3,000 tokens, the resent history averages 4,000 tokens, and retrieval adds 2,500 tokens (k = 10 care-guide chunks); output totals 1,300 tokens. Propose three fixes, estimate the savings of each with arithmetic, and say what you would measure to make sure accuracy did not drop.",
+      "rubric": [
+        "Identifies at least three distinct levers from the lesson (prompt caching of the stable prefix, tool-schema dedupe or trimming, history trimming, lower retrieval depth, shorter outputs)",
+        "Estimates savings with arithmetic that follows from the numbers given (for example the 5,000-token prefix times 6 calls as the caching target)",
+        "Orders the fixes by expected savings or ease and explains the order",
+        "States that each fix is re-measured with the suite (accuracy per failure mode) as well as cost, and reverted if accuracy drops",
+        "Keeps the changes one at a time so each saving can be attributed"
+      ],
+      "modelAnswer": "Baseline per conversation: 6 x (2,000 + 3,000 + 4,000 + 2,500) = 69,000 input tokens plus 1,300 output. At $5 and $25 per million that is about $0.345 + $0.033 = $0.38.\n\nFix 1, prompt caching of the stable prefix. The system prompt and tool schemas are 5,000 identical tokens at the front of every call: 30,000 of the 69,000 tokens. If cached reads cost about a tenth of the full price, those 30,000 tokens drop from $0.15 to about $0.015, saving roughly $0.135 (35% of the bill) with zero behavior change. Do this first.\n\nFix 2, retrieval depth. k = 10 chunks is 2,500 tokens per call, 15,000 per conversation. If k = 3 keeps recall@3 high on the labeled retrieval set, that is 750 per call, saving 10,500 tokens, about $0.05 (14%).\n\nFix 3, history trimming. Keeping only the last two turns plus a running summary might cut the resent history from 4,000 to 1,500 tokens per call: 15,000 tokens saved, about $0.075 (20%). This one can hurt, because the model may lose a fact from turn one, so it is last.\n\nAlso trim tool descriptions (3,000 tokens is large for six tools; 1,200 is plenty) and cap replies.\n\nMeasurement: change one thing at a time, re-run the full suite, and log two numbers for each change: cost per 1k conversations and accuracy per failure mode. Keep a change only if no failure mode gets worse; revert and log the revert otherwise. Then confirm the winning config once on the test slice."
+    }
+  ],
+  "homework": {
+    "id": "l9-hw2",
+    "title": "Homework 2 - Fix a failure mode, then cut the cost",
+    "prompt": "This homework has two parts. Do both.\n\n**Part A: accuracy.** Take your top failure mode from Homework 1. Apply one change from the fix-routing ladder (prompt, tool design, or harness) at a time, measure on your dev slice after each, keep or revert, and log every iteration. Then run the winning configuration **once** on your frozen test slice and write down the decision.\n\n**Part B: cost.** Profile the cost of an average conversation from your traces (tokens per call, split by system prompt, tool schemas, history, retrieval, output). Measure one prompt-caching change before and after. Calibrate a two-model cascade on labeled data and report its accuracy and cost against the single-model baseline. Finally run the **upgrade drill** across at least two committed frontier configs: re-run the full suite, redraw the frontier, and decide what to deploy, keep, or retire.\n\nPaste your write-up below. Tables are welcome; include your config files or their key fields.",
+    "deliverables": [
+      "Part A: a fix log with at least two iterations (hypothesis, change, dev-slice result, keep or revert)",
+      "Part A: the winning config and its single test-slice result, with the decision written down",
+      "Part B: a cost profile table for one average conversation",
+      "Part B: a before-and-after measurement of one caching change (cost and accuracy)",
+      "Part B: a cascade calibrated on labeled data, with the threshold, accuracy, and cost versus the baseline",
+      "Part B: an upgrade-drill log across at least two frontier configs with a deploy / keep / retire decision"
+    ],
+    "rubric": [
+      "Part A changes one axis at a time on the dev slice and logs each iteration with the failure-mode rate, accuracy, and cost",
+      "Part A reads the test slice once for the winner and states the decision",
+      "Part B includes a cost profile broken down by component with token counts and dollars",
+      "Part B measures a caching change with both cost and accuracy reported",
+      "Part B calibrates the cascade threshold on labeled data and compares the cascade to the baseline on the suite",
+      "Part B runs the upgrade drill on at least two committed configs and states a deploy, keep, or retire decision with reasons"
+    ]
+  }
+}

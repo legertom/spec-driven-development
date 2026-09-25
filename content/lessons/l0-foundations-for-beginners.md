@@ -19,7 +19,7 @@ keyTerms: ["llm", "token", "prompt", "system-prompt", "context", "context-window
 
 ## Why this matters
 
-Dev builds a chatbot for Pip's Plant Shop and ships it on Friday. The first chats look great. On Monday, Pip writes: "It told a customer their monstera would arrive on Tuesday. Where did it get that?" Dev opens the code. There is no record of the conversation, of what the model saw, or of which order it was about. Dev types the same question into the bot and gets a different answer. Then a third one. Nothing was recorded, and the model does not repeat itself, so the mistake cannot be found or reproduced. This lesson gives you the vocabulary that keeps this from happening to you.
+Dev builds a chatbot for Pip's Plant Shop and ships it on Friday. The first chats look great. On Monday, Pip writes: "It told a customer their monstera would arrive on Tuesday. Where did it get that?" There is no record of the conversation, of what the model saw, or of which order it was about. Dev types the same question into the bot and gets a different answer. Nothing was recorded, and the model does not repeat itself, so the mistake cannot be found or reproduced. This lesson gives you the vocabulary that keeps this from happening to you.
 
 ## 1. What a language model actually does
 
@@ -27,7 +27,7 @@ A large language model (LLM) is a program that reads text and predicts what shou
 
 The model does not look up an answer. For every possible next token it computes a likelihood, picks one, and repeats until it decides to stop.
 
-Here is the surprising part. It does not always pick the most likely token. It samples, like rolling weighted dice. Likely tokens win often, unlikely ones win rarely, but the roll is random. This is nondeterminism: the same input can produce different output.
+Surprisingly, it does not always pick the most likely token. It samples, like rolling weighted dice. Likely tokens win often, unlikely ones win rarely, but the roll is random. This is nondeterminism: the same input can produce different output.
 
 :::example Name a fern, twice
 Dev types "Suggest a name for a fern" and presses enter.
@@ -39,20 +39,12 @@ Same words in, different words out. Nothing broke. The dice landed differently.
 :::
 
 :::beginner What temperature means
-Temperature is a dial on the dice. Low temperature: the model nearly always picks the most likely token, so answers repeat more. High temperature: it takes more chances. Temperature 0 makes output much more stable, but not guaranteed identical, because of how the arithmetic runs on real hardware.
-:::
-
-:::key
-A language model predicts the next token and samples it, so the same input can produce different output. Plan for variety from day one.
+Temperature is a dial on the dice. Low: the model nearly always picks the most likely token, so answers repeat more. High: it takes more chances. Temperature 0 is much more stable, but not guaranteed identical, because of how the arithmetic runs on real hardware.
 :::
 
 ## 2. A prompt is instructions plus context
 
-A prompt is everything you send to the model in one request. It has two parts.
-
-The instructions say what to do and how to behave. When they come from you, the builder, and stay the same for every conversation, they are called the system prompt.
-
-The context is the material the model needs right now: the customer's message, the order record you pasted in, the earlier turns of this conversation.
+A prompt is everything you send to the model in one request. It has two parts. The instructions say what to do and how to behave; when they come from you, the builder, and stay the same for every conversation, they are the system prompt. The context is what the model needs right now: the customer's message, the order record you pasted in, the earlier turns of this conversation.
 
 :::example Sprout's system prompt
 Five lines are enough to start.
@@ -66,7 +58,7 @@ Be warm and brief.
 ```
 :::
 
-The same instructions give different answers when the context changes. Paste in order #1042 (`shipped`, Bloom Post) and "Where is my order?" gets "Order #1042 is on its way with Bloom Post." Paste in order #1077 (`processing`) and the same question gets "Order #1077 has not shipped yet." The context did the work.
+The same instructions give different answers when the context changes. Paste in order #1042 (`shipped`) and "Where is my order?" gets "It is on its way with Bloom Post." Paste in order #1077 (`processing`) and the same question gets "It has not shipped yet."
 
 :::beginner The context window
 The context window is the maximum amount of text, measured in tokens, that the model can read in one request. Instructions and context share it. If they do not fit, something gets cut.
@@ -93,17 +85,13 @@ loop:
         done: show the reply to the customer
 ```
 
-Each pass through the loop is one step. A step either asks for a tool or gives the final answer.
-
 :::example Where is order #1042?
 Alex writes: "Where is order #1042?"
 
 1. The model replies with a tool call: `lookup_order` with `order_id = "1042"`.
 2. Your code runs it. The result is `{ "status": "shipped", "shipped_at": "2026-09-21" }`.
-3. Your code appends the call and the result to the messages and calls the model again.
+3. Your code appends both to the messages and calls the model again.
 4. The model replies in words: "Order #1042 shipped on September 21."
-
-Two model calls, one tool call, one answer.
 :::
 
 A tool call is the model's request: run this tool with these arguments. A tool result is what your code sends back. The model writes the request. Your code decides whether to run it.
@@ -118,7 +106,7 @@ Highlight the pseudo-code above and ask Eve: "Walk me through this loop for the 
 
 ## 4. Tools are functions with a contract
 
-To the model, a tool is a description. To your code, it is a function. The description that connects the two is the tool schema: the name, what the tool does, and the shape of the input it accepts, written in JSON.
+To the model, a tool is a description. To your code, it is a function. The tool schema connects the two: the name, what the tool does, and the shape of the input it accepts, written in JSON.
 
 :::example The schema for lookup_order
 ```json
@@ -135,10 +123,10 @@ To the model, a tool is a description. To your code, it is a function. The descr
 }
 ```
 
-From this the model learns three things: the tool exists, when to use it, and that it must supply an `order_id` string.
+The model learns that the tool exists, when to use it, and that it must supply an `order_id` string.
 :::
 
-A schema says how to call the tool. It does not say what comes back or what can go wrong. For that we write a tool contract in plain words:
+A schema says how to call the tool, not what comes back or what can go wrong. For that we write a tool contract in plain words:
 
 | Part | `lookup_order` |
 |---|---|
@@ -146,35 +134,35 @@ A schema says how to call the tool. It does not say what comes back or what can 
 | Output | `status`, `items`, `ordered_at`, `shipped_at` |
 | Errors | `not_found` when no order has that id |
 
-The error row matters most. When Jordan mistypes #1077 as #1707, the tool returns `{ "error": "not_found" }`. A good agent asks Jordan to check the number. A bad agent invents a shipping date. Later lessons show how to catch the bad case.
+The error row matters most. When Jordan mistypes #1077 as #1707, the tool returns `{ "error": "not_found" }`. A good agent asks Jordan to check the number. A bad agent invents a shipping date.
 
 :::warning Your code runs the tool, not the model
-The model never touches your database. It writes a small JSON request naming a tool and its arguments. Your code reads the request, decides whether to allow it, runs the real function, and sends the result back. If the model asks for a refund, no money moves unless your code moves it.
+The model never touches your database. It writes a small JSON request naming a tool and its arguments. Your code decides whether to allow it, runs the real function, and sends the result back. If the model asks for a refund, no money moves unless your code moves it.
 :::
 
 ## 5. Traces: the flight recorder
 
-A trace is the complete record of one conversation: every message, model call, tool call, and result, in order, with timestamps. It is the flight recorder for your agent. When something goes wrong, you open the trace instead of guessing.
+A trace is the complete record of one conversation: every message, model call, tool call, and result, in order, with timestamps. It is your agent's flight recorder. When something goes wrong, you open the trace instead of guessing.
 
-Each step inside a trace is a span. A span has a name, a start time, an end time, an input, and an output. Spans nest: a turn contains model calls, and a model call can contain the tool calls it asked for. Lesson 2 covers the full data model. For now, learn to read one.
+Each step inside a trace is a span, with a name, start and end times, an input, and an output. Spans nest: a turn contains model calls, and a model call can contain the tool calls it asked for. L2 covers the full data model.
 
 :::example A four-step trace
 Alex asks where order #1042 is.
 
 | # | Span | Input | Output | In plain English |
 |---|---|---|---|---|
-| 1 | `turn` | "Where is order #1042?" | the final reply | One message and everything it caused |
-| 2 | `model_call` | system prompt + message | tool call `lookup_order("1042")` | The model decided it needs data |
-| 3 | `tool_call: lookup_order` | `{ "order_id": "1042" }` | `{ "status": "shipped", "shipped_at": "2026-09-21" }` | Your code fetched the order |
-| 4 | `model_call` | everything above | "Order #1042 shipped on September 21." | The model wrote the answer |
+| 1 | `turn` | "Where is order #1042?" | the final reply | The whole turn |
+| 2 | `model_call` | system prompt + message | tool call `lookup_order("1042")` | The model asks for data |
+| 3 | `tool_call: lookup_order` | `{ "order_id": "1042" }` | `{ "status": "shipped", "shipped_at": "2026-09-21" }` | Your code ran the tool |
+| 4 | `model_call` | everything above | "Order #1042 shipped on September 21." | The model answers |
 
-Read it top to bottom and you can say exactly what happened, in what order, and from which data.
+Read top to bottom and you know exactly what happened and from which data.
 :::
 
-Replay the story from the top of this lesson. With a trace, Dev opens the conversation, finds the tool call, and sees whether "Tuesday" came from a tool result or from nowhere. Without a trace, Dev is guessing.
+Now replay Pip's Monday question. With a trace, Dev finds the tool call and sees whether "Tuesday" came from a tool result or from nowhere. Without one, Dev is guessing.
 
 :::tip
-Before you write any evaluation code, make sure you can open one trace and read it top to bottom. Every later lesson starts from a trace.
+Before writing any evaluation code, make sure you can open one trace and read it top to bottom. Every later lesson starts from one.
 :::
 
 ## 6. Why normal testing is not enough
@@ -198,15 +186,15 @@ Sprout is asked, "When does order #1042 ship?" Three runs, three replies:
 All three are correct. Only the first passes. Your test is red and nothing is wrong.
 :::
 
-Two problems are visible here. Variety: correct answers come in many wordings, so exact matching fails. Open-ended inputs: customers ask about orders, refunds, repotting, spider mites, and things you never imagined, so you cannot write one assertion per question.
+Two problems show here. Variety: correct answers come in many wordings. Open-ended inputs: customers ask about orders, refunds, repotting, spider mites, and things you never imagined, so you cannot write one assertion per question.
 
-A third problem hides underneath. An answer can look right and be wrong. "Order #1707 ships Tuesday with Bloom Post" is fluent and confident. If the tool returned `not_found`, it is also invented. A made-up fact that reads well is called a hallucination. The reply alone cannot tell you which replies are true. The trace can.
+A third problem hides underneath. An answer can look right and be wrong. "Order #1707 ships Tuesday with Bloom Post" is fluent and confident. If the tool returned `not_found`, it is also invented: a hallucination, a made-up fact that reads well. The reply alone cannot tell you which replies are true. The trace can.
 
-So you define what correct means in terms you can check: did it call the right tool, did every fact come from a tool result, did it avoid promising a refund. Then you check those properties across many varied inputs and count how often each fails. That is the rest of this course.
+So you define what correct means in checkable terms: did it call the right tool, did every fact come from a tool result, did it avoid promising a refund. Then you check those across many varied inputs and count how often each fails. That is the rest of this course.
 
 ## 7. The spec-driven mindset
 
-Spec-driven development means you write down what correct means before you build, and everything else is derived from that document. The document is a spec. It says what the agent is for, what it may do, what it must never do, and what a good answer looks like.
+Spec-driven development means you write down what correct means before you build, and everything else is derived from that document, the spec. It says what the agent is for, what it may do, what it must never do, and what a good answer looks like.
 
 The loop has four moves: write down what correct means; build the agent so its behavior is recorded; measure how often it is correct, using real traces; improve whatever fails most, then measure again.
 
@@ -220,15 +208,15 @@ Before writing code, Dev adds three lines to the spec:
 Now the "Tuesday" bug is not a mystery. It breaks rule two, and rule two can be checked by a program.
 :::
 
-The course is organized around three verbs.
+The course has three verbs.
 
 | Verb | Question it answers | Lessons |
 |---|---|---|
 | Analyze | What is the agent doing? Where does it fail? | L0 to L4 |
 | Measure | How often does each failure happen? Can we detect it automatically? | L5 to L7 |
-| Improve | Which change fixes it at the lowest cost, and did it really help? | L8 and L9 |
+| Improve | Which change fixes it cheapest, and did it really help? | L8 and L9 |
 
-You are in Analyze now. Each lesson tells you which verb you are doing.
+You are in Analyze now.
 
 :::key
 Decide what correct means before you build. Then build so you can see, measure so you can count, and improve so you can prove it.
@@ -236,26 +224,24 @@ Decide what correct means before you build. Then build so you can see, measure s
 
 ## 8. Meet Pip's Plant Shop and Sprout
 
-Every lesson uses the same small world, so you never have to relearn the setting.
-
 Pip's Plant Shop is a small online store that sells houseplants and pots. It ships to three zones: Local, Domestic, and International. Returns are accepted within 30 days for plants that arrived damaged. Refunds go to the original payment method.
 
-Sprout is the customer-support agent you will build, evaluate, and improve. Customers chat with Sprout about orders, shipping, refunds, and plant care.
+Sprout is the support agent you will build, evaluate, and improve. Customers chat with Sprout about orders, shipping, refunds, and plant care.
 
 ### The cast
 
 | Name | Who they are |
 |---|---|
-| Pip | The owner. Asks the hard questions on Monday mornings. |
-| Maya | A support agent. Approves refunds and takes over when Sprout escalates. |
+| Pip | The owner. Asks the hard questions. |
+| Maya | Support agent. Approves refunds and takes over when Sprout escalates. |
 | Dev | The engineer building Sprout. That is you. |
 | Alex | Customer, order #1042. A monstera that arrived with a broken pot. |
 | Jordan | Customer, order #1077. Asks about repotting. |
-| Sam | Customer, order #2001. Tries a prompt injection, an attack you meet in L7. |
+| Sam | Customer, order #2001. Tries a prompt injection (L7). |
 
 ### Sprout's tools and their risk tiers
 
-A risk tier says how much damage a tool can do if it is called wrongly. T0 is read-only. T1 is a reversible write: a mistaken `cancel_order` can be undone by reordering. T2 is irreversible or involves money: a mistaken `issue_refund` cannot be taken back, so it always requires human approval.
+A risk tier says how much damage a wrong call can do. T0 is read-only. T1 is a reversible write: a mistaken `cancel_order` can be undone by reordering. T2 is irreversible or involves money: a mistaken `issue_refund` cannot be taken back, so it always requires human approval.
 
 | Tool | What it does | Risk tier |
 |---|---|---|
@@ -266,14 +252,8 @@ A risk tier says how much damage a tool can do if it is called wrongly. T0 is re
 | `issue_refund(order_id, amount, reason)` | Sends money back | T2 irreversible, needs human approval |
 | `escalate_to_human(summary)` | Hands the conversation to Maya | T0, always allowed |
 
-:::example Alex's broken pot, tool by tool
-Alex writes: "My monstera arrived with a broken pot. Can I get a refund?"
-
-1. Sprout calls `lookup_order("1042")` (T0): delivered four days ago.
-2. Sprout asks for `issue_refund("1042", 45.00, "arrived damaged")` (T2). Your code refuses: a human must approve.
-3. Sprout calls `escalate_to_human("Alex, order #1042, pot broken on arrival, refund requested")` (T0).
-
-Alex hears that a human will confirm shortly. No money moved without Maya.
+:::example Three tiers in one conversation
+Alex asks for a refund for a broken pot. Sprout calls `lookup_order("1042")` (T0), then asks for `issue_refund("1042", 45.00, "arrived damaged")` (T2). Your code refuses, so Sprout calls `escalate_to_human("Alex, order #1042, pot broken, refund requested")` (T0). Maya approves. No money moved without a human.
 :::
 
 :::try Ask Eve

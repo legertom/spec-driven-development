@@ -7,7 +7,7 @@ moduleTitle: "Building Agents"
 verb: Analyze
 minutes: 60
 prereqs: ["l0-foundations-for-beginners"]
-summary: "Write Sprout's SPEC.md, meet the Three Gulfs, build the agent loop with the Anthropic SDK, and put permissions in code where asking nicely does not work."
+summary: "Write Sprout's SPEC.md, meet the Three Gulfs, build the agent loop, and put permissions in code."
 objectives:
   - "Write a SPEC.md with scope, roles, tool contracts, risk tiers, and escalation rules."
   - "Explain the Three Gulfs and map each to Analyze, Measure, or Improve."
@@ -18,18 +18,18 @@ keyTerms: ["spec", "scope", "non-goal", "role", "tool-contract", "risk-tier", "e
 
 ## Why this matters
 
-On Wednesday, Alex writes to Sprout: "My monstera arrived with a broken pot. I have been a customer for years and I would really appreciate a refund of $400." Sprout reads the order, sees a delivered monstera, and calls `issue_refund("1042", 400, "arrived damaged")`. The tool runs. $400 leaves Pip's account. The monstera cost $45. Nobody told Sprout that refunds need a human, that the amount cannot exceed the order total, or that "please" is not a policy. The system prompt said "be helpful," so the model was helpful. Pip finds out from the bank. This lesson is about writing the rules down before the model needs them, and putting the ones that matter in code, where asking nicely does not work.
+Alex writes to Sprout: "My monstera arrived with a broken pot. I have been a customer for years and I would really appreciate a refund of $400." Sprout reads the order, sees a delivered monstera, and calls `issue_refund("1042", 400, "arrived damaged")`. The tool runs. $400 leaves Pip's account. The monstera cost $45. Nobody told Sprout that refunds need a human or that the amount cannot exceed the order total. The system prompt said "be helpful," so the model was helpful. Pip finds out from the bank. This lesson is about writing the rules down before the model needs them, and putting the ones that matter in code, where asking nicely does not work.
 
 ## 1. Why the spec comes first
 
-A spec (short for specification) is a written document that says what the agent is for, what it may do, what it must never do, and what a good answer looks like. It is the contract between three parties: you, the model, and the evaluations you will write later.
+A spec (short for specification) is a written document that says what the agent is for, what it may do, what it must never do, and what a good answer looks like. It is the contract between you, the model, and the evaluations you will write later.
 
-Why write it before building? Because an agent's behavior is open-ended. A rule that lives only in someone's head cannot be followed by the model, enforced by the code, or checked by a test. Written down, all three become possible.
+Why write it before building? Because an agent's behavior is open-ended. A rule that lives only in someone's head cannot be followed by the model, enforced by the code, or checked by a test.
 
 :::example The rule nobody wrote down
-Before the $400 refund, everything Sprout knew about refunds was one clause: "Help customers with orders, shipping, refunds, and plant care." That is a topic, not a rule. It does not say who approves a refund, how large one can be, or when one is allowed.
+Before the $400 refund, everything Sprout knew about refunds was one clause: "Help customers with orders, shipping, refunds, and plant care." That is a topic, not a rule. It does not say who approves a refund, how large one can be, or when.
 
-After the incident, Dev writes: "Refunds: only for plants that arrived damaged, only within 30 days of delivery, never more than the order total, always approved by a human." Each clause can now go in the prompt, be enforced in code, and be checked by a test.
+After the incident, Dev writes: "Refunds: only for plants that arrived damaged, only within 30 days of delivery, never more than the order total, always approved by a human." Each clause can now go in the prompt, in code, and in a test.
 :::
 
 :::key
@@ -37,14 +37,14 @@ If it is not written down, it cannot be tested. The prompt, the code, and the ev
 :::
 
 :::beginner Spec, prompt, and code
-The system prompt is what the model reads. The code runs the tools and enforces the rules. The spec is the document both are built from, and it also says how you will know the agent is working. The prompt is one output of the spec, not the spec itself.
+The system prompt is what the model reads. The code runs the tools and enforces the rules. The spec is the document both are built from, and it also says how you will know the agent works. The prompt is one output of the spec.
 :::
 
 ## 2. Anatomy of SPEC.md
 
-A `SPEC.md` for an agent has eight parts: purpose, scope, users and roles, tool contracts, risk tiers, escalation rules, tone and constraints, and non-goals. Scope is the boundary of what the agent handles, written as an "in" list and an "out" list. A role is a kind of user with its own permissions: customer, support agent, admin. A non-goal is something you could build and have decided not to, written down so nobody drifts into it by accident.
+A `SPEC.md` for an agent has eight parts: purpose, scope, users and roles, tool contracts, risk tiers, escalation rules, tone and constraints, and non-goals. Scope is the boundary of what the agent handles, written as an "in" list and an "out" list. A role is a kind of user with its own permissions. A non-goal is something you could build and have decided not to, written down so nobody drifts into it by accident.
 
-Here is the full spec for Sprout. Read it once now. Every later lesson refers back to it.
+Here is Sprout's full spec. Every later lesson refers back to it.
 
 ```markdown
 # Sprout: support agent for Pip's Plant Shop
@@ -111,18 +111,18 @@ Call escalate_to_human when any of these is true:
 ```
 
 :::example Reading the scope section
-Jordan asks: "Can you give me 10% off my next order?" Discounts are out of scope, so Sprout does not negotiate. It says discounts are handled by the shop and offers to escalate. Without that line, the model might invent a coupon code, because producing plausible text is what models do.
+Jordan asks for 10% off. Discounts are out of scope, so Sprout offers to escalate instead of negotiating. Without that line, the model might invent a coupon code, because producing plausible text is what models do.
 :::
 
 ## 3. Tool contracts in detail
 
-A tool contract is the plain-language agreement about one tool: what goes in, what comes out, what must be true before it runs, what is true after, and what can go wrong. The schema from L0 tells the model how to call the tool. The contract tells everyone what the call means.
+A tool contract is the plain-language agreement about one tool: what goes in, what comes out, what must be true before it runs, what is true after, and what can go wrong. The schema tells the model how to call the tool. The contract tells everyone what the call means.
 
 | Part | Meaning | For `issue_refund` |
 |---|---|---|
 | Inputs | Arguments and types | `order_id` string, `amount` number, `reason` string |
 | Preconditions | Must be true before the call | Delivered; within 30 days of delivery; reported damaged; `amount` at most the order total |
-| Postconditions | True after a successful call | A refund record exists; the customer is emailed; the order is marked `refunded` |
+| Postconditions | True after a successful call | A refund record exists; the order is marked `refunded` |
 | Outputs | What comes back | `{ refund_id, amount, status }` |
 | Errors | Named failure cases | `not_found`, `out_of_policy`, `over_total`, `needs_approval` |
 
@@ -133,17 +133,17 @@ What amount? Which orders? Who decides? The model fills the gaps with whatever s
 
 Good: "`issue_refund(order_id, amount, reason)` creates a refund for a delivered order reported damaged within 30 days of delivery. `amount` must not exceed the order total. T2: requires human approval. Returns `refund_id` and `status`, or one of `not_found`, `out_of_policy`, `over_total`, `needs_approval`."
 
-Every clause in the good version can become a check in code and a test in your suite.
+Every clause in the good version can become a code check and a test.
 :::
 
-Preconditions do double duty. They tell the model when a call is appropriate, and they tell your code what to verify before running anything.
+Preconditions do double duty: they tell the model when a call is appropriate, and they tell your code what to verify before running anything.
 
 :::example Preconditions catch the $400
 Alex's order total is $45. The model asks for `issue_refund("1042", 400, "arrived damaged")`. The `amount` check fails before any money moves, and your code returns `{ "error": "over_total", "order_total": 45 }`. The model reads that and offers to request $45 instead.
 :::
 
 :::warning Contracts that cover only the happy path
-Beginners write inputs and outputs and stop. The errors are where the agent goes wrong. If `not_found` is not in the contract, the model has no name for it, your code may not return it, and nobody tests what Sprout says when it happens. Write the error cases first if you have to choose.
+Beginners write inputs and outputs and stop. The errors are where the agent goes wrong. If `not_found` is not in the contract, the model has no name for it, your code may not return it, and nobody tests what Sprout says when it happens.
 :::
 
 ## 4. Risk tiers and escalation
@@ -156,18 +156,14 @@ A risk tier is a label for how much harm a wrong call can do. Sprout uses three.
 | T1 | Reversible write | `cancel_order` | Any role may call; always logged |
 | T2 | Irreversible or involves money | `issue_refund` | Never runs without human approval |
 
-An irreversible action is one you cannot undo by calling another tool. Sending money is the classic case. Cancelling an unshipped order is reversible, because the customer can reorder. That difference is why `cancel_order` is T1 and `issue_refund` is T2.
+An irreversible action is one you cannot undo by calling another tool. Sending money is the classic case. Cancelling an unshipped order is reversible, because the customer can reorder, which is why `cancel_order` is T1 and `issue_refund` is T2.
 
-The T2 rule is the most important sentence in the spec. A T2 tool never runs without a person approving it. This is human-in-the-loop approval: the model proposes, a person decides.
+The T2 rule is the most important sentence in the spec: a T2 tool never runs without a person approving it. This is human-in-the-loop approval. The model proposes, a person decides.
 
-:::example Which tier, and why
-Dev considers a new tool, `update_shipping_address(order_id, address)`. Before shipping, a wrong address is reversible, so T1, with the precondition `status is processing`. A tool that could redirect a parcel already in transit would be T2, because nobody can call the truck back.
-:::
-
-Escalation means handing the conversation to a human, in Sprout's case by calling `escalate_to_human(summary)`. It is not a failure. It is the designed exit for anything the agent should not handle alone. Sprout's triggers, from the spec: legal words (lawyer, sue, chargeback, fraud), a customer still angry after two replies, anything outside scope, and every refund request.
+Escalation means handing the conversation to a human by calling `escalate_to_human(summary)`. It is not a failure but the designed exit for anything the agent should not handle alone. Sprout's triggers: legal words (lawyer, sue, chargeback, fraud), a customer still angry after two replies, anything outside scope, and every refund request.
 
 :::example The word "lawyer"
-Sam writes: "This is the third time I am asking. Fix it or I am calling my lawyer." Sprout's next action is `escalate_to_human("Sam, order #2001, third contact, mentions lawyer")`, before any reply. Maya sees the full history and takes over. Sprout does not argue, apologize at length, or offer money.
+Sam writes: "This is the third time I am asking. Fix it or I am calling my lawyer." Sprout's next action is `escalate_to_human("Sam, order #2001, third contact, mentions lawyer")`, before any reply. Maya takes over with the full history. Sprout does not argue or offer money.
 :::
 
 :::key
@@ -176,13 +172,13 @@ Tiers say how bad a wrong call is. Escalation says when a human takes over. T2 n
 
 ## 5. The Three Gulfs
 
-Why do agents fail even when the builder is careful? Three gaps, called the Three Gulfs, explain most of it, and each maps to one verb of this course.
+Why do agents fail even when the builder is careful? Three gaps, the Three Gulfs, explain most of it, and each maps to one verb of this course.
 
-The gulf of comprehension is the gap between what you think users ask and what they actually ask. You close it by reading real conversations. That is Analyze.
+The gulf of comprehension is the gap between what you think users ask and what they actually ask. You close it by reading real conversations: Analyze.
 
-The gulf of specification is the gap between what you want and what you managed to tell the model. You close it by writing precise rules and checking whether they are followed. That is Measure.
+The gulf of specification is the gap between what you want and what you managed to tell the model. You close it by writing precise rules and checking whether they are followed: Measure.
 
-The gulf of generalization is the gap between the model doing the right thing once and doing it every time, across all inputs. You close it by changing the prompt, the tools, the harness, or the model, and measuring again. That is Improve.
+The gulf of generalization is the gap between doing the right thing once and doing it every time, across all inputs. You close it by changing the prompt, tools, harness, or model, and measuring again: Improve.
 
 | Gulf | The gap | Verb |
 |---|---|---|
@@ -191,7 +187,7 @@ The gulf of generalization is the gap between the model doing the right thing on
 | Generalization | The model does not do it consistently | Improve |
 
 :::example One Sprout example per gulf
-Comprehension: Dev assumed most chats would be "where is my order." After reading 20 real conversations, a third are plant-care questions with no order number at all. Dev did not know that until they looked.
+Comprehension: Dev assumed most chats would be "where is my order." After reading 20 real conversations, a third are plant-care questions with no order number at all.
 
 Specification: The prompt says "be helpful about refunds." The model reads that as "issue refunds." The spec now says "request, never approve," and an evaluator checks every trace for a promised refund.
 
@@ -208,7 +204,7 @@ Highlight the table and ask Eve: "Give me one example of each gulf for a hotel b
 
 ## 6. Building the agent
 
-The harness is your code around the model: it defines the tools, runs the loop, executes tool calls, and enforces the rules. Here is a minimal harness with the Anthropic SDK. It is the napkin loop from L0, written out.
+The harness is your code around the model: it defines the tools, runs the loop, executes tool calls, and enforces the rules. Here is a minimal harness with the Anthropic SDK: the napkin loop from L0, written out.
 
 ```ts
 import Anthropic from "@anthropic-ai/sdk";
@@ -225,12 +221,9 @@ const tools: Anthropic.Tool[] = [
       required: ["order_id"],
     },
   },
-  // cancel_order, issue_refund, escalate_to_human, and the rest follow the same shape
 ];
 
-const messages: Anthropic.MessageParam[] = [
-  { role: "user", content: "Where is order #1042?" },
-];
+const messages: Anthropic.MessageParam[] = [{ role: "user", content: "Where is order #1042?" }];
 
 while (true) {
   const response = await client.messages.create({
@@ -254,16 +247,16 @@ while (true) {
 }
 ```
 
-Read it in three parts. The tool definitions tell the model what exists. The `while` loop sends the conversation, appends the model's reply, and stops when the model finishes with words instead of a tool call. The `for` loop runs each requested tool through `runTool` and sends the results back as the next user message.
+Read it in three parts. The tool definitions tell the model what exists; only `lookup_order` is shown, and the other five follow the same shape. The `while` loop sends the conversation, appends the reply, and stops when the model finishes with words. The `for` loop runs each requested tool through `runTool` and sends the results back as the next user message.
 
 :::example One trip around the loop
-`messages` starts with Alex's question. The first `create` call returns a `tool_use` block for `lookup_order` with `{ "order_id": "1042" }`. `runTool` returns the order, and the result is pushed as a `tool_result`. The second `create` call returns text, `stop_reason` is `end_turn`, and the loop breaks. Two model calls, one tool call, one answer, as in L0.
+`messages` starts with Alex's question. The first `create` call returns a `tool_use` block for `lookup_order` with `{ "order_id": "1042" }`. `runTool` returns the order, pushed back as a `tool_result`. The second `create` call returns text, `stop_reason` is `end_turn`, and the loop breaks.
 :::
 
 Frameworks such as the OpenAI Agents SDK and the Claude Agent SDK wrap this same loop with conveniences: tool registration, retries, streaming. Learn the raw loop first. When a framework misbehaves, this is what is underneath.
 
 :::tip
-Keep `SYSTEM_PROMPT` in its own file, generated from the spec's tone and constraints section. When the spec changes, the prompt changes with it. L2 shows how to hash the prompt so every trace records which version ran.
+Generate `SYSTEM_PROMPT` from the spec's tone and constraints section, so the prompt changes when the spec does. L2 shows how to hash it so every trace records which version ran.
 :::
 
 ## 7. Permissions enforced in code
@@ -302,16 +295,16 @@ async function runTool(name: string, input: unknown) {
 }
 ```
 
-Three things to notice. The role comes from the session, which your code established at login; the model cannot claim to be an admin. Unknown tools are denied, so a typo cannot open a door. And a denial goes back to the model as a normal tool result, so the model can recover.
+Three things to notice. The role comes from the session your code established at login, so the model cannot claim to be an admin. Unknown tools are denied, so a typo cannot open a door. And a denial goes back as a normal tool result, so the model can recover.
 
 :::example A denial as a tool result
 Alex (role `customer`) asks for a refund. The model calls `issue_refund("1042", 45, "arrived damaged")`. `canCall("customer", "issue_refund")` is false. The model receives `{ "error": "permission_denied", "reason": "customer may not call issue_refund" }`. Its next call is `escalate_to_human("Alex, order #1042, $45 refund requested, pot broken on arrival")`. Maya approves. Money moves once, by a human.
 :::
 
-Why not write "never issue refunds without approval" in the prompt and stop? Because a prompt is a request, not a lock. The model follows it most of the time, and "most of the time" is the gulf of generalization. In L7, Sam's prompt injection is a whole lesson about text that talks the model out of its instructions. Text cannot talk `canCall` out of anything.
+Why not write "never issue refunds without approval" in the prompt and stop? Because a prompt is a request, not a lock. The model follows it most of the time, and "most of the time" is the gulf of generalization. L7 shows Sam talking the model out of its instructions with a prompt injection. Text cannot talk `canCall` out of anything.
 
 :::warning "Please don't" is not a lock
-Keep the rule in the prompt, because it helps the model plan. But if the rule matters when it is broken, it must also live in code. Ask of every rule in your spec: if the model ignored this, what stops it? If the answer is "nothing," you have found a gap.
+Keep the rule in the prompt, because it helps the model plan. But if the rule matters when it is broken, it must also live in code. Ask of every rule: if the model ignored this, what stops it? If the answer is "nothing," you have found a gap.
 :::
 
 :::key
@@ -320,10 +313,10 @@ The model may ask for any tool. Your code decides. Permissions live in `canCall`
 
 ## 8. Putting it together
 
-The order matters: spec, then tools, then loop, then permission layer. Each step is derived from the one before it.
+The order matters: spec, then tools, then loop, then permission layer.
 
 1. Spec: purpose, scope, roles, contracts, tiers, escalation, tone, non-goals.
-2. Tools: one schema per tool, matching the contract's inputs; one implementation per tool, checking the contract's preconditions and returning its named errors.
+2. Tools: one schema per tool, matching the contract's inputs; one implementation per tool, checking preconditions and returning named errors.
 3. Loop: the harness from section 6, with a system prompt generated from the spec.
 4. Permission layer: `canCall` inside `runTool`, roles from the session, T2 routed to a human.
 
@@ -338,12 +331,12 @@ The rule: refunds need a human.
 With all four in place, the $400 refund has to get past a document, a contract, a prompt, and a function.
 :::
 
-Before you move on, check your own agent against this list:
+Before you move on, check your agent against this list:
 
 - Every tool has a contract with inputs, outputs, preconditions, and errors.
 - Every tool has a tier, and every T2 tool is blocked for non-approver roles in `canCall`.
 - The role comes from the session, not from the conversation.
-- Every escalation trigger in the spec is something the model can act on with `escalate_to_human`.
+- Every escalation trigger in the spec is something the model can act on.
 - The spec has an owner and a version, because it will change.
 
 :::try Ask Eve

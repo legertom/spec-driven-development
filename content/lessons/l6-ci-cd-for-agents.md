@@ -29,18 +29,10 @@ The next Wednesday, Maya finds three refund promises on orders older than 30 day
 
 In L4 you named failure modes. In L5 you built an evaluator for each. Now you make each failure replayable, so a computer checks it on every change.
 
-A **regression suite** is the set of tests you run before every change to confirm old failures stay fixed. A **test case** is one entry in it. For an agent it has four parts.
-
-| Field | Holds | Comes from |
-|---|---|---|
-| `id` | A stable name | You |
-| `initial_state` | The world the test starts from: orders, today's date, the approval queue | The seeded world (L3) |
-| `input` | Who the customer is and what they send | The failing trace (L4) |
-| `expected` | Assertions, a pinned judge, or both | The definition (L4) and the evaluator (L5) |
-| `tags` | Labels for filtering | The taxonomy (L4) |
+A **regression suite** is the set of tests you run before every change to confirm old failures stay fixed. A **test case** is one entry in it. For an agent it has five fields: `id`, `initial_state` (the world the test starts from, taken from the seeded world of L3), `input` (who the customer is and what they send, taken from the failing trace of L4), `expected` (assertions, a pinned judge, or both, derived from the L4 definition and the L5 evaluator), and `tags` (labels from the taxonomy).
 
 :::beginner What "initial state" means
-Think of a saved game. Save a chess match one move before a blunder and you can reload it and retry that move on the same board. An **initial state** is that saved game for Sprout: which orders exist, what today's date is, what Maya has approved. Without it, "this order is 41 days old" is true today and false a month from now.
+Think of a saved game: reload it and the board is the same every time. An **initial state** is that saved game for Sprout: which orders exist, what today's date is, what Maya has approved. Without it, "this order is 41 days old" is true today and false a month from now.
 :::
 
 Here is Dev's test case for the Thursday regression. It starts from Alex's real conversation, with the world trimmed to the one order that matters.
@@ -80,10 +72,10 @@ expected:
     expect: pass
 tags: [refund, policy-window, delivered, t2, from-production]
 ```
-The world says the order is 41 days old. The customer asks for a refund. Correct means no refund requested, no refund promised, and the 30-day window explained. The assertions check the mechanical parts. The judge checks the wording.
+The world says the order is 41 days old. The customer asks for a refund. Correct means no refund requested, no refund promised, and the 30-day window explained. Assertions check the mechanical parts; the judge checks the wording.
 :::
 
-Four habits make a case worth keeping. One failure mode per case, so a failure tells you why. The smallest world that reproduces it: one order, not sixty. A real trace as the source when you can, because production cases anchor the suite. And a mirror case: `tc-refund-inside-window-015` is the same message with `delivered_on` nine days ago, where correct means `issue_refund` *is* requested. Without it, Sprout can pass by refusing everyone.
+Four habits make a case worth keeping. One failure mode per case, so a failure tells you why. The smallest world that reproduces it: one order, not sixty. A real trace as the source when you can. And a mirror case: `tc-refund-inside-window-015` is the same message with `delivered_on` nine days ago, where correct means `issue_refund` *is* requested. Without it, Sprout can pass by refusing everyone.
 
 :::key
 A test case is a frozen world, a frozen input, and a written definition of correct. Drop any one of the three and you cannot replay it.
@@ -95,7 +87,7 @@ The `expected` block holds two kinds of check.
 
 An **assertion** is a code check that reads the trace and returns true or false. Was a tool requested? With what arguments? Does the reply contain a phrase? Assertions are exact, free, and instant. They fit failures with a mechanical definition, such as *Refund outside policy* or *Revealed another customer's data*.
 
-A **pinned judge** is an LLM judge from L5 with the judge prompt and the model version frozen and recorded in the test, so a result only changes when Sprout changes. A judge costs cents and takes seconds, and you trust it because of its TPR and TNR on the frozen test set. Judges fit failures that need interpretation, such as *Wrong tone*.
+A **pinned judge** is an LLM judge from L5 with the judge prompt and the model version frozen. The test records the prompt's hash (the `prompt_hash` above, the L2 trick), and the runner refuses to run if the hash no longer matches the prompt file. So a result only changes when Sprout changes. A judge costs cents and takes seconds, and you trust it because of its TPR and TNR on the frozen test set. Judges fit failures that need interpretation, such as *Wrong tone*.
 
 :::example Assertions for three of Sprout's failure modes
 ```yaml
@@ -109,12 +101,8 @@ A **pinned judge** is an LLM judge from L5 with the judge prompt and the model v
 Each is a few lines of code in your runner. None needs a model.
 :::
 
-:::example What "pinned" looks like
-The `judge` block in the test case above names the judge and its `prompt_hash`, the first eight characters of the sha256 of the prompt file (the L2 trick). The judge file itself records the exact model version and its validation numbers, TPR 0.85 and TNR 0.95. If the hash in the test does not match the prompt file, the runner refuses to run. A year from now you can still answer "which judge said this?"
-:::
-
 :::warning Editing the judge to make a test pass
-A pinned judge flags a reply you think is fine. The tempting move is to soften the judge prompt in the same pull request that changed Sprout. Now two things changed at once, and the green result means nothing. Fix Sprout, or change the judge in its own pull request, re-validate it on the frozen test set, and bump its version.
+A pinned judge flags a reply you think is fine. The tempting move is to soften the judge prompt in the same pull request that changed Sprout. Now two things changed at once, and the green result means nothing. Fix Sprout, or change the judge in its own pull request, re-validate it, and bump its version.
 :::
 
 :::tip
@@ -128,7 +116,7 @@ Not every test costs the same. A **cost tier** says what a test needs in order t
 | Tier | What runs | Model calls | Time and cost | Runs on |
 |---|---|---|---|---|
 | Tier 0, unit | Pure code: permission layer, argument validation, assertion functions | None | Milliseconds, free | Every commit |
-| Tier 1, mocked integration | The real loop and model; every tool is a fake returning fixed data from `initial_state` | One short conversation | Seconds, cents | Every pull request |
+| Tier 1, mocked integration | The real loop and model; every tool is a fake returning data from `initial_state` | One short conversation | Seconds, cents | Every pull request |
 | Tier 2, full agent | The whole agent against the seeded staging world, k runs per case, pinned judges | k conversations plus judges | Minutes, dollars | Nightly, and before a release |
 
 :::beginner What a mock is
@@ -144,10 +132,8 @@ Same failure, three prices. The cheap tiers catch most regressions. The expensiv
 :::
 
 :::warning Running every eval on every commit
-Run all 84 cases at Tier 2 with k = 5 on every push and you get 420 conversations, about 40 minutes and 30 dollars, per push. Within a week, developers stop waiting for it and merge around it. A suite nobody waits for protects nothing. Put each case in the cheapest tier that catches its failure.
+Run all 84 cases at Tier 2 with k = 5 on every push and you get 420 conversations, about 40 minutes and 30 dollars, per push. Within a week, developers stop waiting and merge around it. A suite nobody waits for protects nothing. Put each case in the cheapest tier that catches its failure.
 :::
-
-A workable split for Sprout: 40 cases at Tier 0, 32 at Tier 1, 12 at Tier 2. The nightly Tier 2 run costs about 5 dollars.
 
 ## 4. pass@k vs pass^k
 
@@ -186,8 +172,6 @@ Which one matters for Sprout? Alex has one conversation. There is no "try three 
 Report pass^k for anything a customer experiences once. pass@k tells you what the agent can do. pass^k tells you what the customer will get.
 :::
 
-One caution: p is an estimate. Five runs with one failure suggests p is about 0.8, but five runs cannot tell 0.8 from 0.9 apart. Nightly runs accumulate, and the bootstrap interval from L5 tightens every night.
-
 :::try Ask Eve
 Highlight the formulas above and ask Eve: "If Sprout passes the refund test with p = 0.95, what is pass^5, and should Pip ship?" Then ask what p would need to be for pass^10 to reach 0.9.
 :::
@@ -205,10 +189,10 @@ Jordan's order #1077 has not shipped, and Jordan asks to cancel it. Correct is o
 - Run 2 (no reset): the order is already `cancelled`. Sprout says so. The assertion `tool_called: cancel_order` fails.
 - Run 3 (no reset): same as run 2.
 
-Reported failure rate: 2 in 3. Real failure rate: 0. The reverse happens too: if run 1 leaves an approval in the queue, run 2's refund looks approved when it should not be.
+Reported failure rate: 2 in 3. Real failure rate: 0. The reverse happens too: an approval left in the queue by run 1 makes run 2's refund look approved.
 :::
 
-Other things that leak: the approval queue, rate-limit counters, conversation memory, a cached care-guide search, and the clock. Reset all of them, not only the orders table.
+Reset everything that leaks: the approval queue, rate-limit counters, conversation memory, a cached care-guide search, and the clock.
 
 ```bash
 # Reset the seeded world, then replay one case 5 times at Tier 2
@@ -216,7 +200,7 @@ npm run world:reset -- --seed 42
 npm run evals -- --case tc-refund-outside-window-014 --k 5 --tier 2
 ```
 
-Your runner's commands will differ. The output is a table: five runs, four pass, and run 3 requests `issue_refund` and fails the judge. So p is about 0.8 tonight, and run 3 is a real trace of the regression that goes straight into the pull request comment.
+Your runner's commands will differ. The output is a table: five runs, four pass, and run 3 requests `issue_refund` and fails the judge. So p is about 0.8 tonight, and run 3 is a real trace of the regression that goes into the pull request comment.
 
 :::tip
 Reset by construction: build the world in memory from the seed at the start of every run instead of restoring a database afterward. A reset you cannot forget is the only reliable kind.
@@ -224,7 +208,7 @@ Reset by construction: build the world in memory from the seed at the start of e
 
 ## 6. The GitHub Actions gate
 
-**CI/CD** is the automation that runs your tests on every change (continuous integration) and ships the change when they pass (continuous delivery). A **gate** is the rule inside it that blocks a merge or deploy when the suite says no. **GitHub Actions** is the runner this course uses. Others work the same way.
+**CI/CD** is the automation that runs your tests on every change (continuous integration) and ships the change when they pass (continuous delivery). A **gate** is the rule inside it that blocks a merge or deploy when the suite says no. **GitHub Actions** is the runner this course uses.
 
 The workflow below is a sketch. It runs Tier 0 and Tier 1 on every pull request, and Tier 2 nightly or when someone adds the `run-full-evals` label.
 
@@ -272,7 +256,7 @@ Thursday's "tone only" change would have died here, with four traces attached, b
 
 ### Flake policy
 
-A **flake** is a test that fails, then passes on rerun, with nothing changed in between. Sources: sampling, a network hiccup, a world that was not reset. Dev's policy: a failed Tier 2 case is rerun once from a fresh reset. If it passes, it counts as a flake toward a per-case flake rate. A case whose flake rate passes 10% over a week is quarantined: it still runs and reports, but no longer blocks, and an issue is opened to find the cause. Nobody deletes a flaky test. A flake is often a real failure with p around 0.9, which is exactly what §4 says to fear.
+A **flake** is a test that fails, then passes on rerun, with nothing changed in between. Sources: sampling, a network hiccup, a world that was not reset. Dev's policy: a failed Tier 2 case is rerun once from a fresh reset. If it passes, it counts as a flake toward a per-case flake rate. A case whose flake rate passes 10% over a week is quarantined: it still runs and reports, but no longer blocks, and an issue is opened. Nobody deletes a flaky test. A flake is often a real failure with p around 0.9.
 
 :::warning Green is not proof
 With p = 0.9 and k = 3, a case passes all three runs 73% of the time, so a k = 3 gate lets a 10% failure through on most pull requests. That is acceptable, because the nightly run sees 35 runs over a week and catches it. Trust the weekly trend, not one green check.
@@ -306,7 +290,6 @@ The dashboard shows 3.8%, not 8%. Without the correction, Dev would chase a prob
 | Refund outside policy | Code check, 100% | 1.1% | exact | 1.1% | above 2% for 1 hour: page Dev |
 | Revealed another customer's data | Code check, 100% | 0.0% | exact | 0.0% | any single trace: page Dev and Pip |
 | Made up order info | Judge v2, 5% sample | 8.0% flagged | 0.85 / 0.95 | 3.8% | above 6% for 1 day: ticket |
-| Wrong tone | Judge v3, 5% sample | 12.0% flagged | 0.80 / 0.90 | 2.9% | above 8% for 3 days: weekly review |
 | Ignored tool error | Judge v1, 5% sample | 9.0% flagged | 0.90 / 0.97 | 6.9% | above 5% for 1 day: ticket, **firing** |
 
 Code checks measure their mechanical definition exactly, so they need no correction. A refund outside policy costs money, so it pages within the hour. A data leak is a legal problem, so a single trace pages two people. The bottom row is firing: someone reads those traces today.

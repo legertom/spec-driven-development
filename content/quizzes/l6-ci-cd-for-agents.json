@@ -1,0 +1,211 @@
+{
+  "lessonSlug": "l6-ci-cd-for-agents",
+  "questions": [
+    {
+      "id": "l6-q1",
+      "type": "mc",
+      "prompt": "A test case for an agent needs three things. Which set is right?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A prompt, a model id, and a temperature"
+        },
+        {
+          "id": "b",
+          "text": "An initial state, an input, and an expected result"
+        },
+        {
+          "id": "c",
+          "text": "A trace id, a severity, and an owner"
+        },
+        {
+          "id": "d",
+          "text": "A judge prompt, a dev split, and a test split"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Those describe a configuration, not a test. Two configurations can run the same test.",
+        "b": "Correct. Freeze the world (initial state), freeze what the customer says (input), and write down what correct means (expected). Drop one and the case cannot be replayed.",
+        "c": "Those fields belong on a review sheet from Lesson 4, not on a test case.",
+        "d": "Those are the pieces of validating a judge. A test case may reference a pinned judge, but it is not one."
+      }
+    },
+    {
+      "id": "l6-q2",
+      "type": "mc",
+      "prompt": "Which failure should become a code assertion, and which a pinned judge check?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Assertion: \"wrong tone\"; judge: \"refund amount over order total\""
+        },
+        {
+          "id": "b",
+          "text": "Assertion: \"refund amount over order total\"; judge: \"wrong tone\""
+        },
+        {
+          "id": "c",
+          "text": "Both should be judges, because tests should be flexible"
+        },
+        {
+          "id": "d",
+          "text": "Both should be assertions, because judges are too slow"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Backwards. Tone needs interpretation; an amount comparison does not.",
+        "b": "Correct. Mechanical failures get code assertions (free, deterministic). Subjective failures get a judge whose prompt and model version are pinned.",
+        "c": "Flexibility is the enemy of a regression test. Use code wherever the verdict is mechanical.",
+        "d": "An assertion cannot decide whether a reply sounds dismissive. Pin a judge for those, and run it on the tier that can afford it."
+      }
+    },
+    {
+      "id": "l6-q3",
+      "type": "mc",
+      "prompt": "What does it mean to \"pin\" a judge in a CI suite?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Run it on every commit"
+        },
+        {
+          "id": "b",
+          "text": "Freeze its prompt and its model version so a change in the result means the agent changed, not the judge"
+        },
+        {
+          "id": "c",
+          "text": "Give it the highest severity"
+        },
+        {
+          "id": "d",
+          "text": "Let it see the test split so it stays calibrated"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "How often it runs is a cost-tier decision, not what pinning means.",
+        "b": "Correct. If the judge itself moves, you cannot tell whether a red build is the agent's fault. Pin both the prompt and the model id.",
+        "c": "Severity is a property of the failure mode, not of the judge.",
+        "d": "Never. A judge that has seen the test split is burned (Lesson 5)."
+      }
+    },
+    {
+      "id": "l6-q4",
+      "type": "mc",
+      "prompt": "Which cost tier runs on every commit, and why?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tier 2, full agent evals with a real model, because they are the most realistic"
+        },
+        {
+          "id": "b",
+          "text": "Tier 0, deterministic code checks, because they cost nothing and finish in milliseconds"
+        },
+        {
+          "id": "c",
+          "text": "Tier 1, mocked tools, because they catch tool bugs"
+        },
+        {
+          "id": "d",
+          "text": "All tiers, so nothing slips through"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Realistic and expensive. Run the full evals on pull requests or nightly, not on every keystroke.",
+        "b": "Correct. Free and instant checks can run constantly. The expensive tiers run less often, on a schedule that matches their cost.",
+        "c": "Mocked integration is cheap enough for every pull request, but the every-commit tier is the deterministic one.",
+        "d": "Running dollars of model calls on every commit burns budget and slows everyone down. Match frequency to cost."
+      }
+    },
+    {
+      "id": "l6-q5",
+      "type": "mc",
+      "prompt": "Sprout answers an order-status question correctly with probability 0.95. A customer asks once. Which number tells you what that customer will experience, and what is it for k = 3 runs?",
+      "options": [
+        {
+          "id": "a",
+          "text": "pass@3, about 0.9999"
+        },
+        {
+          "id": "b",
+          "text": "pass^3, about 0.857"
+        },
+        {
+          "id": "c",
+          "text": "pass@3, about 0.857"
+        },
+        {
+          "id": "d",
+          "text": "pass^3, about 0.95"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "pass@3 says at least one of three tries succeeds. The customer does not get three tries.",
+        "b": "Correct. pass^3 = 0.95 x 0.95 x 0.95 = 0.857: the chance all three replays are right, which is the reliability a one-shot customer feels.",
+        "c": "The value is right for pass^3, but pass@3 is the wrong name and the wrong idea.",
+        "d": "0.95 is the single-run probability. pass^3 multiplies it three times."
+      }
+    },
+    {
+      "id": "l6-q6",
+      "type": "mc",
+      "prompt": "Why does reset-and-replay reset the world before each replay?",
+      "options": [
+        {
+          "id": "a",
+          "text": "To make the model deterministic"
+        },
+        {
+          "id": "b",
+          "text": "Because state from one run (a cancelled order, a queued refund) would leak into the next and change the result"
+        },
+        {
+          "id": "c",
+          "text": "To clear the prompt cache"
+        },
+        {
+          "id": "d",
+          "text": "Because judges require an empty database"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Resetting the world does not change how the model samples. It keeps the inputs identical.",
+        "b": "Correct. If run 1 cancels order #1077, run 2 starts with a cancelled order and measures a different scenario. Reset, replay, count failures.",
+        "c": "Prompt caching is a cost feature (Lesson 9) and is unrelated to test isolation.",
+        "d": "Judges read traces. They do not care about the database. The agent does."
+      }
+    },
+    {
+      "id": "l6-q7",
+      "type": "short",
+      "prompt": "With p = 0.8 and k = 3, compute pass^3 and pass@3 (show the arithmetic), and explain which one a support agent needs and why.",
+      "rubric": [
+        "Computes pass^3 = 0.8^3 = 0.512 (accepts 0.51)",
+        "Computes pass@3 = 1 - 0.2^3 = 0.992 (accepts 0.99)",
+        "States that a support agent needs pass^k because each customer gets one attempt and the number measures reliability",
+        "States that pass@k measures capability (at least one success) and is the wrong number for a customer-facing agent"
+      ],
+      "modelAnswer": "pass^3 = 0.8 x 0.8 x 0.8 = 0.512. pass@3 = 1 - (0.2 x 0.2 x 0.2) = 1 - 0.008 = 0.992. A support agent needs pass^k: Alex asks once and gets one answer, so what matters is the chance the agent is right every time, which is 51% here even though the single-run rate looks like 80%. pass@k only says the agent can get it right in at least one of three tries, which measures capability, not what the customer receives.",
+      "maxWords": 150
+    },
+    {
+      "id": "l6-q8",
+      "type": "free",
+      "prompt": "Write a test case in YAML for the failure mode *Refund outside policy*. Include the initial state (the world the test starts from), the input, the expected result (assertions and, if needed, a pinned judge), tags, and the cost tier it runs at.",
+      "rubric": [
+        "Has an id and tags, and names the failure mode it guards",
+        "Pins an initial state: an order whose refund would be outside policy (for example delivered more than 30 days ago, or not damaged) with a stated order total",
+        "Includes the customer's input requesting the refund",
+        "Expected result uses at least one code assertion (no issue_refund call, or no refund promised) and references a pinned judge only where interpretation is needed",
+        "States the cost tier and when it runs (for example Tier 1 with mocked tools on every pull request)"
+      ],
+      "modelAnswer": "```yaml\nid: refund-outside-policy-045-days\ntags: [refund, policy, T2]\nfailure_mode: refund_outside_policy\ntier: 1            # mocked tools, runs on every pull request\ninitial_state:\n  customer: cust_alex\n  orders:\n    - id: \"1042\"\n      total: 45.00\n      status: delivered\n      delivered_on: 2026-08-01   # 45 days before the test date\n      damaged: false\n  today: 2026-09-15\ninput:\n  - role: user\n    content: \"My monstera looks sad. I'd like a refund for order #1042.\"\nexpected:\n  assertions:\n    - no_tool_call: issue_refund\n    - reply_not_matches: \"(refund(ed)? (is|has been|will be) (issued|processed|sent))\"\n    - tool_called: escalate_to_human     # or: offers to request a review\n  judge:\n    name: refund_promised_outside_policy\n    pinned_prompt: judges/refund_promise_v3.md\n    pinned_model: claude-opus-5\n    expect: pass\nreplays: 3          # pass^3 must be 1.0 for this case\n```\nThe world is frozen (order 45 days old, not damaged), the input is frozen, and correct is written down: no refund tool call, no promise, and the pinned judge agrees no refund was promised. Three replays because a customer gets one try."
+    }
+  ]
+}

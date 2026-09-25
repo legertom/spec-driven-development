@@ -1,0 +1,231 @@
+{
+  "lessonSlug": "l5-measuring-with-evaluators",
+  "questions": [
+    {
+      "id": "l5-q1",
+      "type": "mc",
+      "prompt": "Why does the course insist on one binary (fail / pass) evaluator per failure mode instead of a 1-to-5 quality score?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A score is more precise, so it needs fewer traces."
+        },
+        {
+          "id": "b",
+          "text": "Two people agree far more often on fail / pass than on a 3 versus a 4, and a fail points at one specific thing to fix."
+        },
+        {
+          "id": "c",
+          "text": "Language models cannot output numbers reliably."
+        },
+        {
+          "id": "d",
+          "text": "Scores only work for code checks, not for judges."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Precision you cannot get two humans to agree on is not precision. Scores look exact and are not.",
+        "b": "Correct. Binary verdicts are easier to label consistently, easier to validate, and each fail maps to a named failure mode you can act on.",
+        "c": "Models can output numbers. The problem is that the numbers do not mean the same thing across traces or labelers.",
+        "d": "Both code checks and judges should be binary. That is the whole point of one evaluator per mode."
+      }
+    },
+    {
+      "id": "l5-q2",
+      "type": "mc",
+      "prompt": "Which of these failure modes should be measured with a code check rather than an LLM judge?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sprout's reply sounds dismissive."
+        },
+        {
+          "id": "b",
+          "text": "The refund amount Sprout requested is larger than the order total."
+        },
+        {
+          "id": "c",
+          "text": "Sprout's answer is not supported by what the tools returned."
+        },
+        {
+          "id": "d",
+          "text": "The customer seems more frustrated at the end than at the start."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Tone needs interpretation, so it needs a judge with a definition and boundary examples.",
+        "b": "Correct. The amount and the order total are both in the trace, so a few lines of code decide this with no interpretation and no cost.",
+        "c": "Grounding needs a judge to compare claims against tool output in context. A code check can only catch the simplest cases.",
+        "d": "Frustration is a judgment call. Write a definition and validate a judge."
+      }
+    },
+    {
+      "id": "l5-q3",
+      "type": "mc",
+      "prompt": "On a dev split of 10 real failures and 10 real passes, the judge flags 7 of the failures and passes 6 of the passes. What are its TPR and TNR?",
+      "options": [
+        {
+          "id": "a",
+          "text": "TPR 0.60, TNR 0.70"
+        },
+        {
+          "id": "b",
+          "text": "TPR 0.70, TNR 0.60"
+        },
+        {
+          "id": "c",
+          "text": "TPR 0.70, TNR 0.40"
+        },
+        {
+          "id": "d",
+          "text": "TPR 0.65, TNR 0.65"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The numbers are swapped. TPR is about the real failures (7 of 10); TNR is about the real passes (6 of 10).",
+        "b": "Correct. TPR = 7 / 10 = 0.70 (how much it catches). TNR = 6 / 10 = 0.60 (how often it leaves good traces alone). Four false alarms is a lot.",
+        "c": "TNR counts the passes the judge got right (6), not the ones it got wrong (4).",
+        "d": "That is the overall accuracy (13 of 20). Report TPR and TNR separately; accuracy hides which mistake the judge makes."
+      }
+    },
+    {
+      "id": "l5-q4",
+      "type": "mc",
+      "prompt": "A failure mode occurs in 5 of 100 traces. A \"judge\" that answers pass to everything scores 95% accuracy. What does this show?",
+      "options": [
+        {
+          "id": "a",
+          "text": "The judge is good enough for monitoring."
+        },
+        {
+          "id": "b",
+          "text": "Accuracy rewards agreeing that most traces are fine; this judge has a TPR of 0 and catches nothing."
+        },
+        {
+          "id": "c",
+          "text": "The failure mode is too rare to matter."
+        },
+        {
+          "id": "d",
+          "text": "The labels must be wrong."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "It would never flag a single failure. High accuracy, zero usefulness.",
+        "b": "Correct. When failures are rare, accuracy is dominated by the passes. TPR (0 of 5) exposes the problem immediately.",
+        "c": "5% of conversations promising refunds outside policy is not rare in money terms. Rarity is why accuracy misleads, not a reason to ignore the mode.",
+        "d": "Nothing in the example suggests bad labels. The metric is the problem."
+      }
+    },
+    {
+      "id": "l5-q5",
+      "type": "mc",
+      "prompt": "Dev runs judge v2 on the frozen test split, sees one miss, adds that trace to the prompt as a FAIL example, and re-runs the test split. TPR jumps to 1.00. What is true?",
+      "options": [
+        {
+          "id": "a",
+          "text": "The judge is now validated at TPR 1.00."
+        },
+        {
+          "id": "b",
+          "text": "The test split has been turned into dev data; the new number means nothing and a fresh test set is needed."
+        },
+        {
+          "id": "c",
+          "text": "This is fine as long as it only happened once."
+        },
+        {
+          "id": "d",
+          "text": "Only the TNR number is affected."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The judge was shown the exam question. A perfect score on a question you have seen is not a measurement.",
+        "b": "Correct. Any result that changes what you do next is a dev result. Freeze the test set, read it once, and label new traces when you need to tune again.",
+        "c": "Once is enough to burn it. The rule is read once, not tune a little.",
+        "d": "Both numbers are contaminated, because the prompt now contains test data."
+      }
+    },
+    {
+      "id": "l5-q6",
+      "type": "mc",
+      "prompt": "The judge flags 20% of 500 traces. From validation, TPR = 0.90 and TNR = 0.95. What is the corrected prevalence, using p_true = (p_observed - (1 - TNR)) / (TPR - (1 - TNR))?",
+      "options": [
+        {
+          "id": "a",
+          "text": "20%"
+        },
+        {
+          "id": "b",
+          "text": "About 18%"
+        },
+        {
+          "id": "c",
+          "text": "15%"
+        },
+        {
+          "id": "d",
+          "text": "About 25%"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "20% is the raw flag rate, which includes false alarms and misses some real failures.",
+        "b": "Correct. (0.20 - 0.05) / (0.90 - 0.05) = 0.15 / 0.85 = 0.176, about 18%.",
+        "c": "0.15 is the numerator. You still have to divide by (TPR - (1 - TNR)) = 0.85.",
+        "d": "That would require the judge to miss far more than it does. Plug the numbers into the formula."
+      }
+    },
+    {
+      "id": "l5-q7",
+      "type": "short",
+      "prompt": "When does a failure mode get a code check instead of an LLM judge? Give one Sprout example of each kind.",
+      "rubric": [
+        "States that code checks are for objective failures that can be computed from the trace and the world (amounts, ids, whether a tool was called)",
+        "States that judges are only for failures that need interpretation (tone, whether a claim is supported)",
+        "Gives a valid Sprout example of a code-checkable failure mode",
+        "Gives a valid Sprout example of a failure mode that needs a judge"
+      ],
+      "modelAnswer": "Use a code check whenever the verdict can be computed from facts already in the trace or the world: numbers, ids, and which tools were called. For example, \"refund amount exceeds order total\" is a comparison between two fields, and \"did not escalate when the customer wrote lawyer\" is a keyword check plus a tool-call check. Code is free, instant, and never has to be validated against labels. Use an LLM judge only when the failure needs interpretation, such as \"wrong tone\" or \"claim not supported by tool output\", and validate it with TPR and TNR before trusting it.",
+      "maxWords": 150
+    },
+    {
+      "id": "l5-q8",
+      "type": "free",
+      "prompt": "Write a judge prompt for the failure mode *Refund promised outside policy*. Include a role, a precise binary definition, at least one PASS and one FAIL boundary example, what the judge is given, and a strict output format.",
+      "rubric": [
+        "Gives the judge a role and states it judges exactly one failure mode",
+        "Defines the failure precisely: Sprout commits to or promises a refund when a policy condition is not met (not damaged, more than 30 days after delivery, or more than the order total), and distinguishes a promise from offering to request one",
+        "Includes at least one FAIL example and at least one PASS boundary example",
+        "States what the judge receives (the full trace) and specifies a strict JSON output such as {\"fail\": true|false, \"reason\": \"...\"}",
+        "Tells the judge to ignore other qualities (tone, length) and to judge only this failure mode"
+      ],
+      "modelAnswer": "You are a strict reviewer for Sprout, the support agent for Pip's Plant Shop. You check one thing only: whether Sprout PROMISED A REFUND OUTSIDE POLICY.\n\nPolicy: refunds are only for plants that arrived damaged, only within 30 days of delivery, never more than the order total, and always approved by a human.\n\nFAIL when Sprout states or implies that a refund will happen (\"I've issued\", \"you'll receive\", \"we will refund\") and at least one policy condition is not met, or when Sprout promises any refund as certain instead of saying a human will confirm.\n\nPASS when Sprout explains the policy, offers to request a refund for a human to approve, or declines a refund that is outside policy, even if the tone is poor.\n\nFAIL example: customer says the plant arrived healthy 45 days ago; Sprout writes \"No problem, I'll refund the full amount today.\"\nPASS example: customer's monstera arrived broken 3 days ago; Sprout writes \"I've asked our team to review a refund of $45; Maya will confirm by email.\"\n\nIgnore tone, length, and other mistakes. Judge only this failure mode.\n\nYou will receive the full conversation and tool results inside <trace> tags. Answer with JSON only: {\"fail\": true or false, \"reason\": \"one sentence quoting the decisive line\"}."
+    }
+  ],
+  "homework": {
+    "id": "l5-hw1",
+    "title": "Homework 1 - Label traces and build a taxonomy",
+    "prompt": "Label at least **60 support traces** from your Sprout scenarios (or a comparable agent of your own) and turn them into a measurable taxonomy.\n\n1. Open-code every trace: read the whole thing and write the first failure in plain language.\n2. Group the notes into **5 to 8 binary failure modes**. For each mode write a one-sentence definition, one real example from your traces, and a boundary (\"counts / does not count\").\n3. For each mode, say whether it will be measured by a **code check** or an **LLM judge**, and why.\n4. Report the **prevalence** of each mode with a bootstrap 95% confidence interval.\n5. For at least one judge-measured mode, write the judge prompt and report **TPR and TNR** on a dev split of your labels.\n\nPaste your write-up below. Tables and short YAML or JSON snippets are welcome.",
+    "deliverables": [
+      "A labeling sheet summary: number of traces, who labeled them, how long it took",
+      "5 to 8 binary failure modes, each with a definition, an example, and a boundary",
+      "A code-check-or-judge decision for every mode, with a reason",
+      "Prevalence with a bootstrap confidence interval for every mode",
+      "One judge prompt with its TPR and TNR on a dev split"
+    ],
+    "rubric": [
+      "Labeled at least 60 traces and describes the review process (first failure, whole trace)",
+      "Defines 5 to 8 failure modes that are binary and specific, each with a definition, an example, and a counts / does-not-count boundary",
+      "Assigns each mode to a code check or an LLM judge with a sensible reason (objective vs interpretive)",
+      "Reports prevalence for each mode with a confidence interval, not only a point estimate",
+      "Includes at least one judge prompt with a definition, boundary examples, and strict output",
+      "Reports TPR and TNR for that judge from a dev split and does not claim to have tuned on the test split"
+    ]
+  }
+}

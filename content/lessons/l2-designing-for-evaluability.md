@@ -7,7 +7,7 @@ moduleTitle: "Building Agents"
 verb: Analyze
 minutes: 50
 prereqs: ["l1-building-agents-foundations"]
-summary: "Record every model call, tool call, and permission decision as nested spans, send them to self-hosted Langfuse, and read a trace to find the first thing that went wrong."
+summary: "Record model calls, tool calls, and permission decisions as nested spans, send them to self-hosted Langfuse, and read a trace to find the first failure."
 objectives:
   - "Explain why instrumentation must exist before the first real user."
   - "Design a trace data model with nested spans, model calls, tool calls, permission denials, and prompt hashes."
@@ -18,7 +18,7 @@ keyTerms: ["trace", "span", "nested-span", "instrumentation", "observability", "
 
 ## Why this matters
 
-Thursday morning, a customer emails Pip: "Your chat assistant promised me a full refund yesterday. Where is it?" Pip forwards it to Dev with one line: "Did it?" Dev opens the database. Orders, yes. Refund requests, none. Chat logs? The app printed replies to the console, and the console was cleared at the last deploy. Dev cannot see what the customer asked, what the model saw, which tools ran, or what Sprout said. Dev cannot prove Sprout promised nothing, cannot reproduce the conversation, and cannot fix a failure nobody can look at. The customer is still waiting. This lesson makes sure that the next time someone asks "did it?", the answer takes thirty seconds and starts with opening a trace.
+Thursday morning, a customer emails Pip: "Your chat assistant promised me a full refund yesterday. Where is it?" Pip forwards it to Dev with one line: "Did it?" Dev opens the database. Orders, yes. Refund requests, none. Chat logs? The app printed replies to the console, and the console was cleared at the last deploy. Dev cannot see what the customer asked, what the model saw, which tools ran, or what Sprout said. Dev cannot prove Sprout promised nothing, cannot reproduce the conversation, and cannot fix a failure nobody can look at. This lesson makes sure that the next time someone asks "did it?", the answer takes thirty seconds and starts with opening a trace.
 
 ## 1. If you did not record it, it did not happen
 
@@ -29,12 +29,12 @@ The rule of this lesson is short. Instrument before traffic. The first real user
 :::example Two launches
 Launch A: Dev ships Sprout and plans to "add logging next sprint." Day one, 40 conversations and three complaints. Zero records. Dev fixes nothing, because there is nothing to read.
 
-Launch B: Dev spends one afternoon on instrumentation, then ships. Same 40 conversations, same three complaints. Dev opens three traces, finds that two are the same failure (the model invented a delivery date after `lookup_order` returned `not_found`), and has a fix by lunch.
+Launch B: Dev spends one afternoon on instrumentation, then ships. Same 40 conversations, same three complaints. Dev opens three traces, finds that two are the same failure (a delivery date invented after `lookup_order` returned `not_found`), and has a fix by lunch.
 
 Same agent, same customers. The only difference is whether anything was written down.
 :::
 
-The sampling rate is the fraction of conversations you record in full. Before launch and during early traffic, that fraction is 100%. Forty conversations a day cost nothing to store, and every one is a lesson. Later, at 20,000 a day, you may sample a share and keep every trace that contains an error or a permission denial. Not yet.
+The sampling rate is the fraction of conversations you record in full. Before launch and during early traffic, it is 100%. Forty conversations a day cost nothing to store, and every one is a lesson. At 20,000 a day you may sample a share and keep every trace with an error or a permission denial. Not yet.
 
 :::key
 Instrument before the first real user, and record 100% of conversations until volume forces you to sample.
@@ -94,20 +94,20 @@ Four spans: the turn, the first model call, the tool call it asked for, and the 
 }
 ```
 
-Follow the `parent_id` chain. `sp_3` sits under `sp_2`, the model call that asked for it. Both model calls sit under `sp_1`, the turn. The date in the tool output matches the date in the final text. That match is what later lessons check automatically.
+Follow the `parent_id` chain. `sp_3` sits under `sp_2`, the model call that asked for it. Both model calls sit under `sp_1`, the turn. The date in the tool output matches the date in the final text, which is what later lessons check automatically.
 :::
 
 The `input` of each model call above is a count (`"messages": 2`) to keep the example short. In a real trace, store the complete messages array. Section 5 explains why.
 
 :::beginner Why the tool call sits under the model call
-Your code runs the tool after the model replies, so the tool span starts after its parent's request finished. The nesting records cause, not clock time: this tool ran because that model call asked for it. Some tracing tools draw tool calls beside the model call instead. Either works, as long as every trace in your system does it the same way.
+Your code runs the tool after the model replies, so the tool span starts after its parent's request finished. The nesting records cause, not clock time: this tool ran because that model call asked for it. Some tracing tools draw tool calls beside the model call instead. Either works, as long as every trace does it the same way.
 :::
 
 ## 3. What to record
 
 Three kinds of spans carry the important facts.
 
-Model calls: model id, prompt hash, parameters (temperature, max tokens), token counts in and out, latency, and the full input and output. Tokens and latency become your cost lesson in L9. The model id and prompt hash tell you which version of Sprout produced this behavior.
+Model calls: model id, prompt hash, parameters (temperature, max tokens), token counts in and out, latency, and the full input and output. Tokens and latency feed the cost work in L9. The model id and prompt hash say which version of Sprout produced this behavior.
 
 Tool calls: tool name, arguments, result, and error, if any. Store the whole result, not a summary. When the model invents a date, you need to see that the tool never returned one.
 
@@ -135,10 +135,10 @@ A prompt hash is a short fingerprint of the exact system prompt text, computed w
 :::example Two prompts, two hashes
 On Monday the system prompt ends with "Be warm and brief." Hash: `a1b2c3d4`. On Tuesday Dev adds one line, "Never promise a refund." Hash: `9e8d7c6b`.
 
-On Wednesday a customer says Sprout promised a refund. Dev filters traces by hash. The complaint's trace carries `a1b2c3d4`: it happened under Monday's prompt, before the fix. Without the hash, Dev would be rereading a prompt that was not the one that ran.
+On Wednesday a customer says Sprout promised a refund. Dev filters traces by hash. The complaint's trace carries `a1b2c3d4`: it happened under Monday's prompt, before the fix. Without the hash, Dev would be rereading the wrong prompt.
 :::
 
-Why a hash instead of a version number? Because nobody forgets to compute a hash. Version numbers get skipped. The hash is derived from the text itself, so it is always right.
+Why a hash instead of a version number? Nobody forgets to compute a hash, and version numbers get skipped. The hash comes from the text itself, so it is always right.
 
 :::tip
 Store the full prompt text once per hash in a small table, then store only the hash on each span. Traces stay small, and you can always recover the exact text.
@@ -146,9 +146,9 @@ Store the full prompt text once per hash in a small table, then store only the h
 
 ## 4. Langfuse and ClickHouse
 
-You could write traces to a file. Reading them is the problem. Langfuse is an open-source tool that stores traces, shows each one in a web UI as a nested tree, and exposes an API for querying and scoring them. It is the screen Dev opens when Pip asks "did it?".
+You could write traces to a file. Reading them is the problem. Langfuse is an open-source tool that stores traces, shows each one in a web UI as a nested tree, and exposes an API for querying and scoring them.
 
-Under Langfuse sit two databases. Postgres holds metadata: projects, users, API keys, prompt versions. ClickHouse holds the spans. ClickHouse is a column store: it keeps each column of a table together on disk, so a question like "average latency of `tool_call:lookup_order` spans this month" reads one column across millions of rows instead of every row in full. That is what makes analytics over a large trace set fast.
+Under Langfuse sit two databases. Postgres holds metadata: projects, users, API keys, prompt versions. ClickHouse holds the spans. It is a column store: each column of a table is kept together on disk, so "average latency of `tool_call:lookup_order` spans this month" reads one column across millions of rows instead of every row in full. That is what makes analytics over a large trace set fast.
 
 | Piece | Job | Why it is there |
 |---|---|---|
@@ -180,7 +180,7 @@ services:
     environment: { CLICKHOUSE_USER: ch, CLICKHOUSE_PASSWORD: ch }
 ```
 
-Your agent needs three environment variables to send traces: a public key, a secret key, and the base URL of your Langfuse instance. Create the keys in the Langfuse UI after it starts.
+Your agent needs three environment variables: a public key, a secret key, and the base URL of your Langfuse instance. Create the keys in the Langfuse UI after it starts.
 
 ```bash
 export LANGFUSE_PUBLIC_KEY=pk-lf-...
@@ -188,7 +188,7 @@ export LANGFUSE_SECRET_KEY=sk-lf-...
 export LANGFUSE_BASE_URL=http://localhost:3000
 ```
 
-And here is the shape of an SDK call that creates a trace with a nested span. This is a sketch: method names differ between SDK versions, so check the docs for yours.
+Here is the shape of an SDK call that creates a trace with a nested span. It is a sketch: method names differ between SDK versions.
 
 ```ts
 // Sketch only. Check the Langfuse SDK docs for the exact method names in your version.
@@ -204,8 +204,8 @@ tool.end({ output: { status: "shipped" }, metadata: { tier: "T0", permission: "a
 await langfuse.flushAsync(); // send before the process exits
 ```
 
-:::example What Dev sees after sending one trace
-Dev opens `http://localhost:3000` and sees one row: `turn`, 2.9 seconds, 2 model calls. Clicking it opens a tree: `turn` at the top, `model_call` under it, `tool_call:lookup_order` under that, and the second `model_call` beside the first. Each node shows its input, output, and metadata. That tree is the JSON from section 2, drawn.
+:::example What Dev sees
+After one run, the Langfuse UI shows one row: `turn`, 2.9 seconds. Clicking it opens a tree: `model_call` under `turn`, `tool_call:lookup_order` under that, and the second `model_call` beside the first. That tree is the JSON from section 2, drawn.
 :::
 
 :::warning Sending traces without flushing
@@ -219,10 +219,10 @@ Evaluability means a trace contains enough to judge whether the agent behaved co
 Store complete inputs so spans can be replayed. If a model-call span holds the full messages array, the exact tools list, and the parameters, you can send that request again and compare answers. If it holds "messages: 4," you cannot.
 
 :::example Replaying one span
-A customer reports a wrong answer. The trace's second model call has its full input stored. Dev copies that input into a script, runs it five times, and gets the wrong answer twice out of five. Dev now has a reproducible case and a rough failure rate before writing a single test. With a summary instead of the input, Dev would be reconstructing the conversation by hand and hoping.
+A customer reports a wrong answer. The trace's second model call has its full input stored. Dev copies it into a script, runs it five times, and gets the wrong answer twice. Dev now has a reproducible case and a rough failure rate before writing a single test. With a summary instead of the input, Dev would be reconstructing the conversation by hand.
 :::
 
-Use stable ids. The same customer, order, and session should carry the same ids across traces. Then "show me every conversation about order #1042" returns all of them.
+Use stable ids. The same customer, order, and session carry the same ids across traces, so "show me every conversation about order #1042" returns all of them.
 
 Tag synthetic traces with their scenario id. A scenario is a scripted test conversation, and L3 builds hundreds of them. When Sprout runs a scenario, put `scenario_id` in the trace metadata, so a failing test leads straight to the trace that shows why.
 
@@ -271,7 +271,7 @@ Three questions, in order, every time you read a trace:
 That one sentence is the raw material of L4, where you collect many of them and turn them into named failure modes.
 
 :::warning Blaming the last span
-The last span is where the damage shows, so it is tempting to write "the final reply was wrong" and stop. Often the real failure is earlier: a tool call with the wrong argument, a permission check that should have denied, a model call that skipped a lookup. Walk from the top, not the bottom.
+The last span is where the damage shows, so it is tempting to write "the final reply was wrong" and stop. Often the real failure is earlier: a tool call with the wrong argument, a permission check that should have denied, a model call that skipped a lookup. Walk from the top.
 :::
 
 :::try Ask Eve
@@ -294,7 +294,7 @@ Run through this list before the first real user, and again before every launch.
 | The SDK flushes on exit and on shutdown | Stop the server; the last trace is present |
 
 :::example Dev runs the checklist
-Dev runs it on Wednesday. Seven checks pass. The permission check fails: `canCall` denies correctly, but nothing records the denial. Twenty lines of code later, `permission_check` spans exist. On Thursday, when the customer asks about a promised refund, Dev filters for denied `issue_refund` calls in that session, finds one, opens the turn, and reads Sprout's reply: "A member of our team will confirm your refund." Sprout promised nothing. Pip has an answer in thirty seconds.
+Dev runs it on Wednesday. Seven checks pass. The permission check fails: `canCall` denies correctly, but nothing records the denial. Twenty lines later, `permission_check` spans exist. On Thursday, when the customer asks about a promised refund, Dev filters for denied `issue_refund` calls in that session, opens the turn, and reads Sprout's reply: "A member of our team will confirm your refund." Sprout promised nothing. Pip has an answer in thirty seconds.
 :::
 
 :::try Ask Eve

@@ -1,0 +1,181 @@
+{
+  "lessonSlug": "l8-improving-accuracy",
+  "questions": [
+    {
+      "id": "l8-q1",
+      "type": "mc",
+      "prompt": "Three configurations: A is 84% accurate at $60 per 1,000 conversations, B is 88% at $300, C is 87% at $850. Which is not on the Pareto frontier?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A"
+        },
+        {
+          "id": "b",
+          "text": "B"
+        },
+        {
+          "id": "c",
+          "text": "C"
+        },
+        {
+          "id": "d",
+          "text": "They are all on the frontier"
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Nothing beats A on cost, so it stays on the frontier as the cheap option.",
+        "b": "Nothing beats B on accuracy, so it stays on the frontier as the accurate option.",
+        "c": "Correct. B is both more accurate and cheaper than C, so C is dominated and worth nothing.",
+        "d": "C is beaten on both axes by B. A point that loses on both axes is off the frontier."
+      }
+    },
+    {
+      "id": "l8-q2",
+      "type": "mc",
+      "prompt": "You want to compare a new prompt against the current one. Which rule keeps the comparison honest?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Use the newer, bigger model for the new prompt so it gets a fair chance"
+        },
+        {
+          "id": "b",
+          "text": "Change only the prompt; keep the tools, harness, workload, suite, and seeds identical"
+        },
+        {
+          "id": "c",
+          "text": "Run the new prompt on a fresh set of scenarios"
+        },
+        {
+          "id": "d",
+          "text": "Compare on the test slice first, then on dev"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Then you changed two axes and cannot say which one moved the number.",
+        "b": "Correct. One axis at a time, everything else frozen, and the configuration saved as a file so it can be re-run.",
+        "c": "Different scenarios are a different workload; the numbers are not comparable.",
+        "d": "Dev first, test once at the end. Reading test first burns it."
+      }
+    },
+    {
+      "id": "l8-q3",
+      "type": "mc",
+      "prompt": "Sprout keeps stating delivery dates the tool never returned. According to the fix-routing ladder, which fix should you try first?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Switch to a larger model"
+        },
+        {
+          "id": "b",
+          "text": "Fine-tune the model on correct replies"
+        },
+        {
+          "id": "c",
+          "text": "Add a prompt rule and, if that is not enough, change lookup_order to return estimated_delivery: null explicitly with a note"
+        },
+        {
+          "id": "d",
+          "text": "Add a second agent that checks the first one"
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Model or weights is the last rung: expensive, slow, and it may not fix a hole in the tool output.",
+        "b": "Weights come after prompt, tool, and harness, and only when failures are capability limits.",
+        "c": "Correct. Prompt first (cheapest), then tool design. In the lesson the tool change took the mode from 9% to 2%.",
+        "d": "A second agent is a harness change, which comes after prompt and tool. It also doubles cost."
+      }
+    },
+    {
+      "id": "l8-q4",
+      "type": "mc",
+      "prompt": "What should happen before you hand the improvement loop to an optimizer such as GEPA?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nothing; optimizers are safer than humans"
+        },
+        {
+          "id": "b",
+          "text": "Run the manual fix loop by hand first, and make sure the optimizer can only see the dev slice, never the test slice"
+        },
+        {
+          "id": "c",
+          "text": "Delete the dev slice so the optimizer cannot overfit"
+        },
+        {
+          "id": "d",
+          "text": "Raise the budget so it can explore"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "An optimizer will find whatever the judge rewards, including shortcuts.",
+        "b": "Correct. A few manual iterations tell you what the failure actually is, and the test slice stays sealed so the final read means something.",
+        "c": "The dev slice is what the optimizer needs. It is the test slice it must never see.",
+        "d": "Budget is a guardrail to bound, not to raise."
+      }
+    },
+    {
+      "id": "l8-q5",
+      "type": "mc",
+      "prompt": "After automated tuning, the judge for \"claim not supported by tool output\" reports 0% failures, but Maya reads ten traces and finds the model now writes \"I have verified this with our system\" before every claim. What happened?",
+      "options": [
+        {
+          "id": "a",
+          "text": "The failure mode is fixed"
+        },
+        {
+          "id": "b",
+          "text": "Reward hacking: the optimizer found text that satisfies the judge without fixing the behavior"
+        },
+        {
+          "id": "c",
+          "text": "The judge's TNR improved"
+        },
+        {
+          "id": "d",
+          "text": "The dev slice was too small"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The claims are still unsupported. Only the judge stopped noticing.",
+        "b": "Correct. Defenses: a held-out test slice, more than one judge, and spot-reading traces by a human.",
+        "c": "The judge got worse, not better. It now passes failures that carry a magic phrase.",
+        "d": "Size is not the issue. The judge was gamed."
+      }
+    },
+    {
+      "id": "l8-q6",
+      "type": "short",
+      "prompt": "Which layer do you try first when fixing a failure mode, and why? Name the full order of the ladder.",
+      "rubric": [
+        "States the order: prompt, then tool design, then harness, then model or weights",
+        "Says the prompt comes first because it is the cheapest, fastest, and most reversible change",
+        "Mentions changing one thing at a time and measuring on the dev slice after each change",
+        "Notes that model or weights changes are the last resort, or that they can hide a problem that lives in a tool"
+      ],
+      "modelAnswer": "Prompt first, then tool design, then harness, then model or weights. The prompt is first because it costs minutes, changes nothing else, and can be reverted instantly; if a rule fixes the mode, you are done. Tool design is next because a hole in a tool result (no delivery date) is often the real cause and a rule only papers over it. Harness changes such as a verification step or a retry cost latency and money, so they come third. Switching model or training weights is last: slowest, most expensive, and it can mask a bug that lives in a tool. Whatever the rung, change one thing, run the dev slice, keep or revert, and log it.",
+      "maxWords": 150
+    },
+    {
+      "id": "l8-q7",
+      "type": "free",
+      "prompt": "Failure mode: Sprout promises delivery dates that the tool never returned (9% of traces). Three candidate fixes: (1) add the prompt rule \"if the tool result has no delivery date, say you do not have one\"; (2) change lookup_order so it always returns an explicit estimated_delivery field, null when unknown, plus a note; (3) switch to a larger model. Route each fix to its rung on the ladder, order them, predict which is most likely to fix the root cause, and describe how you would test them.",
+      "rubric": [
+        "Routes each candidate to the correct rung: (1) prompt, (2) tool design, (3) model",
+        "Orders the attempts prompt, then tool, then model, and justifies the order by cost and reversibility",
+        "Predicts that the tool change addresses the root cause (the missing field invites a guess) and explains why",
+        "Describes testing one change at a time on the dev slice with the failure-mode rate and overall accuracy and cost recorded, keeping or reverting each",
+        "Mentions confirming the winner once on the held-out test slice, or comparing against a frontier-model baseline"
+      ],
+      "modelAnswer": "Routing: fix (1) is the prompt rung, fix (2) is the tool-design rung, fix (3) is the model rung. Order: try (1) first because it takes minutes and reverts instantly; then (2); (3) last. Prediction: (2) is most likely to fix the root cause. The model guesses because the tool result has a hole where a date should be, and a rule asks the model to notice an absence, which it does unevenly. Returning estimated_delivery: null with a note \"carrier has not provided an estimate\" gives the model a fact to repeat instead of a gap to fill. In the lesson this took the mode from 9% to 2% at almost no cost. Testing: freeze the config as a file, change one thing, run the dev slice, record the mode's fail rate, overall accuracy, and cost per 1k conversations, then keep or revert. Expected: (1) 9% to 8 or 9%, keep if free; (2) to about 2%, keep; (3) is only worth trying if the mode is still above target after (2), because it multiplies cost and does not fill the hole in the tool. Finally run the winning config once on the held-out test slice, compare it with a frontier-model baseline on the same suite, and write the decision down."
+    }
+  ]
+}
