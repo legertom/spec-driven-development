@@ -1,0 +1,159 @@
+{
+  "lessonSlug": "l1-instructions-that-hold",
+  "questions": [
+    {
+      "id": "l1-q1",
+      "type": "mc",
+      "prompt": "Which of these instructions for Draft is specific, in the sense the lesson uses?",
+      "options": [
+        { "id": "a", "text": "Be professional and courteous at all times." },
+        { "id": "b", "text": "Open with the customer's first name, then one sentence naming the problem in their words, then the options one per line." },
+        { "id": "c", "text": "Make sure the customer feels heard." },
+        { "id": "d", "text": "Write a high-quality reply that reflects well on Bramble Books." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Two readers could disagree about whether a reply was professional. Tessa and Omar did. An instruction is specific only when they would agree.",
+        "b": "Correct. Each clause names observable text. Tessa can check for the first name, the one-sentence restatement, and the option lines without guessing at intent.",
+        "c": "Feeling heard is not visible in the text. You could not write a reply that clearly fails it, so it does not constrain the output.",
+        "d": "High quality is the goal of every instruction, not an instruction itself. It adds no information the model did not already have."
+      }
+    },
+    {
+      "id": "l1-q2",
+      "type": "mc",
+      "prompt": "Why does the lesson say to pair every \"never\" with a \"do this instead\"?",
+      "options": [
+        { "id": "a", "text": "Because models cannot process negative words like \"never\" and \"not\"." },
+        { "id": "b", "text": "Because a negative instruction removes one option and leaves the model to guess what fills the gap, and the guess may be worse than the thing forbidden." },
+        { "id": "c", "text": "Because positive instructions use fewer tokens." },
+        { "id": "d", "text": "Because Tessa prefers prompts that sound encouraging." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Models handle negation fine. The problem is not comprehension. It is that the negative says nothing about the alternative.",
+        "b": "Correct. \"Never promise refunds\" left Draft to choose, and it chose to refuse a customer who was owed one. The paired form names the path: say a manager will confirm the amount within one business day.",
+        "c": "The paired form is usually longer, not shorter. Length is not the reason; defined behavior is.",
+        "d": "The prompt's tone is irrelevant to Tessa. She reads the replies, and the replies improve when the model has a named alternative."
+      }
+    },
+    {
+      "id": "l1-q3",
+      "type": "mc",
+      "prompt": "Which recurring case needs Draft's refusal behavior, and what should that behavior include?",
+      "options": [
+        { "id": "a", "text": "DR-1, the torn cover: Draft should refuse because damage claims need a manager." },
+        { "id": "b", "text": "DR-2, cancel a shipped order: Draft says what cannot be done and why, names what Tessa can do, invents no policy, and adds a review flag." },
+        { "id": "c", "text": "DR-2, cancel a shipped order: Draft confirms the cancellation so the customer is not upset." },
+        { "id": "d", "text": "DR-3, the embedded instruction: Draft refuses to reply at all." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "DR-1 is inside scope. The exchange policy is written in the prompt, so Draft can offer it. No refusal is needed.",
+        "b": "Correct. Cancelling a shipped order is outside Draft's scope. The refusal is a behavior with parts: what, why from the record, what Tessa can do, and the line \"Tessa: outside scope, needs a decision.\"",
+        "c": "Confirming a cancellation that did not happen is the silent refusal the lesson warns about: the model improvising because the prompt gave it nothing else.",
+        "d": "DR-3 is a context and injection problem, covered in L2. Draft still replies to the customer's real question; it ignores the embedded instruction and flags it."
+      }
+    },
+    {
+      "id": "l1-q4",
+      "type": "mc",
+      "prompt": "\"Be brief\" and \"include the exchange policy\" conflict for DR-1. Where does the lesson say that conflict gets resolved?",
+      "options": [
+        { "id": "a", "text": "Nowhere; the model weighs the two and picks the better one each time." },
+        { "id": "b", "text": "In the user turn, by repeating whichever rule matters for this email." },
+        { "id": "c", "text": "In an explicit priority block in the system prompt that says which rule wins, such as \"include the exchange policy whenever the email mentions damage, even if it makes the reply longer.\"" },
+        { "id": "d", "text": "In Tessa's review, since she catches whichever one the model got wrong." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Leaving it to the model means the resolution changes between runs. That is what produced the two-sentence reply with no exchange policy.",
+        "b": "Per-email rules in the user turn would mean Omar's code has to know the answer before the model does. Standing conflicts belong in the standing instructions.",
+        "c": "Correct. A priority block states which rule wins and under what condition. Rule 3 in the lesson's block is exactly this resolution.",
+        "d": "Tessa reviewing is a safety net, not a resolution. A conflict the prompt does not resolve will keep producing the wrong reply half the time."
+      }
+    },
+    {
+      "id": "l1-q5",
+      "type": "mc",
+      "prompt": "What does the new-hire test check?",
+      "options": [
+        { "id": "a", "text": "Whether the prompt's grammar is clear enough for a person to read." },
+        { "id": "b", "text": "Whether a person with only the prompt and the order record has enough information to write the reply, which reveals facts the prompt is missing." },
+        { "id": "c", "text": "Whether the model behaves the same as a new employee would." },
+        { "id": "d", "text": "Whether the prompt is under 40 lines." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Readability helps, but the test is about missing facts. Nadia understood every sentence and still could not write the reply, because the exchange policy was not there.",
+        "b": "Correct. If a person with the same inputs cannot write the reply, the model cannot either. The test found the exchange-policy paragraph that lived in a wiki page the model never saw.",
+        "c": "The test uses a person as a stand-in for the model's information, not for its behavior. It asks what is missing, not how the model acts.",
+        "d": "Length is section 7's concern. The new-hire test is more likely to add lines than remove them, because it finds gaps."
+      }
+    },
+    {
+      "id": "l1-q6",
+      "type": "mc",
+      "prompt": "Omar is cutting Draft's prompt from 60 lines to 28. Which line should stay?",
+      "options": [
+        { "id": "a", "text": "\"You are an expert customer service writer with years of experience.\"" },
+        { "id": "b", "text": "\"Be accurate.\"" },
+        { "id": "c", "text": "\"Bramble pays return postage for damaged items.\"" },
+        { "id": "d", "text": "\"The order record contains the delivery date.\"" }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "A compliment. The voice rules already set how the reply sounds, and this line changed no reply in the delete-and-compare test.",
+        "b": "A restatement. The rules about which fields to quote already say what accurate means here. On its own it carries no information.",
+        "c": "Correct. This is a fact the model cannot know and the record does not contain. Removing it makes DR-1's reply either omit postage or guess. It changes an output, so it earns its place.",
+        "d": "The record is in the request, so the model can see the delivery date. Describing the data the model already has adds tokens and nothing else."
+      }
+    },
+    {
+      "id": "l1-q7",
+      "type": "short",
+      "prompt": "Rewrite \"do not be rude\" as two positive, specific instructions for Draft.",
+      "rubric": [
+        "Gives exactly two instructions, both phrased as what to do rather than what to avoid",
+        "Each instruction names observable text a reviewer could point at in a reply",
+        "At least one instruction addresses acknowledging the customer's problem or using their words",
+        "Neither instruction relies on a judgment word such as polite, kind, warm, or respectful without defining it"
+      ],
+      "modelAnswer": "First: open with the customer's first name, then one sentence that restates their problem in their own words before offering anything, for example \"your copy arrived with a torn cover.\" Second: when the customer cannot have what they asked for, say which part cannot be done and why in one sentence taken from the order record, then name one thing Tessa can do next. Both replace a wish with a behavior. \"Do not be rude\" produced a reply so careful it never answered the question. These two lines tell the model where the acknowledgement goes and what a no looks like, and Tessa can check each one against the text without deciding whether it feels polite.",
+      "maxWords": 150
+    },
+    {
+      "id": "l1-q8",
+      "type": "free",
+      "prompt": "Write the scope and refusal section of Draft's system prompt. State what Draft handles, list three things it does not handle, and give the exact behavior for each of the three.",
+      "rubric": [
+        "States Draft's scope: replying to a customer email about one existing order using the order record",
+        "Lists three distinct out-of-scope request types (for example cancelling a shipped order, issuing or quoting a refund amount, stating a policy not in the prompt)",
+        "For each of the three, describes a concrete behavior with what cannot be done, a reason drawn from the record or prompt, and what Tessa or a manager can do",
+        "Includes a review flag or line that Tessa sees when the request was outside scope",
+        "Contains no instruction that lets the model invent policy or amounts",
+        "Is written as prompt text the model would read, not as a description of one"
+      ],
+      "modelAnswer": "```markdown\n## Scope\nYou reply to one customer email about one existing order, using only\nthe order record and the policies written in this prompt.\n\n## Outside scope, and what to do instead\n1. Cancelling or changing an order that has shipped.\n   Say the order shipped, with the date from the record, so it cannot\n   be cancelled before delivery. Say the customer may return it unopened\n   and Tessa will process the return when it arrives.\n2. Refund amounts.\n   Never state a number. Say a store manager will confirm the amount\n   within one business day. If the email asks for a gift card refund,\n   say Tessa can restore the balance once the return is received.\n3. Any policy not written in this prompt (price matching, loyalty\n   points, delivery guarantees, discounts).\n   Say you cannot confirm that and Tessa will reply with an answer.\n   Do not describe the policy, guess at it, or apologize for it.\n\nWhen any part of the email is outside scope, still answer the parts\nthat are inside scope, then end the reply with the line:\n\"Tessa: outside scope, needs a decision.\"\n```\n\nThe scope is one sentence so the model knows the boundary. Each out-of-scope item pairs the thing it cannot do with the behavior that replaces it, and each reason comes from the record or the prompt rather than from the model's memory. The closing line is the flag Tessa reads first. For DR-2 this section produces a reply that explains the shipment, offers the unopened return, routes the gift card to Tessa, and ends with the flag, with no invented cancellation."
+    }
+  ],
+  "homework": {
+    "id": "l1-hw1",
+    "title": "Homework 1: Rewrite Draft's system prompt",
+    "prompt": "Rewrite `prompts/draft.system.md` from scratch, under 40 lines, for the Draft feature: it replies to a customer email about one existing order, using the order record, for Tessa to approve before sending.\n\nYour prompt must include:\n\n1. A role, an audience, and a voice, each stated as checkable rules.\n2. At least six specific instructions. For each, you should be able to say what reply it would change for DR-1, DR-2, or DR-3.\n3. Every negative instruction (\"never\", \"do not\") paired with the positive behavior that replaces it.\n4. A scope section naming what Draft handles, and a refusal behavior for requests outside it: what cannot be done, why, what Tessa can do, and a flag she sees.\n5. A priority block that resolves at least one conflict between two of your own instructions.\n\nAfter the prompt, add a two-sentence note: what the new-hire test would catch in your prompt if a new employee had only your prompt and the order record for DR-1.\n\nSubmit the prompt as a `markdown` block and the note as plain text.",
+    "deliverables": [
+      "The rewritten `prompts/draft.system.md` as a markdown block, under 40 lines",
+      "A two-sentence note on what the new-hire test would catch"
+    ],
+    "rubric": [
+      "Role, audience, and voice are each present and stated as checkable rules",
+      "Six or more instructions that would each change an output for at least one of DR-1, DR-2, or DR-3",
+      "Every \"never\" or \"do not\" is paired with an alternative behavior",
+      "The refusal behavior is described concretely: what cannot be done, why, what Tessa can do, and a review flag",
+      "A priority block resolves at least one conflict explicitly",
+      "The prompt is under 40 lines",
+      "No filler instructions such as \"be helpful\", \"be accurate\", or a compliment about the model's expertise"
+    ],
+    "modelAnswer": "A strong submission is a prompt of 25 to 35 lines organized under short headings. Role and audience: \"You write as the Elm Street store of Bramble Books, to a customer who may be upset; Tessa reviews every reply.\" Voice: four checkable rules such as \"we\" not \"I\", sentences under 20 words, no exclamation marks, a fixed closing line. Shape: first name, one sentence naming the problem in the customer's words, options one per line. Exchange policy written out in full (14 days, Bramble pays return postage for damaged items, replacement or store credit), because that is the fact the new-hire test finds missing. Refunds: never a number, paired with \"a store manager will confirm the amount within one business day.\" Outside scope: cancelling, changing, or refunding an order and any policy not in the prompt; say what cannot be done and why from the record, name what Tessa can do, end with \"Tessa: outside scope, needs a decision.\" Priority: refund and scope rules first; if the order shipped, scope wins over answering; include the exchange policy whenever damage is mentioned even at the cost of length. The two-sentence note names a concrete gap, for example: \"A new hire would not know whether the customer pays return postage for a torn cover, so the exchange policy paragraph is required. They would also not know what to write when the email mentions a refund, so the refund line must give the one-business-day behavior rather than a bare never.\""
+  }
+}

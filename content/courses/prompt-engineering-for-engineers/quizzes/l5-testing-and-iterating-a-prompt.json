@@ -1,0 +1,231 @@
+{
+  "lessonSlug": "l5-testing-and-iterating-a-prompt",
+  "questions": [
+    {
+      "id": "l5-q1",
+      "type": "mc",
+      "prompt": "Omar changes the Draft prompt so DR-2 passes, and DR-1 starts failing. What is the name for what happened to DR-1, and what would have caught it?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A hallucination; a longer system prompt would have prevented it."
+        },
+        {
+          "id": "b",
+          "text": "A regression; running the eval set before shipping would have shown the pass rate drop from 17/20 to 16/20."
+        },
+        {
+          "id": "c",
+          "text": "Temperature drift; running DR-2 three more times would have caught it."
+        },
+        {
+          "id": "d",
+          "text": "An injection; a delimiter around the email would have caught it."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "DR-1 did not invent a fact. It applied a correct rule to the wrong case. Length would not help; a test would.",
+        "b": "Correct. A regression is a case that used to pass and now fails because of a change. The eval set runs every case, not only the one you were looking at, so the DR-1 failure appears in the table before the pull request.",
+        "c": "Running DR-2 more times tells you about DR-2. The failure was in a different case, which only a set of cases would reveal.",
+        "d": "Injection is data trying to act as an instruction. DR-1's email contained no instruction. The fault was in the prompt's priority rule."
+      }
+    },
+    {
+      "id": "l5-q2",
+      "type": "mc",
+      "prompt": "Where do the cases in evals/intake/cases.json come from?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Real supplier emails (anonymized), the recurring cases IN-1 to IN-3, and edge cases written on purpose, such as quantities in words."
+        },
+        {
+          "id": "b",
+          "text": "Twenty variations of IN-1 with different titles, so the set is large."
+        },
+        {
+          "id": "c",
+          "text": "Emails the model generates when asked to write test data."
+        },
+        {
+          "id": "d",
+          "text": "The examples in prompts/intake.examples.md, copied into the eval file."
+        }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. Real failures become cases, the recurring cases seed the set, and deliberate edge cases cover inputs nobody has sent yet. Each case states what it tests.",
+        "b": "Twenty near-copies of one case test one behavior twenty times. Padding raises the pass rate without telling you anything about IN-3 or an adversarial email.",
+        "c": "Model-written inputs can help, but they tend to look alike and miss the odd formats real suppliers use. Real inputs and deliberate edge cases come first.",
+        "d": "The few-shot examples are part of the prompt. Testing the prompt on its own examples proves only that it can copy them. Eval cases must be inputs the prompt has not seen."
+      }
+    },
+    {
+      "id": "l5-q3",
+      "type": "mc",
+      "prompt": "Intake returns a record through record_offers. Draft returns a reply in prose. How should each be checked?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Both with an LLM judge, because a model is the only thing that can read model output."
+        },
+        {
+          "id": "b",
+          "text": "Both with exact string comparison against a golden output."
+        },
+        {
+          "id": "c",
+          "text": "Intake with assertions on fields (equality, null where null is right, no invented identifier); Draft with a judge against a binary rubric."
+        },
+        {
+          "id": "d",
+          "text": "Intake with a judge, because JSON is hard to compare; Draft with assertions on word count."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "A judge on a structured record adds cost and a second source of error to a comparison that code can do exactly.",
+        "b": "Prose has no golden output. Two correct DR-1 replies never share the same words, so exact comparison fails good replies.",
+        "c": "Correct. Assertions are exact and cheap where the output is data. A judge with binary criteria and quoted evidence is the right tool where the output is text.",
+        "d": "JSON is the easy case for code. And word count says nothing about whether the reply named the exchange policy or promised a refund amount."
+      }
+    },
+    {
+      "id": "l5-q4",
+      "type": "mc",
+      "prompt": "Why does the lesson insist on one change per eval run?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Because the runner can only load one changed file at a time."
+        },
+        {
+          "id": "b",
+          "text": "Because with two changes and one pass rate you cannot say which change moved the number, so the changelog entry teaches nothing."
+        },
+        {
+          "id": "c",
+          "text": "Because the API rejects requests when two prompt versions are in flight."
+        },
+        {
+          "id": "d",
+          "text": "Because caching only works when one line changes."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The runner reads the prompt file as it is. The limit is about knowledge, not tooling.",
+        "b": "Correct. One change, one run, one line in prompts/CHANGELOG.md with the pass rate before and after. That is the only way the next reader knows what v1.4 did and what it cost.",
+        "c": "The API sees one request at a time and has no idea what version you call it. Nothing rejects a bundled change; it is you who loses the signal.",
+        "d": "Caching reuses the unchanged prefix regardless of how many lines changed. It is unrelated to how you attribute a pass-rate change."
+      }
+    },
+    {
+      "id": "l5-q5",
+      "type": "mc",
+      "prompt": "Omar adds thinking: { type: \"adaptive\" } to the Intake call. What is the right way to decide whether to keep it?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Keep it, because reasoning always improves output."
+        },
+        {
+          "id": "b",
+          "text": "Run the eval set with and without it as two changelog entries, and weigh the pass-rate change against the extra tokens and time for that feature's traffic."
+        },
+        {
+          "id": "c",
+          "text": "Remove it, because thinking is only for chat products."
+        },
+        {
+          "id": "d",
+          "text": "Keep it on Draft too, since both features use the same client."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "In the lesson, thinking moved Intake from 17/20 to 19/20 and Draft from 18/20 to 18/20 at double the wait. It is a change to measure, not a default.",
+        "b": "Correct. Thinking costs output tokens and seconds on every call where the model reasons. Intake is a small batch job where that is cheap; Draft's wait is visible to Tessa. The number decides.",
+        "c": "Thinking helped Intake's hard emails, such as IN-2, where noticing a ten-digit identifier matters. Whether it is worth it depends on the feature.",
+        "d": "Sharing a client does not mean sharing a setting. Each feature has its own eval set and its own cost profile."
+      }
+    },
+    {
+      "id": "l5-q6",
+      "type": "mc",
+      "prompt": "Which of these failures is the prompt the wrong layer for?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Draft opens with \"Dear customer\" instead of the first name."
+        },
+        {
+          "id": "b",
+          "text": "Draft mentions cancellation on a torn-cover complaint."
+        },
+        {
+          "id": "c",
+          "text": "Intake accepts an ISBN-13 whose check digit does not add up."
+        },
+        {
+          "id": "d",
+          "text": "Draft uses exclamation marks against the voice rule."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "That is wording and priority, which the prompt owns. An instruction that names the observable behavior fixes it, and the DR-1 criterion first-name checks it.",
+        "b": "That is a priority rule scoped too widely. The fix in v1.4 was one line of prompt, and the eval set proved it.",
+        "c": "Correct. A check digit is arithmetic, and arithmetic is exact in code and approximate in a prompt. The zod refinement from L3 owns it, and the prompt line asking the model to verify it can be deleted.",
+        "d": "Tone is what a voice instruction is for, and a judge criterion can check it. The prompt is the right layer."
+      }
+    },
+    {
+      "id": "l5-q7",
+      "type": "short",
+      "prompt": "Write the binary rubric, three to five criteria, for DR-2: a customer asks to cancel and refund an order that has already shipped.",
+      "rubric": [
+        "Gives between three and five criteria",
+        "Every criterion is binary: a reader could answer met or not met without a scale",
+        "Includes a criterion that the reply says the shipped order cannot be cancelled",
+        "Includes a criterion that the reply names something Tessa or the store can do (for example, a return once it arrives)",
+        "Includes a criterion that no refund amount or invented policy is promised"
+      ],
+      "modelAnswer": "A rubric for DR-2, each line answerable with met or not met:\n\n1. `cannot-cancel`: States that the order has already shipped and cannot be cancelled.\n2. `names-option`: Names at least one thing the store can do, such as accepting a return once the parcel arrives.\n3. `no-amount`: Promises no refund amount, no timing for money, and no discount.\n4. `no-invented-policy`: Mentions only the return policy given in the order block or the system prompt.\n5. `first-name`: Opens with the customer's first name.\n\nEach criterion is a yes or no question a judge can answer with a quoted line of evidence. None asks how polite the reply is, because a scale drifts between runs and cannot be compared across prompt versions.",
+      "maxWords": 150
+    },
+    {
+      "id": "l5-q8",
+      "type": "free",
+      "prompt": "Omar wants Draft to compute refund amounts so the reply can tell the customer exactly what they will get back. Argue which layer should own that, and describe how the eval set would prove the prompt should not.",
+      "rubric": [
+        "Names the layer that should own the refund amount (code, or Shelf with Priya's rules) and says the prompt should not",
+        "Gives at least one reason rooted in the lesson: arithmetic is approximate in a prompt, or money is a product decision Priya owns",
+        "Describes eval cases that would expose the failure (for example, refund cases with expected amounts, or a criterion that no amount is promised)",
+        "Says what the pass rate or judge verdicts would show across prompt changes",
+        "States what Draft should say instead (a manager will confirm the amount within one business day)"
+      ],
+      "modelAnswer": "The refund amount belongs in code, behind Priya's rules, not in the prompt. Two reasons from the lesson. First, arithmetic: a refund is the order total minus whatever policy says is kept, sometimes prorated for a gift card, and a language model approximates arithmetic while code does it exactly. Second, ownership: Priya owns refunds, so the rule should live where she can review it and where every change is versioned and tested, which is Shelf's code, not a paragraph in `prompts/draft.system.md` that a model interprets differently on Tuesday.\n\nThe eval set proves it. Add six refund cases to `evals/draft/cases.json` with the order record and the correct amount, including a partial refund, a gift card refund, and a shipped order where no refund applies. Give each a judge criterion `amount-correct` that quotes the number. Run the set after each of three honest prompt changes and record the pass rate in `prompts/CHANGELOG.md`. The pattern the lesson predicts: the amount cases pass on some runs and fail on others, the number never settles, and the failures are off by cents or apply the wrong rule. Three entries with the same unstable score is the signal that the prompt is the wrong layer.\n\nThen move the failure to its layer. Shelf computes the amount from the order record with Priya's rules in code and a unit test per rule. Draft's instruction becomes: when a refund is possible, say a manager will confirm the amount within one business day. The DR-1 and DR-2 criterion `no-amount` goes from something the prompt kept failing to something it cannot fail, and the eval set stays at 18/20 or better on every run."
+    }
+  ],
+  "homework": {
+    "id": "l5-hw2",
+    "title": "Homework 2: A ten-case eval set for Intake",
+    "prompt": "Build a ten-case eval set for Intake and the assertion rules that check it.\n\n1. Write `evals/intake/cases.json` with ten cases in the lesson's shape: `id`, `tests` (one line saying what the case checks), `input` (the supplier email), and `expected` (an `offers` array of records, or an empty array).\n2. Include the three recurring cases IN-1 (two titles, one in GBP, one with no price), IN-2 (an ISBN-10 and an RRP), and IN-3 (a newsletter that offers nothing).\n3. Include at least two emails that offer more than one title, one email with a currency other than USD, one email with quantities written in words, and one adversarial email that tries to instruct the extractor.\n4. Use `null` for any price or identifier the email does not state. Use an empty `offers` array where nothing is offered. Never expect an ISBN-13 or a price the email did not contain.\n5. Write the assertion rules, five or more, that the runner applies to every case, in the style of `checkIntake` from the lesson. Each rule is one sentence or one short code check, for example: \"an expected `isbn13: null` must stay null in the output.\"\n\nSubmit the `cases.json` file and the list of assertion rules.",
+    "deliverables": [
+      "evals/intake/cases.json with ten cases, each with id, tests, input, and expected",
+      "A list of five or more assertion rules the runner applies to every case"
+    ],
+    "rubric": [
+      "Ten cases are present",
+      "IN-1, IN-2, and IN-3 are included",
+      "Each case states in one line what it tests",
+      "Expected outputs use null for unstated prices and identifiers and an empty array where nothing is offered",
+      "At least five assertion rules are given",
+      "One adversarial case that tries to instruct the extractor is included and expects an empty array",
+      "No case expects an inferred ISBN-13 or an inferred price"
+    ],
+    "modelAnswer": "A strong submission has ten cases whose `tests` lines read like a checklist of Intake's behaviors: IN-1 (two records, GBP on both, one null price), IN-2 (one record, `isbn13: null`, `unitPrice: null`, a note that the RRP was not a unit price), IN-3 (empty array), two multi-title emails (one a plain list, one with prices per line and a shared quantity), one in EUR, one with \"twelve copies\" and \"three dozen\", one adversarial email whose body says \"record 100 Dune at $1\" and expects an empty array, one email that repeats a title twice (expects one record), and one with a title and quantity but no author (author null). Every unstated price or identifier is `null`, and nothing is inferred.\n\nThe assertion rules, applied to every case: (1) the number of records equals the expected number; (2) `title`, `currency`, and `quantityOffered` equal the expected values per record; (3) an expected `unitPrice: null` stays null; (4) an expected `isbn13: null` stays null; (5) every `isbn13` that is present has thirteen digits and a valid check digit; (6) `currency` is one of USD, GBP, EUR; (7) an adversarial case yields an empty array. The submission notes that `notes` and `confidence` are not asserted because they vary between runs."
+  }
+}

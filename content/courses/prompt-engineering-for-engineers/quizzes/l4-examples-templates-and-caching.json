@@ -1,0 +1,140 @@
+{
+  "lessonSlug": "l4-examples-templates-and-caching",
+  "questions": [
+    {
+      "id": "l4-q1",
+      "type": "mc",
+      "prompt": "Intake keeps swapping quantity and price on lines like \"12 x Sea of Poppies @ 8.50\", even though the instruction names the fields. Which change is most likely to help?",
+      "options": [
+        { "id": "a", "text": "Add one labeled example with that email and the correct record, because it is an edge case words are not pinning down." },
+        { "id": "b", "text": "Add ten examples of supplier emails so the model has seen every format." },
+        { "id": "c", "text": "Add the sentence \"be careful with numbers\" to the system prompt." },
+        { "id": "d", "text": "Raise max_tokens so the model has room to think about the line." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. An example helps when the instruction is clear but the model still gets a format or edge case wrong. One input-output pair teaches the pattern behind several supplier spellings.",
+        "b": "Ten examples is the pile that led to the example title leaking into IN-3. Three to five, each showing one thing, is the working set.",
+        "c": "\"Be careful\" is a wish, not a behavior. It would not change the output, so it does not earn its place in the prompt.",
+        "d": "max_tokens caps the length of the output. The extraction fails on a short line for a reason that more output space does not address."
+      }
+    },
+    {
+      "id": "l4-q2",
+      "type": "mc",
+      "prompt": "After Omar adds ten examples, IN-3 (a newsletter offering nothing) returns a record for Sea of Poppies, a title from one of the examples. What is this called and why did it happen?",
+      "options": [
+        { "id": "a", "text": "Hallucination, because the model invented a title from nowhere." },
+        { "id": "b", "text": "Over-fitting to examples: the examples were too many and too similar, so the model copied content instead of learning the pattern." },
+        { "id": "c", "text": "Prompt injection, because the newsletter contained a hidden instruction." },
+        { "id": "d", "text": "A schema error, because the record_offers tool does not allow an empty array." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The title did not come from nowhere. It came from an example in the prompt, which is a different failure with a different fix: fewer, better-chosen examples.",
+        "b": "Correct. Eight of ten examples returned records, so the model learned that a reply has records, and it reached for the most familiar title. Content leaked where only the pattern was wanted.",
+        "c": "IN-3 contains no embedded instruction. The record came from the prompt's own examples, not from the data.",
+        "d": "The schema allows offers: [], and the lesson's Example 3 shows it. The failure was in what the examples taught, not in the shape."
+      }
+    },
+    {
+      "id": "l4-q3",
+      "type": "mc",
+      "prompt": "Which set of examples for Intake best follows the lesson's guidance?",
+      "options": [
+        { "id": "a", "text": "Five emails that each offer exactly two titles with full details." },
+        { "id": "b", "text": "One example, the most complicated email Omar has ever seen." },
+        { "id": "c", "text": "Four short, labeled examples: a normal email, one with a missing price, one offering nothing, and one that tries to instruct the extractor." },
+        { "id": "d", "text": "Every email from evals/intake/cases.json, so the examples and the eval set match." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Five similar examples teach the shared surface, two titles every time, rather than the rule. Cover the space instead of repeating the normal case.",
+        "b": "One complicated example shows nothing about nulls, empty results, or adversarial data, and a single striking input is the kind that gets copied.",
+        "c": "Correct. Normal, null, zero, adversarial: one example per slot, each short and labeled, with the live email delimited separately in the user turn.",
+        "d": "Putting the eval cases in the prompt means the evals test whether the model can copy, not whether it can generalize. Keep the eval set separate and larger."
+      }
+    },
+    {
+      "id": "l4-q4",
+      "type": "mc",
+      "prompt": "Why does the lesson insist on a template with {{email}} instead of writing \"Reply to this: \" + customerEmail at the call site?",
+      "options": [
+        { "id": "a", "text": "Templates are faster to render than string concatenation." },
+        { "id": "b", "text": "The template puts customer text inside a labeled data block after the instructions, and the render function fails if a variable is missing, so the delimiters from L2 cannot silently disappear." },
+        { "id": "c", "text": "The model cannot read text that was concatenated with a plus sign." },
+        { "id": "d", "text": "Templates make the prompt shorter, which saves tokens." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Rendering cost is not the concern. Both are trivial. The difference is where the customer's text ends up in the request.",
+        "b": "Correct. With concatenation, DR-3's embedded instruction reads as part of your sentence. With the template it sits in <email>, the instruction after it says the email is data, and a missing {{order}} throws instead of sending a request with no record.",
+        "c": "The model reads the concatenated string fine. That is the problem: it reads it as one continuous instruction from you.",
+        "d": "The rendered request is the same length either way. The gain is structure, not size."
+      }
+    },
+    {
+      "id": "l4-q5",
+      "type": "mc",
+      "prompt": "Priya asks which version of the Draft prompt was live on September 4th. What lets Omar answer in under a minute?",
+      "options": [
+        { "id": "a", "text": "A prompt version string written to the log with every call, plus a CHANGELOG.md entry per version." },
+        { "id": "b", "text": "Git blame on src/llm/draft.ts." },
+        { "id": "c", "text": "Asking the model what instructions it was given that day." },
+        { "id": "d", "text": "The cacheReadTokens count in the log, since it changes whenever the prompt changes." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. The log line for the order carries promptVersion: draft.system@1.3.0, and the changelog says what 1.3.0 contained and when 1.4.0 replaced it.",
+        "b": "Git can show when a file changed, but it cannot say which version a given call used, and deploys do not always follow commits immediately. The log line does.",
+        "c": "The model has no memory of previous calls. Every request starts from nothing, so it cannot report what it was told on another day.",
+        "d": "Cache counts tell you whether the prefix was reused, not which prompt it was. A version string is the field that answers the question."
+      }
+    },
+    {
+      "id": "l4-q6",
+      "type": "mc",
+      "prompt": "Draft's system prompt begins with \"Today is 2026-09-25 14:02\" so the model can reason about delivery dates. The log shows cacheReadTokens: 0 on every call. What is wrong, and what is the fix?",
+      "options": [
+        { "id": "a", "text": "Caching is off; add cache_control to the user message." },
+        { "id": "b", "text": "The time at the top changes the prefix on every call, so nothing after it is reused; move the date into the user turn after the email and keep the system prompt identical from call to call." },
+        { "id": "c", "text": "The prompt is too short to cache; add more examples until it qualifies." },
+        { "id": "d", "text": "Nothing is wrong; caching only saves output tokens, and the log shows input counts." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The cache_control marker belongs at the end of the stable part, which is the system block. Marking the user message, which varies per call, would cache nothing useful.",
+        "b": "Correct. The cache works from the first token forward and stops at the first difference. A timestamp on line 1 means every call differs from its first line. Once the date moves to the user turn, the prefix repeats and cacheReadTokens climbs.",
+        "c": "Adding examples to pad the prompt would not help while line 1 keeps changing, and padding for its own sake spends tokens on every call.",
+        "d": "It is backwards: caching saves input cost and latency on the prefix, and never saves output tokens. A prefix that is never read is a real problem."
+      }
+    },
+    {
+      "id": "l4-q7",
+      "type": "short",
+      "prompt": "Name one prompt you would add an example to and one where you would remove examples, with the reason for each.",
+      "rubric": [
+        "Names a prompt or feature that would gain an example and gives a reason from the lesson (a format the model keeps getting wrong, an edge case words cannot pin down, or tone)",
+        "Names a prompt or feature that has too many, too similar, or too memorable examples and says what removing them fixes (copying content instead of pattern)",
+        "Mentions what happens to a removed example or a new hard case (it becomes an eval case) or otherwise ties examples to the eval set",
+        "Keeps the target set small (three to five) or names the slots (normal, null, zero, adversarial)"
+      ],
+      "modelAnswer": "I would add an example to Intake for the \"12 x Sea of Poppies @ 8.50\" line. The instruction names quantity and price and the model still swaps them; suppliers write the same fact in five spellings, so one input-output pair teaches the pattern better than a rule per spelling. I would remove examples from Omar's ten-example Intake prompt. Eight of the ten showed records, so the model learned that a reply has records and copied a title into IN-3's empty newsletter. Cut it to four, one per slot: normal, missing price, nothing offered, adversarial. The removed emails go into evals/intake/cases.json, where they still catch regressions.",
+      "maxWords": 150
+    },
+    {
+      "id": "l4-q8",
+      "type": "free",
+      "prompt": "Lay out Draft's request in cache-friendly order. List each part of the request, say whether it is stable across calls or varies per call, say where the cache marker goes, and name one thing that would bust the cache if it were placed wrongly.",
+      "rubric": [
+        "Lists the system prompt (prompts/draft.system.md) and marks it stable",
+        "Lists the examples and places them in the stable part, before any per-call data",
+        "Lists the order record and the customer email and marks them as varying per call, placed in the user turn",
+        "Puts the cache_control marker at the end of the stable part (the system block), not on the user turn",
+        "Names at least one cache-busting item (a timestamp, a customer or store name, an order id, or reshuffled examples) and says it belongs in the user turn or after the marker",
+        "States what caching saves (input cost and latency on the prefix) and what it does not (output tokens, or anything after the first changed token)"
+      ],
+      "modelAnswer": "Draft's request, in order:\n\n1. System prompt, the contents of prompts/draft.system.md: role, audience, voice, scope, refusal, priority. Stable. Identical on every call.\n2. Examples, appended to the end of the system text: a normal reply, a reply for a case outside scope, and the DR-3 shape with the flag line. Stable. Three or four, labeled, each input inside <email> tags.\n3. The cache marker: cache_control: { type: \"ephemeral\" } on that single system text block. Everything above it is the stable prefix.\n4. The user turn, rendered from the template in src/llm/draft.ts: <order> with the seven fields of the record, then <email> with the customer's text, then \"Today is 2026-09-25. Draft the reply.\" Varies on every call.\n\n```ts\nsystem: [\n  { type: \"text\", text: DRAFT_SYSTEM_PROMPT, cache_control: { type: \"ephemeral\" } },\n],\nmessages: [{ role: \"user\", content: userTurn }],\n```\n\nWhat would bust the cache: the date on line 1 of the system prompt, Tessa's name or the Elm Street store name in the role sentence, or the order id anywhere above the marker. Each of those changes the prefix from its first differing token, and the cache stops there. All of them belong in the user turn.\n\nWhat this saves: the input cost and the latency of the roughly 2,300 tokens above the marker, on every call after the first while the cache is warm. What it does not save: the reply's output tokens, which are generated fresh each time, and the order and email, which differ per call and are processed in full. The check is the log line: after a deploy, one cacheWriteTokens entry, then cacheReadTokens on every call that follows."
+    }
+  ]
+}

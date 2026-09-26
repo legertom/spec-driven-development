@@ -1,0 +1,213 @@
+{
+  "lessonSlug": "l3-structured-output",
+  "questions": [
+    {
+      "id": "l3-q1",
+      "type": "mc",
+      "prompt": "Intake v1 asked for \"the titles as JSON\" and the import job crashed. Which of these is the root cause the lesson names?",
+      "options": [
+        {
+          "id": "a",
+          "text": "The model was too slow, so the job timed out before the JSON arrived."
+        },
+        {
+          "id": "b",
+          "text": "The output had no fixed shape: prose around the JSON, keys that changed between runs, and values the model guessed to fill holes."
+        },
+        {
+          "id": "c",
+          "text": "The supplier emails were too long for the context window."
+        },
+        {
+          "id": "d",
+          "text": "JSON.parse cannot handle arrays of objects."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Speed was not the problem. The replies arrived; the code could not read them because each one looked different.",
+        "b": "Correct. Free text has no contract. \"Here is the JSON you asked for:\" is not JSON, `price` on one run and `unitPrice` on the next is silently undefined in code, and a guessed 12.99 is a wrong number in a price column.",
+        "c": "IN-1 is a short email. Length is a real concern in other lessons, but it did not cause the 2 a.m. crash.",
+        "d": "JSON.parse handles arrays of objects fine. It cannot handle a greeting in front of the array, and it does not know which key your code expected."
+      }
+    },
+    {
+      "id": "l3-q2",
+      "type": "mc",
+      "prompt": "In the record schema, `unitPrice` is listed in `required` and typed `[\"number\", \"null\"]`. What does that combination mean?",
+      "options": [
+        {
+          "id": "a",
+          "text": "The key may be omitted, but if present it must be a number."
+        },
+        {
+          "id": "b",
+          "text": "The key must always be present, and its value must be a number; null is rejected."
+        },
+        {
+          "id": "c",
+          "text": "The key must always be present, and its value is either a number or null."
+        },
+        {
+          "id": "d",
+          "text": "The key is optional and the value may be a number, null, or a string like \"n/a\"."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "That describes an optional field. `required` means the key may never be omitted.",
+        "b": "The nullable type is exactly what allows null. Without `\"null\"` in the type list, this would be right.",
+        "c": "Correct. Required answers \"must the key be there?\" and nullable answers \"may the value be null?\" Intake wants both: the model must say something about the price on every record, and null is one thing it may say.",
+        "d": "The type list has no `\"string\"` in it, so \"n/a\" is rejected. That is the point: unknown is null, never a string the code has to interpret."
+      }
+    },
+    {
+      "id": "l3-q3",
+      "type": "mc",
+      "prompt": "What does setting `tool_choice` to `{ type: \"tool\", name: \"record_offers\" }` force?",
+      "options": [
+        {
+          "id": "a",
+          "text": "The model must answer by calling record_offers with arguments that fit its input_schema; it cannot reply in prose."
+        },
+        {
+          "id": "b",
+          "text": "The API runs the record_offers function on Anthropic's servers and returns its result."
+        },
+        {
+          "id": "c",
+          "text": "The model may call record_offers if it thinks a tool is useful, otherwise it answers in text."
+        },
+        {
+          "id": "d",
+          "text": "The model must call record_offers, but the arguments may be any JSON the model chooses."
+        }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. A forced tool choice closes the prose route. The only response available is a tool_use block whose input matches the schema, which is why there is no preface to strip.",
+        "b": "No function runs anywhere. The tool need not exist; the call itself, with its shaped arguments, is the structured output your code reads.",
+        "c": "That describes the default behavior, where the model decides. Forcing a named tool removes the choice.",
+        "d": "The arguments are constrained by input_schema: the keys, the types, the enums, and the nullable fields. Shape is enforced; only meaning is left for your validator."
+      }
+    },
+    {
+      "id": "l3-q4",
+      "type": "mc",
+      "prompt": "The tool's input_schema already types `isbn13` as a string or null. Why does Intake still validate the result with zod?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Because the API sometimes ignores the schema and returns prose."
+        },
+        {
+          "id": "b",
+          "text": "Because a schema constrains shape, not meaning: a thirteen-digit string with a wrong check digit is still a valid string."
+        },
+        {
+          "id": "c",
+          "text": "Because zod is faster than JSON.parse."
+        },
+        {
+          "id": "d",
+          "text": "Because the schema cannot express nullable fields, so zod has to add them."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "With a forced tool choice the response is a tool call with a shaped input. The failure the lesson shows is a well-shaped value with the wrong meaning.",
+        "b": "Correct. The padded ISBN \"0000316769487\" passes the API schema and fails the check-digit refinement. Rules about the world live in your code.",
+        "c": "Speed is not the reason. zod exists to add rules the schema cannot express and to give your code a typed value.",
+        "d": "The JSON schema expresses nullable fields fine with `[\"string\", \"null\"]`. zod mirrors that and adds refinements on top."
+      }
+    },
+    {
+      "id": "l3-q5",
+      "type": "mc",
+      "prompt": "Validation fails on the first Intake call. What does the lesson say to do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Discard the result and insert the record with the invalid field set to null in code."
+        },
+        {
+          "id": "b",
+          "text": "Retry the same call unchanged until it passes."
+        },
+        {
+          "id": "c",
+          "text": "Send the validation error back as the tool result, ask for a corrected call, allow at most two retries, then throw with the last error."
+        },
+        {
+          "id": "d",
+          "text": "Log a warning and import the record anyway."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Code silently rewriting the model's answer hides the failure and may mask a real problem, such as an invented ISBN that was close to a real one.",
+        "b": "Retrying without the error gives the model no new information. It may return the same value, and without a cap the loop is a bill with no ceiling.",
+        "c": "Correct. The error names the field and the rule, the message restates \"use null, never invent,\" and the cap turns a silent loop into a loud failure a person can act on.",
+        "d": "That is how a bad ISBN reaches the import table. Validation exists to stop the record, not to annotate it."
+      }
+    },
+    {
+      "id": "l3-q6",
+      "type": "mc",
+      "prompt": "Intake v2 runs on IN-3, a supplier newsletter that offers nothing. What is the correct output, and how should the job treat it?",
+      "options": [
+        {
+          "id": "a",
+          "text": "One record per title mentioned, with confidence set to low."
+        },
+        {
+          "id": "b",
+          "text": "An empty offers array, treated as a successful run with zero rows."
+        },
+        {
+          "id": "c",
+          "text": "A validation error, so the job retries."
+        },
+        {
+          "id": "d",
+          "text": "A tool call with offers set to null."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A title mentioned is not a title offered. Low confidence does not make a non-offer into an offer; it would put six phantom rows in the import table.",
+        "b": "Correct. Zero is a valid answer. The tool description and the prompt both say so, and the job logs \"0 offers recorded\" rather than paging anyone.",
+        "c": "An empty array passes validation. Treating it as an error would make Intake retry a correct answer.",
+        "d": "`offers` is a required array, and null is not in its type. Empty list means nothing offered."
+      }
+    },
+    {
+      "id": "l3-q7",
+      "type": "short",
+      "prompt": "Name one field in Intake's record that should be nullable and one that should never be inferred. Explain why for each.",
+      "rubric": [
+        "Names a field that should be nullable (for example unitPrice, isbn13, author, or quantityOffered)",
+        "Explains that nullable lets the model say the fact was absent instead of guessing a value",
+        "Names isbn13 (or another identifier) as a field that must never be inferred or computed",
+        "Explains that an inferred identifier is a manufactured fact (for example padding an ISBN-10 to make an ISBN-13)",
+        "Says where the never-infer rule lives (the system prompt instruction, or the prompt plus the check-digit validator)"
+      ],
+      "modelAnswer": "unitPrice should be nullable. Suppliers often list a title without a price; IN-1's second title is one. If the field could not be null, the model would have to fill it, and it would fill it with a plausible number like 12.99 that nobody quoted. A present null is a statement Shelf can act on: ask the supplier. isbn13 should never be inferred. An identifier either appears in the email or it does not. When IN-2 gives only an ISBN-10, the model must set isbn13 to null and put the ISBN-10 in notes, not pad or convert it. The rule lives in the Unknown values block of prompts/intake.system.md, and the zod check-digit refinement catches any invented number that slips through.",
+      "maxWords": 150
+    },
+    {
+      "id": "l3-q8",
+      "type": "free",
+      "prompt": "Write the record_offer schema for Intake with at least six fields. Mark which fields are required and which are nullable, include at least one enum, and explain how the schema plus one instruction in the system prompt handles IN-2 (an ISBN-10 and an RRP instead of a unit price).",
+      "rubric": [
+        "Shows a JSON schema (or equivalent) with at least six fields, each with a type",
+        "Lists the required fields explicitly",
+        "Marks unitPrice and isbn13 as nullable (type includes null)",
+        "Uses an enum for currency or confidence",
+        "States the instruction that identifiers and prices are never computed, inferred, or converted",
+        "Describes the correct IN-2 record: isbn13 null, unitPrice null, the ISBN-10 and RRP preserved in notes"
+      ],
+      "modelAnswer": "Here is the record schema, used as the item type of the offers array in the record_offers tool.\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"title\": { \"type\": \"string\" },\n    \"author\": { \"type\": [\"string\", \"null\"] },\n    \"isbn13\": { \"type\": [\"string\", \"null\"] },\n    \"unitPrice\": { \"type\": [\"number\", \"null\"] },\n    \"currency\": { \"type\": \"string\", \"enum\": [\"USD\", \"GBP\", \"EUR\"] },\n    \"quantityOffered\": { \"type\": [\"integer\", \"null\"] },\n    \"confidence\": { \"type\": \"string\", \"enum\": [\"high\", \"medium\", \"low\"] },\n    \"notes\": { \"type\": \"string\" }\n  },\n  \"required\": [\"title\", \"author\", \"isbn13\", \"unitPrice\", \"currency\", \"quantityOffered\", \"confidence\", \"notes\"]\n}\n```\n\nEvery field is required, so the model must say something about each one on every record. Four fields are nullable: author, isbn13, unitPrice, and quantityOffered. Null means the email did not state the fact. currency and confidence are enums, so the code never sees \"pounds\" or \"pretty sure.\"\n\nThe schema alone does not handle IN-2, because a padded ISBN-10 is still a string and an RRP is still a number. The instruction in prompts/intake.system.md closes the gap: \"Never compute or infer an identifier, and never convert an RRP or list price into unitPrice. Set the field to null and put the quoted figure in notes.\" With both in place, IN-2 produces one record: isbn13 null, unitPrice null, currency GBP, confidence low, and notes reading \"ISBN-10 0316769487 given; RRP £14.99 quoted, not a unit price.\" The zod refinement on the check digit is the safety net if the model invents a number anyway; it fails validation, the error goes back as the tool result, and the second attempt returns null."
+    }
+  ]
+}

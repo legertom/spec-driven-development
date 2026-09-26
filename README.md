@@ -9,10 +9,10 @@ Built with **Next.js 16** (Node), **Tailwind CSS 4**, **[eve](https://eve.dev)**
 
 | Area | What you get |
 |---|---|
-| **A course catalog** | Every folder in `content/courses/` is a course. Two ship today: **Spec-Driven Development for Dummies** (a primer, seven core lessons across three modules, and a bonus lesson on adoption, set in a bookshop with a coding agent named Quill) and **Building and Evaluating AI Agents** (a primer, nine core lessons across five modules, and a bonus interview-prep lesson). Every lesson has a story, numbered sections, six or more worked examples, key terms, a quiz, written exercises, and collapsible instructor notes. |
+| **A course catalog** | Every folder in `content/courses/` is a course. Four ship today: **Spec-Driven Development for Dummies** (a primer, seven core lessons, and a bonus lesson on adoption, set in a bookshop with a coding agent named Quill), **AI-Augmented Engineering: Working with Coding Agents** (the day-to-day companion: the standing brief, skills, driving a session, permissions and hooks, reviewing an agent's diff), **Prompt Engineering for Engineers** (instructions, grounding, structured output, examples and caching, and testing prompts like code, on two model-backed features of the same bookshop app), and **Building and Evaluating AI Agents** (a primer, nine core lessons across five modules, and a bonus interview-prep lesson). Every lesson has a story, numbered sections, six or more worked examples, key terms, a quiz, written exercises, and collapsible instructor notes. |
 | **Eve, the tutor** | Highlight any text and click **Ask Eve**. Eve is an eve agent (`agent/`): she knows which course and lesson you are reading, reads the lesson, the course map, the glossary, and the quiz through her own tools, explains, re-examples, and quizzes you, and gives hints (not answers) on graded questions. Conversations are durable sessions, one per lesson, that resume after a reload. |
 | **Grading** | Multiple choice is graded in code with an explanation per option. Short answers, free responses, and homework projects are graded by an LLM judge against a binary rubric, with a score, feedback, strengths, improvements, and a model answer. |
-| **Per-course glossary** | Each course ships its own glossary (139 terms for the agents course, 59 for the SDD course) with plain-English definitions and an example each. Searchable, A–Z, "Ask Eve" per term. |
+| **Per-course glossary** | Each course ships its own glossary (139 terms for the agents course, 59 for SDD, 68 for coding agents, 69 for prompt engineering) with plain-English definitions and an example each. Searchable, A–Z, "Ask Eve" per term. |
 | **How It Works** | A page that explains the platform, Eve, grading, data, and the architecture (with a diagram). |
 | **Progress** | Anonymous, no login. Stored in the browser, and in Neon when configured. Dashboard grouped by course, with weak spots and "Ask Eve to review my weak spots". |
 | **Evals** | `evals/` holds eve evals for the tutor: she reads the open lesson before answering, and she never reveals a quiz answer. |
@@ -141,6 +141,8 @@ components/                   UI: markdown renderer, callouts, Eve drawer + chat
 content/courses/
   _template/                  copy this to start a new course
   sdd-for-dummies/            Spec-Driven Development for Dummies
+  working-with-coding-agents/ AI-Augmented Engineering: Working with Coding Agents
+  prompt-engineering-for-engineers/  Prompt Engineering for Engineers
   ai-agent-evals/             Building and Evaluating AI Agents
     course.json               title, modules, lesson order, running example, tutor notes
     glossary.json             glossary entries
@@ -178,4 +180,4 @@ With the default model, a tutor turn or a grading call is roughly a cent or two.
 
 ## Credits
 
-"Building and Evaluating AI Agents" follows the module and lesson structure of the public syllabus of "AI Evals for Engineers & PMs" by Hamel Husain and Shreya Shankar. "Spec-Driven Development for Dummies" follows the ideas of a short lecture on AI-augmented engineering in a regulated lifecycle. All lesson text, examples, quizzes, glossaries, and the Pip's Plant Shop and Bramble Books worlds are original to this platform.
+"Building and Evaluating AI Agents" follows the module and lesson structure of the public syllabus of "AI Evals for Engineers & PMs" by Hamel Husain and Shreya Shankar. "Spec-Driven Development for Dummies" follows the ideas of a short lecture on AI-augmented engineering in a regulated lifecycle. "Working with Coding Agents" uses Claude Code's documented configuration shapes; "Prompt Engineering for Engineers" uses the Anthropic TypeScript SDK's documented API shapes. All lesson text, examples, quizzes, glossaries, and the Pip's Plant Shop and Bramble Books worlds are original to this platform.

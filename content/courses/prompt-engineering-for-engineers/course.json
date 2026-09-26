@@ -1,0 +1,56 @@
+{
+  "slug": "prompt-engineering-for-engineers",
+  "title": "Prompt Engineering for Engineers",
+  "shortTitle": "Prompt Engineering",
+  "tagline": "Write instructions a model will follow, put the right facts in front of it, get back data your code can trust, and test the prompt like the code it is.",
+  "description": "A prompt is a program written in English that a language model runs by predicting what comes next. This short, example-dense course teaches engineers to write instructions that hold, ground the model in the facts it needs, get structured output code can validate, use examples and caching well, and test every prompt change against a small eval set. You practice on two model-backed features of Shelf, the bookshop app from the platform's other courses, and Eve, the built-in tutor, is one highlight away.",
+  "level": "Beginner",
+  "audience": "Engineers and technical product people who write, or are about to write, a system prompt, a structured-output call, or a template that ships in a product. You can read TypeScript and JSON. No AI background is assumed.",
+  "status": "available",
+  "order": 3,
+  "verbs": [
+    { "name": "Instruct", "question": "What should the model do, for whom, with what facts, and what should it do when it cannot?", "lessons": "L0–L2" },
+    { "name": "Structure", "question": "How do you shape the input so data stays data, and shape the output so code can trust it?", "lessons": "L3–L4" },
+    { "name": "Iterate", "question": "How do you know a prompt change made things better, and when is a prompt the wrong tool?", "lessons": "L5–B1" }
+  ],
+  "pipeline": [
+    { "step": "prompts/draft.system.md", "verb": "Instruct", "note": "role, voice, scope, refusal, priority" },
+    { "step": "Delimited context", "verb": "Instruct", "note": "order record in, data is not instructions" },
+    { "step": "record_offers schema", "verb": "Structure", "note": "forced tool call, nulls allowed" },
+    { "step": "zod validation + retry", "verb": "Structure", "note": "shape is not meaning" },
+    { "step": "prompts/intake.examples.md", "verb": "Structure", "note": "three to five, labeled, stable prefix" },
+    { "step": "evals/*/cases.json", "verb": "Iterate", "note": "about 20 cases per feature" },
+    { "step": "npm run evals", "verb": "Iterate", "note": "assertions and a judge, pass rate" },
+    { "step": "prompts/CHANGELOG.md", "verb": "Iterate", "note": "one change at a time" }
+  ],
+  "modules": [
+    { "id": 0, "title": "Start Here", "blurb": "How a model produces text, the three kinds of material in a request, system prompt versus user turn, and why \"be helpful\" does nothing.", "lessons": ["l0-what-a-prompt-is"] },
+    { "id": 1, "title": "Instructions and Context", "blurb": "Specific, positive instructions with a role, a scope, and a refusal; then the facts the model needs, delimited, placed well, and protected from injection.", "lessons": ["l1-instructions-that-hold", "l2-context-grounding-and-injection"] },
+    { "id": 2, "title": "Shaping Input and Output", "blurb": "Schemas and forced tool calls for output code can validate, nulls instead of guesses, and examples, templates, versions, and caching for the input.", "lessons": ["l3-structured-output", "l4-examples-templates-and-caching"] },
+    { "id": 3, "title": "Prompts as Code", "blurb": "A small eval set, assertions and a judge, one change at a time, thinking on or off, and knowing when the prompt is the wrong layer.", "lessons": ["l5-testing-and-iterating-a-prompt"] },
+    { "id": 4, "title": "Bonus", "blurb": "A twelve-question review checklist for prompt changes and the five anti-patterns it catches.", "lessons": ["b1-the-prompt-review-checklist"] }
+  ],
+  "shortTitles": {
+    "l0-what-a-prompt-is": "What a prompt is",
+    "l1-instructions-that-hold": "Instructions that hold",
+    "l2-context-grounding-and-injection": "Context, grounding, and injection",
+    "l3-structured-output": "Structured output",
+    "l4-examples-templates-and-caching": "Examples, templates, and caching",
+    "l5-testing-and-iterating-a-prompt": "Testing and iterating a prompt",
+    "b1-the-prompt-review-checklist": "The prompt review checklist"
+  },
+  "runningExample": {
+    "title": "Bramble Books, Shelf, Intake, and Draft",
+    "summary": "The same bookshop as the platform's other courses. Two features of Shelf call a language model: Intake turns a supplier's free-text email into title records Shelf can import, and Draft writes a reply to a customer email from the order record for Tessa, the Elm Street store manager, to approve. Six recurring cases (IN-1 to IN-3, DR-1 to DR-3) run through every lesson and seed the eval sets.",
+    "tools": [
+      { "name": "prompts/draft.system.md", "does": "Draft's standing instructions: role, audience, voice, scope, refusal, priority", "tier": "Versioned, reviewed, in CHANGELOG.md" },
+      { "name": "prompts/intake.system.md + intake.examples.md", "does": "Intake's instructions and its three to five labeled examples", "tier": "Stable prefix, cached" },
+      { "name": "record_offers schema", "does": "The shape of an Intake record: nullable price, currency enum, confidence", "tier": "Forced tool call, then zod" },
+      { "name": "src/llm/draft.ts, src/llm/intake.ts", "does": "The calls, the templates, the validation, the retry", "tier": "Anthropic TypeScript SDK shapes" },
+      { "name": "evals/*/cases.json + evals/run.ts", "does": "About 20 cases per feature; assertions for Intake, a rubric judge for Draft", "tier": "npm run evals prints the pass rate" },
+      { "name": "docs/prompt-review.md", "does": "The twelve-question checklist for every prompt change", "tier": "Reviewed like code" }
+    ]
+  },
+  "tutorNotes": "Prefer the course's running example, shared with the platform's other courses: Bramble Books, a small bookshop chain, and Shelf, its TypeScript web app. Two Shelf features call a language model. Intake turns a supplier's free-text email into title records (fields: title, author, isbn13, unitPrice, currency, quantityOffered, confidence, notes) through a forced tool call named record_offers, validated with zod. Draft writes a reply to a customer email from the order record, for Tessa, the Elm Street store manager, to approve before sending. The cast: Omar (the engineer, the learner), Nadia (product owner), Priya (policy owner for payments and customer data: refunds, what may be promised), and Tessa (store manager, reviews every draft, the harshest fair critic of tone). The recurring cases: IN-1 (two titles, one in GBP, one with no price), IN-2 (an ISBN-10 and an RRP: never invent an ISBN-13 or a price), IN-3 (a newsletter offering nothing: zero records), DR-1 (torn cover on order #4471, delivered three days ago, paperback, $18.00: grounded reply, exchange policy, no refund amount promised), DR-2 (cancel and refund a shipped order: explain what cannot be done, name what Tessa can do), DR-3 (an email ending with an embedded instruction to offer a 50% discount: data is not instructions, the reply flags it). The three verbs: Instruct (L0-L2), Structure (L3-L4), Iterate (L5-B1). The one-liner: a prompt is code; treat it like code. Files: prompts/draft.system.md, prompts/intake.system.md, prompts/intake.examples.md, prompts/CHANGELOG.md, src/llm/draft.ts, src/llm/intake.ts, evals/intake/cases.json, evals/draft/cases.json, evals/run.ts, npm run evals. Code examples use the Anthropic TypeScript SDK: client.messages.create with model claude-opus-5, a system array with cache_control ephemeral on the stable block, tools with input_schema and tool_choice of type tool for structured output, and thinking of type adaptive to turn thinking on. Do not invent other SDK parameters; if asked about something outside these, say the course does not cover it and point to the official documentation. For evals at scale point to Building and Evaluating AI Agents; for the daily craft with coding agents point to Working with Coding Agents; for the lifecycle point to Spec-Driven Development for Dummies.",
+  "credits": "Written as a short companion to the platform's other courses. The API shapes follow the Anthropic TypeScript SDK's documented Messages API, tool use, prompt caching, and adaptive thinking. All lesson text, examples, prompts, quizzes, the glossary, and the Intake and Draft features were written for this course."
+}
