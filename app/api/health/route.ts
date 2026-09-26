@@ -14,6 +14,7 @@ import { isDbConfigured } from "@/lib/db";
  * GET /api/health?probe=eve  → also runs one real turn on the eve agent and reports how it ended
  * GET /api/health?probe=lesson → a real tutor turn about the first lesson of the first course, with the
  *                               page context the browser would attach; reports the tools Eve called
+ *                               (&course=<slug> picks another course)
  * Probes are throttled to one per 10 seconds per server instance.
  */
 export const maxDuration = 120;
@@ -60,8 +61,9 @@ function toolsCalled(events: readonly { type: string; data?: unknown }[]): strin
 }
 
 /** The turn a real learner would send from the first lesson of the first course. */
-function lessonProbe(): { message: string; clientContext: Record<string, string> } | null {
-  const course = getCourses()[0];
+function lessonProbe(courseSlug: string | null): { message: string; clientContext: Record<string, string> } | null {
+  const courses = getCourses();
+  const course = courseSlug ? courses.find((c) => c.slug === courseSlug) : courses[0];
   const lessonSlug = course?.lessonOrder[0];
   if (!course || !lessonSlug) return null;
   const lesson = getLessonMeta(course.slug, lessonSlug);
@@ -103,7 +105,7 @@ export async function GET(req: NextRequest) {
     }
     const turn =
       probe === "lesson"
-        ? lessonProbe()
+        ? lessonProbe(req.nextUrl.searchParams.get("course"))
         : { message: "Reply with the single word: ready", clientContext: { page: "/api/health", note: "Automated health probe. Reply with one word and use no tools." } };
     if (!turn) return Response.json({ ...base, probe: { ok: false, message: "No course content to probe with." } }, { status: 503 });
     try {
