@@ -7,30 +7,127 @@
   "level": "Beginner",
   "audience": "Beginner engineers and product managers. You can read simple code and have used a chat assistant. No machine-learning or statistics background is assumed.",
   "status": "available",
-  "order": 1,
+  "order": 2,
   "verbs": [
-    { "name": "Analyze", "question": "What is the agent actually doing, and where does it fail?", "lessons": "L0–L4" },
-    { "name": "Measure", "question": "How often does each failure happen, and can we detect it automatically?", "lessons": "L5–L7" },
-    { "name": "Improve", "question": "Which change fixes it at the lowest cost, and did it really help?", "lessons": "L8–L9" }
+    {
+      "name": "Analyze",
+      "question": "What is the agent actually doing, and where does it fail?",
+      "lessons": "L0–L4"
+    },
+    {
+      "name": "Measure",
+      "question": "How often does each failure happen, and can we detect it automatically?",
+      "lessons": "L5–L7"
+    },
+    {
+      "name": "Improve",
+      "question": "Which change fixes it at the lowest cost, and did it really help?",
+      "lessons": "L8–L9"
+    }
   ],
   "pipeline": [
-    { "step": "SPEC.md", "verb": "Analyze", "note": "scope, tools, risk tiers" },
-    { "step": "Agent + traces", "verb": "Analyze", "note": "permissions in code" },
-    { "step": "Scenarios", "verb": "Analyze", "note": "~500 synthetic cases" },
-    { "step": "Failure taxonomy", "verb": "Analyze", "note": "open + axial coding" },
-    { "step": "Evaluators", "verb": "Measure", "note": "code checks + judges" },
-    { "step": "CI gate", "verb": "Measure", "note": "pass^k, monitoring" },
-    { "step": "Red team", "verb": "Measure", "note": "guards + approval" },
-    { "step": "Frontier", "verb": "Improve", "note": "accuracy × cost" }
+    {
+      "step": "SPEC.md",
+      "verb": "Analyze",
+      "note": "scope, tools, risk tiers"
+    },
+    {
+      "step": "Agent + traces",
+      "verb": "Analyze",
+      "note": "permissions in code"
+    },
+    {
+      "step": "Scenarios",
+      "verb": "Analyze",
+      "note": "~500 synthetic cases"
+    },
+    {
+      "step": "Failure taxonomy",
+      "verb": "Analyze",
+      "note": "open + axial coding"
+    },
+    {
+      "step": "Evaluators",
+      "verb": "Measure",
+      "note": "code checks + judges"
+    },
+    {
+      "step": "CI gate",
+      "verb": "Measure",
+      "note": "pass^k, monitoring"
+    },
+    {
+      "step": "Red team",
+      "verb": "Measure",
+      "note": "guards + approval"
+    },
+    {
+      "step": "Frontier",
+      "verb": "Improve",
+      "note": "accuracy × cost"
+    }
   ],
   "modules": [
-    { "id": 0, "title": "Start Here", "blurb": "A gentle primer for beginners: what language models, agents, tools, and traces are, and why normal testing is not enough.", "lessons": ["l0-foundations-for-beginners"] },
-    { "id": 1, "title": "Building Agents", "blurb": "Write the spec, build a support agent with permissions enforced in code, instrument it so its behavior is measurable, and generate the scenarios every later module uses.", "lessons": ["l1-building-agents-foundations", "l2-designing-for-evaluability", "l3-synthetic-data-and-scenarios"] },
-    { "id": 2, "title": "Error Analysis", "blurb": "Turn traces into a human-owned failure taxonomy, then build validated evaluators and a prevalence estimate you can defend.", "lessons": ["l4-finding-failures", "l5-measuring-with-evaluators"] },
-    { "id": 3, "title": "CI/CD", "blurb": "Turn failures into a regression suite that gates deployments, and monitor production with the same evaluators.", "lessons": ["l6-ci-cd-for-agents"] },
-    { "id": 4, "title": "Security, Safety, and Governance", "blurb": "Map the attack surface, red-team the running agent, add guards and human approval, and keep a governance record.", "lessons": ["l7-safety-and-adversarial-evaluation"] },
-    { "id": 5, "title": "Improving Agents", "blurb": "Compare configurations on accuracy and cost, route each fix to the cheapest layer, and run the upgrade drill when new models ship.", "lessons": ["l8-improving-accuracy", "l9-improving-cost"] },
-    { "id": 6, "title": "Bonus", "blurb": "Common traps in eval-focused interviews and how to avoid them.", "lessons": ["b1-evals-interview-prep"] }
+    {
+      "id": 0,
+      "title": "Start Here",
+      "blurb": "A gentle primer for beginners: what language models, agents, tools, and traces are, and why normal testing is not enough.",
+      "lessons": [
+        "l0-foundations-for-beginners"
+      ]
+    },
+    {
+      "id": 1,
+      "title": "Building Agents",
+      "blurb": "Write the spec, build a support agent with permissions enforced in code, instrument it so its behavior is measurable, and generate the scenarios every later module uses.",
+      "lessons": [
+        "l1-building-agents-foundations",
+        "l2-designing-for-evaluability",
+        "l3-synthetic-data-and-scenarios"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Error Analysis",
+      "blurb": "Turn traces into a human-owned failure taxonomy, then build validated evaluators and a prevalence estimate you can defend.",
+      "lessons": [
+        "l4-finding-failures",
+        "l5-measuring-with-evaluators"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "CI/CD",
+      "blurb": "Turn failures into a regression suite that gates deployments, and monitor production with the same evaluators.",
+      "lessons": [
+        "l6-ci-cd-for-agents"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Security, Safety, and Governance",
+      "blurb": "Map the attack surface, red-team the running agent, add guards and human approval, and keep a governance record.",
+      "lessons": [
+        "l7-safety-and-adversarial-evaluation"
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Improving Agents",
+      "blurb": "Compare configurations on accuracy and cost, route each fix to the cheapest layer, and run the upgrade drill when new models ship.",
+      "lessons": [
+        "l8-improving-accuracy",
+        "l9-improving-cost"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Bonus",
+      "blurb": "Common traps in eval-focused interviews and how to avoid them.",
+      "lessons": [
+        "b1-evals-interview-prep"
+      ]
+    }
   ],
   "shortTitles": {
     "l0-foundations-for-beginners": "Foundations for beginners",
@@ -49,12 +146,36 @@
     "title": "Pip's Plant Shop",
     "summary": "A small online store that sells houseplants. Sprout is its support agent. Customers ask about orders, shipping, refunds, and plant care. Every lesson uses the same shop, the same people, and the same six tools, so you never have to re-learn the setting.",
     "tools": [
-      { "name": "lookup_order", "does": "Status, items, and dates for one order", "tier": "T0 · read-only" },
-      { "name": "get_shipping_status", "does": "Carrier and tracking events", "tier": "T0 · read-only" },
-      { "name": "search_care_guide", "does": "Plant-care articles", "tier": "T0 · read-only" },
-      { "name": "cancel_order", "does": "Cancels an unshipped order", "tier": "T1 · reversible write" },
-      { "name": "issue_refund", "does": "Sends money back", "tier": "T2 · irreversible, needs a human" },
-      { "name": "escalate_to_human", "does": "Hands the chat to Maya", "tier": "T0 · always allowed" }
+      {
+        "name": "lookup_order",
+        "does": "Status, items, and dates for one order",
+        "tier": "T0 · read-only"
+      },
+      {
+        "name": "get_shipping_status",
+        "does": "Carrier and tracking events",
+        "tier": "T0 · read-only"
+      },
+      {
+        "name": "search_care_guide",
+        "does": "Plant-care articles",
+        "tier": "T0 · read-only"
+      },
+      {
+        "name": "cancel_order",
+        "does": "Cancels an unshipped order",
+        "tier": "T1 · reversible write"
+      },
+      {
+        "name": "issue_refund",
+        "does": "Sends money back",
+        "tier": "T2 · irreversible, needs a human"
+      },
+      {
+        "name": "escalate_to_human",
+        "does": "Hands the chat to Maya",
+        "tier": "T0 · always allowed"
+      }
     ]
   },
   "tutorNotes": "Prefer the course's running example: Pip's Plant Shop, a small online plant store, and Sprout, its support agent with the tools lookup_order, get_shipping_status, search_care_guide, cancel_order (T1), issue_refund (T2, needs human approval), and escalate_to_human. The cast: Pip (owner), Maya (support agent who approves refunds), Dev (the engineer), customers Alex (order #1042, broken pot), Jordan (order #1077), and Sam (order #2001, tries a prompt injection). The three verbs of the course are Analyze (L0–L4), Measure (L5–L7), and Improve (L8–L9). Spec-driven means: write what correct means before building; the prompt, the code, and the evals are all derived from the spec.",

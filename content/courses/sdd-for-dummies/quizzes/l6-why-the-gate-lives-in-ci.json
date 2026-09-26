@@ -1,0 +1,140 @@
+{
+  "lessonSlug": "l6-why-the-gate-lives-in-ci",
+  "questions": [
+    {
+      "id": "l6-q1",
+      "type": "mc",
+      "prompt": "The model behind Quill is upgraded on a Tuesday. No file in the Shelf repository changes, and make test is green. By Thursday, new PRs handle errors differently from what the spec asks. What best explains this?",
+      "options": [
+        { "id": "a", "text": "A regression in the application code that the tests failed to cover." },
+        { "id": "b", "text": "Model drift: the agent's behavior changed because the model changed, with no change to any versioned file." },
+        { "id": "c", "text": "Prompt drift: someone edited CLAUDE.md without opening a PR." },
+        { "id": "d", "text": "A flaky test suite that passes by chance." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The existing code did not change and still passes its tests. What changed is the code the agent writes next, which the test suite does not measure.",
+        "b": "Correct. The model is one of the three inputs to agent behavior and it lives outside the repository. Only the eval suite, run on a schedule, can detect this kind of change.",
+        "c": "Prompt drift comes from an edit to the instructions. Here nothing in the repository changed, so the cause is the model, not the prompt.",
+        "d": "A flaky suite gives inconsistent results with no real change. Here the behavior change is consistent and has a clear cause: the upgrade."
+      }
+    },
+    {
+      "id": "l6-q2",
+      "type": "mc",
+      "prompt": "Bramble's agent-evals workflow has two triggers. Which pair is correct, and what does each catch?",
+      "options": [
+        { "id": "a", "text": "Every push to any branch (catches all changes) and a weekly run (catches cost overruns)." },
+        { "id": "b", "text": "Pull requests that touch CLAUDE.md or .claude/** (catches prompt drift) and a nightly schedule (catches model drift)." },
+        { "id": "c", "text": "Pull requests that touch src/** (catches code bugs) and a manual button (catches incidents)." },
+        { "id": "d", "text": "A nightly schedule only, because the model can change at any time." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Running on every push would run the suite when the agent's steering did not change, which costs money and muddies the signal. The paths filter is deliberate.",
+        "b": "Correct. The paths filter fires when the configuration changes, and the cron line runs on main every night so a model change with no PR still gets measured.",
+        "c": "Application code changes are covered by make test. The eval workflow is about the agent's configuration and model, and a manual button is not a gate.",
+        "d": "The schedule alone would let a bad CLAUDE.md edit merge in the afternoon and only be noticed at 02:00, after other work built on it."
+      }
+    },
+    {
+      "id": "l6-q3",
+      "type": "mc",
+      "prompt": "A PR edits a skill file and the eval pass rate drops from 96% to 88%, below the 90% threshold. Three of the failing cases have owner: payments. Under Bramble's merge rule, what happens?",
+      "options": [
+        { "id": "a", "text": "The PR merges, and the author files a ticket to look at the cases later." },
+        { "id": "b", "text": "The check is red, and the PR cannot merge until Priya's team reviews it and writes why in the PR." },
+        { "id": "c", "text": "The author lowers the threshold to 85% in CONTRIBUTING.md so the check passes." },
+        { "id": "d", "text": "The PR is closed automatically and the skill file is reverted." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "That is the dashboard-not-gate failure from the story. The merge rule exists so a drop stops the change rather than describing it.",
+        "b": "Correct. The rule names a threshold, requires review on a drop, and names the owning team from the case's owner field. Payments cases belong to Priya's team.",
+        "c": "Lowering the threshold is a spec change with a reviewer of record. An author cannot do it inside the PR that needs it.",
+        "d": "The rule blocks the merge and routes to a reviewer. It does not throw the work away; the author may well fix the skill in the same PR."
+      }
+    },
+    {
+      "id": "l6-q4",
+      "type": "mc",
+      "prompt": "Which of these is a leading indicator for Bramble's agent gate?",
+      "options": [
+        { "id": "a", "text": "The number of regressions found in production this quarter." },
+        { "id": "b", "text": "The number of regressions caught in CI this quarter." },
+        { "id": "c", "text": "The median number of days from a production incident to its permanent eval case." },
+        { "id": "d", "text": "The number of config PRs blocked by the check." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Regressions in production are the outcome you are trying to prevent. That number moves after the damage, so it is lagging.",
+        "b": "Catches in CI are a count of what the gate already did. It is useful, but it moves after the fact, so it is lagging.",
+        "c": "Correct. If the team stops closing loops, this number rises weeks before production incidents do. It moves before the outcome.",
+        "d": "Blocked PRs record the merge rule being exercised. Like catches in CI, it is a result, not an early signal."
+      }
+    },
+    {
+      "id": "l6-q5",
+      "type": "mc",
+      "prompt": "A nightly run fails. Omar opens the run record and the last green run record side by side. Which combination of fields tells him the cause was a model change, not a config change?",
+      "options": [
+        { "id": "a", "text": "Same timestamp, different run id." },
+        { "id": "b", "text": "Same pass rate, different threshold." },
+        { "id": "c", "text": "Same commit and same config hash, different model id." },
+        { "id": "d", "text": "Different commit, same model id." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Every run has a different id and timestamp. Those fields say when it ran, not what changed.",
+        "b": "The threshold is a policy number and rarely changes. If the pass rate were the same, there would be no failure to explain.",
+        "c": "Correct. Two of the three inputs to behavior are unchanged and the third differs. That is why the run record stores commit, config hash, and model id together.",
+        "d": "A different commit means the code or config changed, which points away from the model. The model id would need to differ to blame the upgrade."
+      }
+    },
+    {
+      "id": "l6-q6",
+      "type": "mc",
+      "prompt": "One eval case fails about one night in five with no change to code, config, or model. What should the team do?",
+      "options": [
+        { "id": "a", "text": "Delete the case, because a case that cannot be trusted is worse than none." },
+        { "id": "b", "text": "Retry it once; if it flakes twice in a week, move it to evals/quarantine/ and exclude it from the threshold until its owner fixes or retires it." },
+        { "id": "c", "text": "Lower the merge threshold by one point to absorb the noise." },
+        { "id": "d", "text": "Retry it until it passes, so the nightly run stays green." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Deleting loses the coverage the case provided. Quarantine keeps it visible in the run record until someone decides whether to fix or retire it.",
+        "b": "Correct. One retry removes noise, a flake count decides quarantine, and the owner stays responsible. Red stays meaningful.",
+        "c": "Lowering the threshold makes every case a little less trustworthy to hide one bad case. It also needs a spec change with a reviewer.",
+        "d": "Unlimited retries turn drift with a wobble into a green run. The weekly three-run measurement exists to tell flakes from drift."
+      }
+    },
+    {
+      "id": "l6-q7",
+      "type": "short",
+      "prompt": "Explain Bramble's merge rule for agent configuration changes to a new teammate in three sentences.",
+      "rubric": [
+        "States that PRs touching CLAUDE.md or .claude/** run the eval suite in CI",
+        "Names a numeric threshold or a maximum drop from the last green run",
+        "Says a change that drops the pass rate is reviewed before it merges",
+        "Identifies who reviews it: the team named as owner of the failing cases"
+      ],
+      "modelAnswer": "Anything that steers Quill, meaning CLAUDE.md and everything under .claude/, is code, so a PR that touches it runs the agent-evals suite in CI before it can merge. The check fails if the pass rate is below 90% or drops more than three points from the last green run, and a failing check blocks the merge. When that happens, the team that owns the failing cases, for example Priya's team for payments cases, has to review the change and write in the PR why it is acceptable or how it was fixed. Nobody lowers the threshold inside a PR; that is a spec change with a reviewer of record.",
+      "maxWords": 150
+    },
+    {
+      "id": "l6-q8",
+      "type": "free",
+      "prompt": "Write the agent-evals workflow for Bramble as a YAML file, then explain each trigger: what it fires on, what kind of drift it catches, and what would go wrong without it.",
+      "rubric": [
+        "Includes a pull_request trigger with a paths filter covering CLAUDE.md and .claude/**",
+        "Includes a schedule trigger with a cron expression",
+        "Explains that the PR trigger catches prompt drift (config edits) before merge",
+        "Explains that the schedule catches model drift, which arrives with no PR",
+        "Includes a step that fails the job when the pass rate is below the threshold or drops from the last green run",
+        "Stores or uploads the run record so it survives as evidence"
+      ],
+      "modelAnswer": "```yaml\n# .github/workflows/agent-evals.yml\nname: agent-evals\non:\n  pull_request:\n    paths: ['CLAUDE.md', '.claude/**']\n  schedule:\n    - cron: '0 2 * * *'\n\njobs:\n  evals:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci\n      - run: npm run evals -- --out .gates/runs/${{ github.run_id }}.json\n      - run: node scripts/check-threshold.mjs .gates/runs/${{ github.run_id }}.json\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: eval-run-${{ github.run_id }}\n          path: .gates/runs/\n```\n\nThe pull_request trigger fires only when a PR touches CLAUDE.md or anything under .claude/, which is where skills and hooks live. Those files steer Quill, so an edit to them is a behavior change even though no application code moved. This is prompt drift, and the trigger measures it on the branch before it merges. Without it, Omar's \"prefer concise diffs\" edit would merge with a green make test and start deleting comments across the codebase. The paths filter keeps the suite off PRs that only change src/, which saves money and keeps a red check meaningful.\n\nThe schedule trigger runs at 02:00 every night on the main branch with no PR at all. It exists because the model is the one input to agent behavior that is not in git. When the vendor upgrades it, nothing in the repository changes, so no PR trigger can fire. The nightly run is the only thing that measures that. Without it, the Tuesday upgrade goes unnoticed until a customer sees a zero balance.\n\nThe check-threshold step exits non-zero when the pass rate is below 90% or drops more than three points from the last green run, which is what makes the run a gate rather than a report. The upload step, with if: always(), keeps the run record with its commit, config hash, and model id even on failure, so the failing run becomes the evidence Priya and Mr. Hale read later."
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "lessonSlug": "l1-the-artifact-chain",
+  "questions": [
+    {
+      "id": "l1-q1",
+      "type": "mc",
+      "prompt": "Which list gives the six links of the artifact chain in the correct order?",
+      "options": [
+        { "id": "a", "text": "intent.md, plan.md, spec.md, make test, evals/*.json, merged PR" },
+        { "id": "b", "text": "intent.md, spec.md, plan.md, make test, evals/*.json, merged PR" },
+        { "id": "c", "text": "spec.md, intent.md, plan.md, merged PR, make test, evals/*.json" },
+        { "id": "d", "text": "plan.md, intent.md, spec.md, evals/*.json, make test, merged PR" }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The plan cannot come before the spec, because the plan quotes the spec's acceptance criteria and constraints. Nothing in plan.md is written until spec.md is accepted.",
+        "b": "Correct. Intent is accepted first, the spec grows from it, the plan is approved before any code exists, make test produces the log, the eval pass rate gates the merge, and the merged PR folds it all into one page.",
+        "c": "Intent comes before the spec: the spec's first part is the intent, so it must already exist. And the PR merges last, after the test log and eval run are attached to it.",
+        "d": "A plan written before the intent is a solution looking for a problem. The chain starts with the business outcome, and the plan is the third link, approved by the engineer."
+      }
+    },
+    {
+      "id": "l1-q2",
+      "type": "mc",
+      "prompt": "Who approves plan.md, and when?",
+      "options": [
+        { "id": "a", "text": "Nadia, after the PR is opened, so she can check the outcome was delivered." },
+        { "id": "b", "text": "Quill, as soon as it has written the plan, so the build can start without waiting." },
+        { "id": "c", "text": "Omar, before the build starts, so a bad plan is corrected as a page instead of as a forty-file diff." },
+        { "id": "d", "text": "Mr. Hale, once a year, when he reviews the changes for that period." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Nadia accepts the intent, not the plan. The plan is engineering detail (steps, files, commands), and it must be approved before code exists, not after the PR.",
+        "b": "The agent never promotes its own work. If Quill could approve its own plan, the boundary would not exist and the 'will not touch' list would be a suggestion.",
+        "c": "Correct. The engineer reads the steps, the files touched, and the 'will not touch' list, edits them if needed, and signs before Quill writes a line of code.",
+        "d": "Mr. Hale reads the chain afterwards as evidence. He does not approve links; the named people at each boundary do, at the time."
+      }
+    },
+    {
+      "id": "l1-q3",
+      "type": "mc",
+      "prompt": "In spec.md, what does it mean for a concern to be \"routed to a policy owner\"?",
+      "options": [
+        { "id": "a", "text": "The constraints section names the owner, states the rule as understood, and asks a question; the owner's answer is written under it with a date before any code is generated." },
+        { "id": "b", "text": "The policy owner is added as a reviewer on the pull request so she can object before merge." },
+        { "id": "c", "text": "Quill is told in CLAUDE.md to follow the company's data policy." },
+        { "id": "d", "text": "The engineer books a meeting with the policy owner after the feature ships to confirm it is compliant." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. Routing is a sentence in a file, not a meeting. It happens at the spec link, so the owner's answers become acceptance criteria and tests before Quill starts.",
+        "b": "Reviewing the PR is a week too late. By then the code exists and the wrong rule is baked in. In the CR-103 story that is exactly when Priya found out.",
+        "c": "An instruction in CLAUDE.md is a request to the agent, and it does not tell the agent which rule applies to this change. The policy owner has to state the rule for this spec.",
+        "d": "After shipping is not routing, it is damage control. The point of the chain is that the question is asked before generation, not after production."
+      }
+    },
+    {
+      "id": "l1-q4",
+      "type": "mc",
+      "prompt": "What gets attached to the pull request, and why?",
+      "options": [
+        { "id": "a", "text": "A sentence from Quill saying the tests passed, because the agent ran them." },
+        { "id": "b", "text": "The make test log with its exit code and the eval pass rate, because a log is evidence and a sentence is a claim." },
+        { "id": "c", "text": "The full contents of the customers table, so reviewers can check the export by hand." },
+        { "id": "d", "text": "Only the diff, because the reviewer can rerun the tests locally if they want proof." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "'The tests passed' is a claim. It has no command, no commit, no time, and no output. Anyone can type it.",
+        "b": "Correct. The log shows what ran, on which commit, and what it printed. The eval pass rate shows the agent's configuration still behaves. Both can be read by an auditor without the engineer in the room.",
+        "c": "Personal data in a PR is a policy breach of its own. Evidence is about what was checked, not a dump of what the code touched.",
+        "d": "Rerunning tests locally proves something to one person on one day. Attaching the log proves it to everyone, permanently, and it is what Mr. Hale will read."
+      }
+    },
+    {
+      "id": "l1-q5",
+      "type": "mc",
+      "prompt": "What does \"promotion\" mean in the artifact chain, and who may do it?",
+      "options": [
+        { "id": "a", "text": "Moving work across a stage boundary, such as approving the plan or merging the PR; a named person or a pass rate a person set, never the agent." },
+        { "id": "b", "text": "Deploying the merged code to production; done automatically when make test exits zero." },
+        { "id": "c", "text": "Raising the priority of a change request so Quill works on it first; done by Nadia." },
+        { "id": "d", "text": "Marking a pull request as ready for review; done by Quill when it finishes the build." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. Every boundary has a promoter: Nadia for intent, Priya for her constraints, Omar for the plan, the reviewer of record and the eval threshold for the merge. Quill drafts and opens but never promotes.",
+        "b": "Deployment is one kind of promotion, but promotion happens at every boundary, and a zero exit code alone does not merge anything. A person merges.",
+        "c": "Prioritisation is planning, not promotion. Promotion is about work changing hands to a stage where someone else is responsible for it.",
+        "d": "Opening the PR is Quill's job and is not a promotion, because nothing has been accepted yet. Merging is the promotion, and Quill may not do it."
+      }
+    },
+    {
+      "id": "l1-q6",
+      "type": "mc",
+      "prompt": "The eval suite in evals/*.json ran on the CR-103 pull request even though Shelf's application code was the main change. Why did it run?",
+      "options": [
+        { "id": "a", "text": "It runs on every PR regardless of what changed." },
+        { "id": "b", "text": "Omar added a skill for handling personal data, and a skill is agent configuration, which can change Quill's behavior on every future task." },
+        { "id": "c", "text": "Because make test failed, and the eval suite is the fallback check." },
+        { "id": "d", "text": "Because Priya requested it in the constraints section." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The suite runs when agent configuration changes (CLAUDE.md, skills, hooks) and on a schedule. It does not test Shelf; make test does.",
+        "b": "Correct. Configuration steers the agent, so a change to it is gated by a pass rate rather than a glance. L5 and L6 explain this in depth.",
+        "c": "make test exited zero in the CR-103 PR. The eval suite is not a fallback; it checks something different, the agent's configuration.",
+        "d": "Priya confirmed the consent rule. She did not decide which checks run in CI; the workflow's path filter did, because a file under .claude/ changed."
+      }
+    },
+    {
+      "id": "l1-q7",
+      "type": "short",
+      "prompt": "Why does the engineer approve plan.md before Quill starts building, rather than reviewing the code afterwards?",
+      "rubric": [
+        "States that the plan is approved before any code is generated",
+        "Gives a cost reason: a plan is short (one page) and a diff can be large, so mistakes are cheaper to catch in the plan",
+        "Mentions the 'will not touch' list or files touched as something the engineer checks",
+        "States that the agent may not approve its own plan (the agent never promotes its own work)"
+      ],
+      "modelAnswer": "Omar approves the plan before the build because a mistake in a plan costs a sentence to fix and a mistake in a diff costs an afternoon. The plan is one page: steps, files touched, commands, and the files Quill promises not to touch. Omar can see \"this touches the payments module\" or \"this runs against production\" in ten seconds, and edit the line. In a forty-file diff he might not see it at all, and by then the code exists and is tempting to keep. The plan is also a boundary. Quill writes it but may not approve it, because the agent never promotes its own work. Omar's signature and date on plan.md are what make the build permitted.",
+      "maxWords": 150
+    },
+    {
+      "id": "l1-q8",
+      "type": "free",
+      "prompt": "Trace CR-101 (show a gift card's remaining balance on the order page) through all six links of the artifact chain. At each link, name the artifact or command, the person or rule that accepts it, and one sentence of what it would contain for CR-101.",
+      "rubric": [
+        "Names all six links in order: intent.md, spec.md, plan.md, make test, evals/*.json, merged PR",
+        "Names Nadia as accepting intent.md and Priya as the policy owner routed to in spec.md",
+        "Names Omar as approving plan.md before the build",
+        "States that the make test log and the eval pass rate are attached to the PR as evidence",
+        "Names a reviewer of record for the merged PR who is a human, not Quill",
+        "Includes at least one CR-101-specific detail (only the customer's own gift card balances, or the payments boundary)"
+      ],
+      "modelAnswer": "1. intent.md. Nadia writes: \"A customer viewing their order page can see how much is left on the gift cards linked to their own account, so fewer people phone the store to ask.\" She signs and dates it. No implementation is mentioned.\n\n2. spec.md. Omar expands the intent into six parts. The constraints section says: touches the orders page and reads the gift card balance service; data boundary: gift card balance is stored value and belongs to the payments domain; policy owner: Priya. Rule as understood: a customer may see only balances for cards linked to their own account. Question for Priya: may a card bought as a gift show its balance to the buyer after it is redeemed? Priya answers no and signs. The acceptance criteria now include \"a customer never sees another customer's balance.\"\n\n3. plan.md. Quill proposes: add a read-only balance lookup in src/orders/, render it on the order page, write tests/gift-balance.test.ts with two customers, run make test. Will not touch: src/payments/** write paths, any production database. Omar reads the list, adds \"do not edit files under tests/ after they are written,\" and signs.\n\n4. make test. Quill builds, tests, and lints. The log shows the two-customer isolation test passing and exit code 0. The log is pasted into the PR.\n\n5. evals/*.json. CR-101 did not change CLAUDE.md, skills, or hooks, so the eval check is skipped on this PR; the nightly run still reports its pass rate, and it stays above threshold.\n\n6. Merged PR. The description links intent, spec with Priya's signature, plan with Omar's edit, the test log, and names Omar as reviewer of record. Quill opened the PR and did not merge it. Mr. Hale can read the page and see who decided each step."
+    }
+  ]
+}

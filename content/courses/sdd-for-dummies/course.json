@@ -1,0 +1,58 @@
+{
+  "slug": "sdd-for-dummies",
+  "title": "Spec-Driven Development for Dummies",
+  "shortTitle": "SDD for Dummies",
+  "tagline": "Write what \"done\" means before an AI agent writes the code, gate the work with checks a human can trust, and leave evidence an auditor can read.",
+  "description": "AI coding agents are fast at typing and terrible at knowing what you meant. This course teaches the loop that fixes that: intent written down first, acceptance criteria before code, a gate the agent must pass before a person looks, and a merged change that carries its own proof. You practice on a tiny bookshop app with a coding agent named Quill, and Eve, the built-in tutor, is one highlight away.",
+  "level": "Beginner",
+  "audience": "Beginner engineers, product managers, and team leads who are starting to use AI coding agents. You can read simple code and have opened a pull request. No AI, compliance, or DevOps background is assumed.",
+  "status": "available",
+  "order": 1,
+  "verbs": [
+    { "name": "Specify", "question": "What does \"done\" mean, in writing, before anything is generated?", "lessons": "L0–L3" },
+    { "name": "Gate", "question": "What must the agent's work pass before a person looks, and where does a person decide?", "lessons": "L4–L6" },
+    { "name": "Prove", "question": "What evidence shows the gate ran, and who accepted the change?", "lessons": "L7–B1" }
+  ],
+  "pipeline": [
+    { "step": "intent.md", "verb": "Specify", "note": "product owner accepts" },
+    { "step": "spec.md", "verb": "Specify", "note": "routed to policy owners" },
+    { "step": "plan.md", "verb": "Specify", "note": "engineer approves before build" },
+    { "step": "Failing test", "verb": "Specify", "note": "fails for the expected reason" },
+    { "step": "gate.sh + hooks", "verb": "Gate", "note": "allow, ask, or block" },
+    { "step": "evals/*.json", "verb": "Gate", "note": "pass rate gates the merge" },
+    { "step": "CI workflow", "verb": "Gate", "note": "config is code" },
+    { "step": "Evidence pack", "verb": "Prove", "note": "code + proof + approver" }
+  ],
+  "modules": [
+    { "id": 0, "title": "Start Here", "blurb": "What a coding agent is, why \"done\" has to be written down, and the four rules of a spec-driven lifecycle.", "lessons": ["l0-what-is-spec-driven-development"] },
+    { "id": 1, "title": "The Executable Spec", "blurb": "The artifact chain from intent to merged PR, the six parts of a spec an agent can build from, and turning criteria into failing tests before any code exists.", "lessons": ["l1-the-artifact-chain", "l2-writing-an-executable-spec", "l3-from-spec-to-failing-test"] },
+    { "id": 2, "title": "The Enforced Gate", "blurb": "Checks the agent must pass before a person looks, hooks that allow, ask, or block, eval cases built from real work, and why the gate lives in CI.", "lessons": ["l4-the-enforced-gate", "l5-eval-cases-for-coding-agents", "l6-why-the-gate-lives-in-ci"] },
+    { "id": 3, "title": "The Auditable Change", "blurb": "Control, evidence, metric, and cost: how to prove a gate ran, and how to talk to an auditor with files instead of memories.", "lessons": ["l7-evidence-and-audit-readiness"] },
+    { "id": 4, "title": "Bonus", "blurb": "A 30-day plan for bringing spec-driven development to a real team, and answers to the usual objections.", "lessons": ["b1-adopting-it-on-your-team"] }
+  ],
+  "shortTitles": {
+    "l0-what-is-spec-driven-development": "What is spec-driven development?",
+    "l1-the-artifact-chain": "The artifact chain",
+    "l2-writing-an-executable-spec": "Writing an executable spec",
+    "l3-from-spec-to-failing-test": "From spec to failing test",
+    "l4-the-enforced-gate": "The enforced gate",
+    "l5-eval-cases-for-coding-agents": "Eval cases for coding agents",
+    "l6-why-the-gate-lives-in-ci": "Why the gate lives in CI",
+    "l7-evidence-and-audit-readiness": "Evidence and audit readiness",
+    "b1-adopting-it-on-your-team": "Adopting it on your team"
+  },
+  "runningExample": {
+    "title": "Bramble Books, Shelf, and Quill",
+    "summary": "Bramble Books is a small bookshop chain whose web app, Shelf, handles inventory, online orders, gift cards (stored value, so money rules apply), and customer emails (so privacy rules apply). Quill is the AI coding agent the team uses. Every lesson follows the same three change requests through the same artifact chain, so you never re-learn the setting.",
+    "tools": [
+      { "name": "intent.md", "does": "The outcome in one sentence, in business terms", "tier": "Nadia (product owner) accepts" },
+      { "name": "spec.md", "does": "Intent, constraints, acceptance criteria, verification, human gates, evidence", "tier": "Concerns routed to Priya (policy owner)" },
+      { "name": "plan.md", "does": "The steps Quill will take and the files it will touch", "tier": "Omar (engineer) approves before build" },
+      { "name": "make test", "does": "Build, tests, lint; output attached to the PR", "tier": "Exit code is the verdict" },
+      { "name": "gate.sh + hooks", "does": "Allow, ask, or block an agent action; log every decision", "tier": "Human gate for production actions" },
+      { "name": "evals/*.json", "does": "Real tasks paired with accepted outcomes; runs in CI", "tier": "Pass rate gates the merge" }
+    ]
+  },
+  "tutorNotes": "Prefer the course's running example: Bramble Books, a small bookshop chain; Shelf, its TypeScript web app (inventory, online orders, gift cards, customer emails); and Quill, the terminal coding agent the team uses. The cast: Omar (the engineer, the learner), Nadia (product owner, accepts intent.md), Priya (policy owner for payments and customer data; spec concerns are routed to her; she approves refunds over $200), and Mr. Hale (the auditor who asks for proof). The three recurring change requests: CR-101 (show gift card balance on the order page), CR-102 (let a store manager refund a gift card purchase, a production action that needs a human gate), CR-103 (export customer emails for the newsletter, consent policy applies). The artifact chain: intent.md, spec.md, plan.md, make test, evals/*.json, merged PR. The six parts of an executable spec: intent, constraints, acceptance criteria, verification, human gates, evidence. The three verbs: Specify (L0-L3), Gate (L4-L6), Prove (L7-B1). The one-liner: the spec is the contract, the agent is the implementer, the gate is the evidence. Agent configuration examples use Claude Code shapes (CLAUDE.md, .claude/settings.json hooks with allow/ask/deny). When the learner asks about evals in depth, point them to the platform's other course, Building and Evaluating AI Agents.",
+  "credits": "The ideas follow a short lecture on AI-augmented engineering in a regulated software lifecycle: the artifact chain, the executable spec, the enforced gate, evals in CI, and evidence thinking. All lesson text, examples, quizzes, the glossary, and the Bramble Books world were written for this course."
+}

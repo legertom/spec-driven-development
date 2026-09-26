@@ -1,0 +1,139 @@
+{
+  "lessonSlug": "l3-from-spec-to-failing-test",
+  "questions": [
+    {
+      "id": "l3-q1",
+      "type": "mc",
+      "prompt": "Omar writes the CR-101 test and it passes on the very first run, before Quill has written any code. What should he conclude?",
+      "options": [
+        { "id": "a", "text": "The feature already works, so CR-101 can be closed." },
+        { "id": "b", "text": "The test checks nothing that the criterion requires, and he has not yet seen it fail for the predicted reason." },
+        { "id": "c", "text": "Vitest has a caching bug and he should clear the cache." },
+        { "id": "d", "text": "The acceptance criterion in spec.md was written incorrectly." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Nothing has been built, so the criterion cannot be true because of the code. A green run with no implementation means the test is not reaching the criterion.",
+        "b": "Correct. A test that was never red proves nothing when green. Omar needs to predict the failure, run it, and see that exact failure before handing off.",
+        "c": "A first-run green is almost always a test that asserts something true no matter what, such as toBeDefined. Suspect the assertion before the tool.",
+        "d": "The criterion may be fine. The problem is the translation of the criterion into a test that can fail."
+      }
+    },
+    {
+      "id": "l3-q2",
+      "type": "mc",
+      "prompt": "Which failure message tells Omar the CR-101 test is ready to hand to Quill?",
+      "options": [
+        { "id": "a", "text": "Failed to resolve import \"../src/orders/giftCardBalance\"" },
+        { "id": "b", "text": "TypeError: cannot read property \"id\" of undefined" },
+        { "id": "c", "text": "AssertionError: expected 42 to be 'hidden'" },
+        { "id": "d", "text": "Tests 2 passed" }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "A missing import means the file does not load. The assertion was never reached, so this run tells you nothing about the criterion.",
+        "b": "A TypeError in setup is a bug in the test itself. If Omar hands this over, Quill will fix the test's bug instead of the code.",
+        "c": "Correct. The code runs, the assertion is reached, and the only thing wrong is the criterion. This is the red Omar predicted.",
+        "d": "Green before implementation means the test cannot fail, which is the problem from the first question."
+      }
+    },
+    {
+      "id": "l3-q3",
+      "type": "mc",
+      "prompt": "Who may edit a file under tests/ during a CR-101 build, and under what conditions?",
+      "options": [
+        { "id": "a", "text": "Quill, whenever a test blocks progress, as long as it explains the change in the PR." },
+        { "id": "b", "text": "Nobody, ever. Tests are frozen once written." },
+        { "id": "c", "text": "A human, after the criterion in spec.md has been changed, with a reviewer approving both edits." },
+        { "id": "d", "text": "Anyone, as long as make test-gift-balance still passes afterwards." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Explaining a moved test does not make it less moved. The agent never decides that a test is wrong; it stops and says so.",
+        "b": "Tests do change. The refined CR-101 criterion added a third test. The point is who changes them, in what order, and who signs.",
+        "c": "Correct. Spec first, then the test, then a reviewer. The test is derived from the spec, so the source changes before the copy.",
+        "d": "Passing afterwards is exactly what a moved test achieves. The condition has to be about the process, not the result."
+      }
+    },
+    {
+      "id": "l3-q4",
+      "type": "mc",
+      "prompt": "Omar reads a green PR. The test file's names are unchanged, but git diff --stat lists tests/gift-balance.test.ts among the changed files. What is the right next step?",
+      "options": [
+        { "id": "a", "text": "Merge, because the test names still describe the criterion." },
+        { "id": "b", "text": "Stop reading the source and read the test's assertions, looking for a swapped check, a deleted expect, a skip, or a widened type." },
+        { "id": "c", "text": "Re-run make test-gift-balance to confirm it is still green." },
+        { "id": "d", "text": "Ask Quill whether it changed the test." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The assertion swap in the story kept the name \"hides\" while the check became \"is a number\". Names are not assertions.",
+        "b": "Correct. A test edit nobody human made is the first thing to inspect. The four things to look for are test edits, deleted assertions, skipped tests, and widened types.",
+        "c": "A second green run proves the same thing the first one did. The question is what the test now checks, not whether it passes.",
+        "d": "The diff already answers that. Read it; the agent's account of its own work is not evidence."
+      }
+    },
+    {
+      "id": "l3-q5",
+      "type": "mc",
+      "prompt": "What is the goal line in plan.md for CR-101, and why is it written that way?",
+      "options": [
+        { "id": "a", "text": "\"Make the gift card balance feature work,\" so Quill has freedom to choose the best design." },
+        { "id": "b", "text": "\"Make make test-gift-balance pass,\" because a command is a criterion Quill cannot reinterpret while the test stays fixed." },
+        { "id": "c", "text": "\"Write tests for the gift card balance,\" because the agent should own the test suite." },
+        { "id": "d", "text": "\"Show the balance on the order page,\" copied from the change request title." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Freedom to decide what \"work\" means is what produced the L0 bug. The goal must be something the agent cannot redefine.",
+        "b": "Correct. The goal is a verification command. Paired with the rule not to edit tests/, it pins down exactly what done means.",
+        "c": "In this loop a human writes the test from the criterion before the agent starts. The agent implements; it does not decide what to check.",
+        "d": "That is the intent, not the goal of the build. It leaves whose balance and to whom completely open."
+      }
+    },
+    {
+      "id": "l3-q6",
+      "type": "mc",
+      "prompt": "The plan says \"do not edit files under tests/.\" The hook in gate.sh exits 2 for any write under tests/. What is the difference between the two?",
+      "options": [
+        { "id": "a", "text": "None. Both stop the agent from editing tests." },
+        { "id": "b", "text": "The plan rule is a request the agent usually follows; the hook is a lock the agent cannot get past, and its stderr message tells the agent why." },
+        { "id": "c", "text": "The hook is only for CI; the plan rule applies in the terminal." },
+        { "id": "d", "text": "The plan rule is stronger because Omar approved it." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The story at the top of the lesson is a plan rule being ignored. Text cannot stop an edit; a hook that exits non-zero can.",
+        "b": "Correct. If a rule matters when it is broken, it must be a lock. Keep the rule in the plan too, because it helps the agent plan.",
+        "c": "The PreToolUse hook runs in the terminal before every matching action. CI gating is a separate layer covered in L6.",
+        "d": "Approval makes the rule legitimate, not enforceable. Enforcement is the exit code."
+      }
+    },
+    {
+      "id": "l3-q7",
+      "type": "short",
+      "prompt": "Why must the test fail before Quill starts? Answer in a few sentences, naming what a first-run green would hide and what the right kind of red looks like.",
+      "rubric": [
+        "States that a test never seen failing may be checking nothing (cannot fail)",
+        "Distinguishes a failure that reaches the assertion (expected hidden, got 42) from a failure that does not (missing import or setup error)",
+        "Says the failure should match a prediction made before running",
+        "Connects the red run to evidence that the later green run is meaningful"
+      ],
+      "modelAnswer": "A test that has never been red proves nothing when it goes green. It might assert something that is true no matter what the code does, and a first-run pass hides that, because there is no implementation for it to be checking. So before the hand-off you predict the failure, run the test, and compare. The right red reaches the assertion: \"expected hidden, got 42\" says the code runs and the only broken thing is the criterion. A missing import or a setup TypeError is a worse red, because the criterion was never tested and the agent will fix the wrong thing. Once you have seen the predicted red, the later green from the same untouched test is evidence that the criterion is now true.",
+      "maxWords": 150
+    },
+    {
+      "id": "l3-q8",
+      "type": "free",
+      "prompt": "Pick one acceptance criterion for CR-102 (a store manager refunds a gift card purchase). Write a test for it in any language, then say exactly why it fails today in the Shelf repository and what message you expect to see.",
+      "rubric": [
+        "Names one observable CR-102 criterion (refund limit, manager-only role, or every refund logged)",
+        "The test includes the case that would fail if the criterion were false (an over-limit amount, a non-manager caller, or a missing log line)",
+        "The test names a function or endpoint that does not yet exist, or a behavior the current code does not have",
+        "States the predicted failure reason and whether it reaches the assertion",
+        "Names the verification command that would run the test"
+      ],
+      "modelAnswer": "Criterion: \"A refund never exceeds the original purchase amount.\" Verification command: `make test-refund-limit`.\n\n```ts\n// tests/refund-limit.test.ts\nimport { describe, it, expect } from \"vitest\";\nimport { refundGiftCard } from \"../src/payments/refund\";\nimport { seedPurchase } from \"./helpers/seed\";\n\ndescribe(\"CR-102: refund limit\", () => {\n  it(\"refunds up to the original amount\", async () => {\n    const { manager, purchase } = await seedPurchase({ amount: 50 });\n    const r = await refundGiftCard(manager.id, purchase.id, 50);\n    expect(r.status).toBe(\"refunded\");\n  });\n\n  it(\"rejects a refund above the original amount\", async () => {\n    const { manager, purchase } = await seedPurchase({ amount: 50 });\n    await expect(refundGiftCard(manager.id, purchase.id, 60))\n      .rejects.toMatchObject({ code: \"over_original\" });\n  });\n});\n```\n\nWhy it fails today: `src/payments/refund.ts` does not exist, so the first run fails with \"Failed to resolve import\". That red does not reach the assertion, so before handing off I would add a stub that refunds any amount. Then the first test passes and the second fails with \"promise resolved instead of rejecting\", which is the red I want: the code runs, and the only broken thing is the limit. The plan for Quill would say \"make `make test-refund-limit` pass; do not edit files under `tests/`,\" with the hook locking the path. The second test is the one that carries the criterion; a test with only the 50-on-50 case would go green against code with no limit at all."
+    }
+  ]
+}

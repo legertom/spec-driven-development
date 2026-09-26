@@ -1,0 +1,120 @@
+{
+  "lessonSlug": "b1-adopting-it-on-your-team",
+  "questions": [
+    {
+      "id": "b1-q1",
+      "type": "mc",
+      "prompt": "Omar opens the adoption conversation by asking the team which action they would never let an agent perform unattended. Why is this the right first question?",
+      "options": [
+        { "id": "a", "text": "It shows the team that gates are dangerous and should be avoided." },
+        { "id": "b", "text": "It locates the first gate and proves the team already believes in gates, so the plan builds on agreement instead of argument." },
+        { "id": "c", "text": "It lets Omar skip writing specs for anything except that one action." },
+        { "id": "d", "text": "It identifies which engineer will own the CI workflow." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "The question is meant to surface the gate the team already wants, not to argue against gates. Every team has at least one action it refuses to trust.",
+        "b": "Correct. Priya and Nadia named CR-102 and CR-103 without debating whether gates are worthwhile. The disagreement was about order, which is a planning question, not a values question.",
+        "c": "Specs are written for every change that goes through the chain, starting with a small one in week one. The first gate does not exempt the other changes.",
+        "d": "Ownership of CI is a week-four concern. The question is about which action needs a human, not about who runs the workflow."
+      }
+    },
+    {
+      "id": "b1-q2",
+      "type": "mc",
+      "prompt": "Which change should a team push through the artifact chain in week one of the 30-day plan?",
+      "options": [
+        { "id": "a", "text": "The riskiest change, such as CR-102's refund action, so the gate is tested under real stakes." },
+        { "id": "b", "text": "A CR-101-sized change: small, visible, touching one boundary, finishable in a few days." },
+        { "id": "c", "text": "No change at all; week one is for writing the CI workflow." },
+        { "id": "d", "text": "Every open change request at once, so the whole backlog gets specs." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Starting with the scary change turns week one into a policy argument. The team needs to learn the shape of the loop before the stakes rise.",
+        "b": "Correct. One small change lets the team feel intent, spec, failing test, and merge in a single week, with a template spec left behind for later.",
+        "c": "CI comes in week four, after there is a gate and an eval suite to run. Week one is about the chain, not the automation around it.",
+        "d": "Adoption is one change, one spec, one gate, one eval suite. Width comes after the first loop works."
+      }
+    },
+    {
+      "id": "b1-q3",
+      "type": "mc",
+      "prompt": "In week three, where do the first twenty eval cases come from?",
+      "options": [
+        { "id": "a", "text": "Recent merged pull requests, with the original request as the prompt and the accepted outcome as the checks." },
+        { "id": "b", "text": "Invented tasks written to cover every feature of Shelf." },
+        { "id": "c", "text": "The agent generates them from CLAUDE.md." },
+        { "id": "d", "text": "The auditor supplies them during the annual visit." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. The team already made these judgments when it merged the PRs. Mining them records existing judgment instead of inventing new judgment.",
+        "b": "Invented tasks test what you imagined the agent doing. Real tasks test what the team actually asked for, in the words it arrived in.",
+        "c": "The agent's configuration is the thing under test. Letting it write its own cases tests the model's mood, not the team's expectations.",
+        "d": "Mr. Hale asks for evidence that cases ran. He does not write them. Evals are owned by the team that does the work."
+      }
+    },
+    {
+      "id": "b1-q4",
+      "type": "mc",
+      "prompt": "Nadia says the refund gate is too slow. What is the lesson's recommended answer?",
+      "options": [
+        { "id": "a", "text": "Remove the gate, because product owners decide priorities." },
+        { "id": "b", "text": "Explain that safety always matters more than speed." },
+        { "id": "c", "text": "Measure the wait time per gate from the log, make it visible, and tune the threshold based on the number." },
+        { "id": "d", "text": "Move the gate from a hook to a comment in CLAUDE.md so it stops blocking." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "The gate exists because Priya owns the money rules. It can be tuned, and Nadia can argue for that, but a number should drive the change.",
+        "b": "That is an argument, and arguments do not end this conversation. A median wait of 40 minutes did. Answer objections with measurements.",
+        "c": "Correct. Bramble's log showed seven requests and a 40-minute median, so the team kept the gate, raised the two-approver line to $1,000, and named a Friday backup.",
+        "d": "A comment in CLAUDE.md is a request, not a lock. Moving enforcement into text removes the gate without saying so."
+      }
+    },
+    {
+      "id": "b1-q5",
+      "type": "mc",
+      "prompt": "Which sentence is the right way to explain the refund rule to Mr. Hale, the auditor?",
+      "options": [
+        { "id": "a", "text": "\"Big refunds get a second look, and you can see how long that takes.\"" },
+        { "id": "b", "text": "\"The hook returns ask above 200 and logs the approval.\"" },
+        { "id": "c", "text": "\"This satisfies the dual-approval control for stored value, and the log at .gates/log.jsonl is the evidence.\"" }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "That is the version for Nadia. It speaks in outcomes and wait times, which is what a product owner cares about.",
+        "b": "That is the version for an engineer. It names the mechanism, which is useful to a peer and meaningless to an auditor.",
+        "c": "Correct. An auditor asks which control a gate satisfies and what artifact proves it ran. This sentence answers both with a file path."
+      }
+    },
+    {
+      "id": "b1-q6",
+      "type": "short",
+      "prompt": "Name one gate you would not let an agent pass unattended on a team you know, and say what evidence would change your mind.",
+      "rubric": [
+        "Names one specific action (not a category like 'anything risky') that would require a human",
+        "Names the person or role who would approve it",
+        "States at least one concrete piece of evidence that would change the decision, such as a pass rate over a number of runs or a log showing a pattern",
+        "Says whether the gate is permanent or could be relaxed, and why"
+      ],
+      "modelAnswer": "On my team the gate is deleting or altering rows in the customer billing table. Any agent command that touches that table pauses for the billing lead, who approves in the PR. The evidence that would change my mind is a hundred nightly eval runs where the agent never proposed a destructive billing command outside a migration file, plus a decision log showing every real request was correctly routed to ask for six months. Even then I would relax the gate only for reads and for migrations that pass a dry run, and keep the human for deletes. Money that leaves cannot be called back, so that part of the gate is permanent.",
+      "maxWords": 150
+    },
+    {
+      "id": "b1-q7",
+      "type": "free",
+      "prompt": "Write the week-by-week 30-day adoption plan for a team you know. Name the first change request, the first hook rule, where the eval cases will come from, and how the gate reaches CI.",
+      "rubric": [
+        "Names a specific first change request that is small and visible, not the riskiest one",
+        "Week 1 includes an intent file, a spec, and a failing test before the agent builds",
+        "Week 2 names one concrete hook rule and where decisions are logged",
+        "Week 3 says where the eval cases come from (recent PRs, tickets, or real tasks) and gives a target count",
+        "Week 4 names the CI trigger (config paths and a schedule) and one incident that becomes a permanent eval",
+        "Includes at least one measurement the team will use to answer an objection"
+      ],
+      "modelAnswer": "Team: a four-person group maintaining an internal expense tool. First change request: show each employee the total of their own pending claims on the dashboard. It is read-only, touches the money boundary, and takes two days.\n\nWeek 1. The finance lead writes intent.md in one paragraph. I write spec.md with the six parts and route the constraints to the finance lead, who adds 'never show another employee's claims.' I write one Vitest test with two employees that fails with 'expected hidden, got 120.' The agent builds from plan.md without touching tests/. We merge with the make test log attached.\n\nWeek 2. Add gate.sh (build, tests, lint, exit non-zero) and one PreToolUse hook that blocks writes under tests/. Every decision is appended to .gates/log.jsonl, which CI uploads as an artifact so nobody can edit it locally.\n\nWeek 3. Mine the last month of merged PRs. Twenty cases, each with the original request and two to four checks; the claims-total case gets a policy check that the query filters by employee id.\n\nWeek 4. Add .github/workflows/agent-evals.yml triggered on pull_request for CLAUDE.md and .claude/** and nightly at 2am, with a 90 percent merge threshold. Turn last quarter's duplicate-reimbursement incident into evals/duplicate-claim-guard.json. Enable an ask decision for any command that writes to the payments table, approved by the finance lead.\n\nMeasurement: median wait per gate from the log, reported weekly. If the finance lead's median wait passes an hour, we add a backup approver rather than removing the gate."
+    }
+  ]
+}

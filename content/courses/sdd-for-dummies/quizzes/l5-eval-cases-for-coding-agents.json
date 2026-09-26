@@ -1,0 +1,157 @@
+{
+  "lessonSlug": "l5-eval-cases-for-coding-agents",
+  "questions": [
+    {
+      "id": "l5-q1",
+      "type": "mc",
+      "prompt": "What does an eval case for a coding agent pair together?",
+      "options": [
+        { "id": "a", "text": "A polished, idealized prompt and the agent's own summary of what it did." },
+        { "id": "b", "text": "A real task in the words it arrived in and the checks the team accepted as the outcome." },
+        { "id": "c", "text": "A unit test and the commit that made it pass." },
+        { "id": "d", "text": "A model name and its pass rate on a public benchmark." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A polished prompt tests the polished prompt, not the messy request Quill will see next time. And the agent's summary is not a check; a check must pass or fail without a human.",
+        "b": "Correct. The prompt is the real request, verbatim. The checks (tests, lint, behavior, policy) are the standard the reviewer already applied when the work was accepted.",
+        "c": "That is a test, which checks the code at one commit. An eval runs the agent from scratch on a task and then checks what it produced.",
+        "d": "A benchmark measures a model on someone else's tasks. An eval suite measures your agent, with your configuration, on your team's work."
+      }
+    },
+    {
+      "id": "l5-q2",
+      "type": "mc",
+      "prompt": "Omar edits one line of CLAUDE.md. No TypeScript changes and make test is green. Why does the eval suite still need to run?",
+      "options": [
+        { "id": "a", "text": "Because CLAUDE.md is compiled into the app bundle." },
+        { "id": "b", "text": "Because the unit tests only run when TypeScript files change." },
+        { "id": "c", "text": "Because CLAUDE.md changes what Quill writes, so it is configuration, and configuration is code that can regress." },
+        { "id": "d", "text": "It does not need to run; a green test suite proves the edit was safe." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "CLAUDE.md is never part of the app. It is read by the agent at the start of a session, which is exactly why the app's tests cannot see its effect.",
+        "b": "When the tests run is not the issue. The tests check the code that exists today; they cannot check the code Quill will write tomorrow under the new instruction.",
+        "c": "Correct. Config is code. CLAUDE.md, skills, and hooks steer the agent, so a change to any of them can cause a regression that only the eval suite can detect.",
+        "d": "The concise diffs incident had a green test suite for a month while Quill deleted comments and docstrings. Green tests say nothing about the agent's future behavior."
+      }
+    },
+    {
+      "id": "l5-q3",
+      "type": "mc",
+      "prompt": "The newsletter export shipped without a consent filter and reached customers. Who writes the eval case for this incident?",
+      "options": [
+        { "id": "a", "text": "A central quality team, once they have time." },
+        { "id": "b", "text": "The team that owned the incident, and the case stays in the suite permanently." },
+        { "id": "c", "text": "Quill, since it wrote the original code." },
+        { "id": "d", "text": "Mr. Hale, during the next audit." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A central group did not feel the pain and does not know what the accepted outcome should have been. Delay also means the same mistake can return before the case exists.",
+        "b": "Correct. Every production incident becomes a permanent eval written by the team that had it, with the incident named in the source field so it is never retired by accident.",
+        "c": "The agent never promotes or grades its own work. A human writes the case, names the check that would have failed, and owns it.",
+        "d": "The auditor asks for proof that the loop exists. He does not write the loop, and once a year is far too late."
+      }
+    },
+    {
+      "id": "l5-q4",
+      "type": "mc",
+      "prompt": "Which of these is a valid policy check for the CR-103 case?",
+      "options": [
+        { "id": "a", "text": "A reviewer reads the diff and decides whether it feels safe." },
+        { "id": "b", "text": "A script that fails unless the export filters on consent and a test asserts that filter." },
+        { "id": "c", "text": "A grep that passes if the word consent appears anywhere in the diff." },
+        { "id": "d", "text": "The agent's final message says it followed Priya's rule." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A check must return pass or fail with no human in the loop. A reviewer's feeling cannot run nightly or gate a merge.",
+        "b": "Correct. It is automatic, it names the rule and its owner, and it checks both the code and a test of the behavior, so a comment cannot satisfy it.",
+        "c": "This is the cheatable check from the lesson. A line reading // TODO: consent passes it. Use greps for structure, not for meaning.",
+        "d": "The agent's claim is not evidence. Checks run against what the agent produced, never against what it said about it."
+      }
+    },
+    {
+      "id": "l5-q5",
+      "type": "mc",
+      "prompt": "How many cases should a starter suite have, and why that range?",
+      "options": [
+        { "id": "a", "text": "Three to five, so each one can be reviewed carefully." },
+        { "id": "b", "text": "Twenty to fifty, enough to notice a regression and small enough to run nightly." },
+        { "id": "c", "text": "At least five hundred, so the pass rate is statistically precise." },
+        { "id": "d", "text": "One per file in the repository." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "With five cases, one flaky check moves the pass rate by twenty points. The number is too noisy to gate anything.",
+        "b": "Correct. Below twenty the rate swings on a single case; above fifty the runs get slow and expensive and the team stops looking at them.",
+        "c": "Each case runs the agent from scratch in a clean checkout. Five hundred nightly runs would cost more than the regressions they catch, and you can grow the suite later.",
+        "d": "Cases come from real tasks and incidents, not from the file tree. A file count says nothing about what the team has asked the agent to do."
+      }
+    },
+    {
+      "id": "l5-q6",
+      "type": "mc",
+      "prompt": "The migrate-node case has failed every nightly run for two weeks because the repository is already on Node 22 and the task no longer makes sense. What should happen?",
+      "options": [
+        { "id": "a", "text": "Leave it; a failing case keeps the team alert." },
+        { "id": "b", "text": "Edit the check so it always passes and keep the pass rate high." },
+        { "id": "c", "text": "The owner retires it through a reviewed PR, since no incident stands behind it." },
+        { "id": "d", "text": "Delete the whole evals directory and start again." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "A case that always fails teaches people to ignore red. That erodes trust in every other case in the suite.",
+        "b": "A check that always passes measures nothing and lies about the pass rate. That is worse than a stale case.",
+        "c": "Correct. Stale cases get a ticket to their owner, who fixes or retires them in a PR. Only incident cases are protected from retirement, and this one has no incident.",
+        "d": "The other forty-nine cases still measure real behavior. Retire one case with one review, not the whole suite."
+      }
+    },
+    {
+      "id": "l5-q7",
+      "type": "short",
+      "prompt": "Why does a change to CLAUDE.md deserve regression testing? Answer in a few sentences a teammate could repeat.",
+      "rubric": [
+        "States that CLAUDE.md (or a skill or hook) changes what the agent writes without changing the app's code",
+        "Explains that unit tests check existing code and cannot detect a change in the agent's future behavior",
+        "Names the eval suite (or eval cases) as the thing that can detect the regression",
+        "Gives a concrete example of a config-caused regression, such as the concise diffs incident"
+      ],
+      "modelAnswer": "CLAUDE.md is read by Quill at the start of every session and steers every line it writes. Editing it changes the agent's behavior without touching a single TypeScript file, so nothing in make test can notice. The unit tests check the code that exists today; they cannot check the code Quill will produce tomorrow under a new instruction. That is why config is code: the eval suite runs the agent on real tasks and checks the results, so it is the only thing that can catch a regression caused by an instruction. When Omar added \"prefer concise diffs,\" tests stayed green for a month while comments and docstrings vanished. One eval case with a docstring count would have failed on the first run.",
+      "maxWords": 150
+    },
+    {
+      "id": "l5-q8",
+      "type": "free",
+      "prompt": "Write one eval case as JSON for the L0 incident where the order page showed gift card balances belonging to other customers. Use the vague original prompt, include at least three checks of at least two different kinds, name an owner and a source, and explain in a short paragraph why each check is there.",
+      "rubric": [
+        "The JSON is valid and has id, owner, source, prompt, and checks fields",
+        "The prompt is the vague original request rather than a corrected one",
+        "The case has at least three checks and at least two of the four kinds (tests, lint, behavior, policy)",
+        "At least one check would fail on the original bad code (for example, a two-customer test or an owner-scope check)",
+        "The source names the incident so the case is not retired by accident",
+        "The explanation says why each check exists"
+      ],
+      "modelAnswer": "```json\n{\n  \"id\": \"gift-balance-isolation\",\n  \"owner\": \"priya\",\n  \"source\": \"incident 2026-06-02, balances shown across customers\",\n  \"prompt\": \"Add gift card balances to the order page\",\n  \"checks\": [\n    { \"type\": \"tests\", \"command\": \"make test\" },\n    { \"type\": \"lint\", \"command\": \"make lint\" },\n    { \"type\": \"behavior\", \"command\": \"make test-gift-balance\" },\n    { \"type\": \"policy\", \"command\": \"checks/owner-scope.sh src/orders/\" }\n  ]\n}\n```\n\nThe prompt is the nine-minute request exactly as Omar typed it in L0, because the point is to prove Quill now does the right thing when asked badly. It will be asked badly again. The source names the incident and its date so that nobody retires the case later because it \"never fails.\" Priya owns it because she owns the rule about whose balance may be shown.\n\nThe first two checks are the baseline: make test proves nothing else broke and make lint proves the diff follows house style. The behavior check is the two-customer Vitest test from L3, which renders the order page for customer A and asserts that customer B's card balance is hidden. That test fails on the original bad code, which is what makes this case worth keeping. The policy check is a script that greps every query under src/orders/ and fails if any of them reads gift cards without a customer id filter. It catches a version of the bug the test might miss, such as a new endpoint that leaks the balance somewhere other than the page the test renders."
+    }
+  ],
+  "homework": {
+    "id": "l5-hw2",
+    "title": "Homework 2 — A five-case eval suite from your own work",
+    "prompt": "Build a small eval suite from tasks you have actually done with a coding agent, or tasks you have done by hand and would hand to one.\n\n1. Pick five real tasks from your recent work: merged PRs, tickets, or bug fixes. Copy each request in the words it arrived in. Do not clean it up.\n2. Write one JSON file per case under `evals/`, following the shape from the lesson: `id`, `owner`, `source`, `prompt`, and a `checks` array. Each case needs at least two checks, and the checks across the suite must cover at least two of the four kinds (tests pass, lint clean, behavior unchanged, policy followed).\n3. At least one check in the suite must be a policy check: a rule someone outside engineering owns, expressed as a grep, a script, or a clearly worded judge question.\n4. At least one case must come from an incident or a bug that reached users, with the incident named in `source`.\n5. Run the suite at least once and report the pass rate as a table (case id, PASS or FAIL). If you cannot run an agent, write a runner plan instead: the command that would start the agent, how you get a clean checkout per case, how each check is executed, and how the pass rate is computed.\n\nSubmit the five JSON files, any check scripts, and either the results table or the runner plan.",
+    "deliverables": [
+      "Five eval case files under evals/, each with id, owner, source, prompt, and checks",
+      "Any check scripts the cases reference",
+      "A results table from at least one run, or a written runner plan"
+    ],
+    "rubric": [
+      "Five cases, each with a real prompt copied in the words it arrived in",
+      "Each case has at least two checks",
+      "At least one policy check that names a rule and its owner",
+      "One case is derived from an incident or bug, with the incident named in source",
+      "A pass rate is reported from at least one run, or a runner plan describes clean checkout, agent start, check execution, and pass rate computation"
+    ]
+  }
+}

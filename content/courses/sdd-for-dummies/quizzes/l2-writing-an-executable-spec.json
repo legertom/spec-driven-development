@@ -1,0 +1,158 @@
+{
+  "lessonSlug": "l2-writing-an-executable-spec",
+  "questions": [
+    {
+      "id": "l2-q1",
+      "type": "mc",
+      "prompt": "The sentence \"Never reads customers.email or customers.address\" appears in the CR-102 spec. Which of the six parts does it belong to?",
+      "options": [
+        { "id": "a", "text": "Intent" },
+        { "id": "b", "text": "Constraints" },
+        { "id": "c", "text": "Acceptance criteria" },
+        { "id": "d", "text": "Evidence" }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Intent is the business outcome in one sentence. It never names tables or fields; those are implementation details that belong lower in the spec.",
+        "b": "Correct. This is a data boundary, a line between data the change may touch and data it must never reach. Data boundaries live in the constraints section, which is routed to Priya.",
+        "c": "Acceptance criteria describe behaviors the finished feature exhibits. A rule about what the change must never touch is a boundary on how it is built, not a behavior it shows.",
+        "d": "Evidence says what is recorded and where it lands. A boundary on data access is a rule to obey, not a record of what happened."
+      }
+    },
+    {
+      "id": "l2-q2",
+      "type": "mc",
+      "prompt": "Which of these is a good acceptance criterion for CR-102?",
+      "options": [
+        { "id": "a", "text": "Refunds are handled safely and only by the right people." },
+        { "id": "b", "text": "The refund code is clean and well tested." },
+        { "id": "c", "text": "A request from any role other than store_manager returns 403 and no refunds row is written." },
+        { "id": "d", "text": "Refunds should be limited to a sensible amount." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "\"Safely\" and \"the right people\" are not observable. Nobody can say what they would look at to confirm this, so neither Quill nor a test can check it.",
+        "b": "Code quality is a property of the code, not a behavior anyone outside it can watch. A criterion must be something you could observe from a response, a screen, or a table.",
+        "c": "Correct. It names a role, a response code, and a side effect that did not happen. It is true or false, and one Vitest test can check it.",
+        "d": "\"Sensible\" is a feeling. The lesson's version names the limit: larger than the original purchase price is rejected with over_purchase."
+      }
+    },
+    {
+      "id": "l2-q3",
+      "type": "mc",
+      "prompt": "What must a verification command do for its criterion to count as executable?",
+      "options": [
+        { "id": "a", "text": "Print a human-readable summary so the reviewer can judge it." },
+        { "id": "b", "text": "Exit with a non-zero code when the criterion is not met." },
+        { "id": "c", "text": "Run every test in the suite so nothing is missed." },
+        { "id": "d", "text": "Be written by Quill after the implementation so it matches the code." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A summary needs a person to read it. The point of a verification command is that gate.sh and CI can act on the result without anyone reading anything.",
+        "b": "Correct. Exit 0 when the criterion holds, anything else when it does not. That single rule lets a script, a hook, or CI check the promise.",
+        "c": "The lesson pairs one command with one criterion on purpose. When make test-refund-role fails, everyone knows which promise broke. A giant run hides that.",
+        "d": "The command and the criterion are written before generation. A command written to match the code proves the code does what it does, not what was wanted."
+      }
+    },
+    {
+      "id": "l2-q4",
+      "type": "mc",
+      "prompt": "Which of these is a complete human gate as the lesson defines it?",
+      "options": [
+        { "id": "a", "text": "Large refunds should be reviewed by a senior person before they go through." },
+        { "id": "b", "text": "Refunds over $200 are held as pending_approval until Priya approves in Shelf admin; her user id and the time are written to the refund row." },
+        { "id": "c", "text": "Quill checks that the refund amount is reasonable before creating it." },
+        { "id": "d", "text": "The manager confirms the refund in a dialog before it is submitted." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "\"Large\" is a feeling and \"a senior person\" is not a name. On the day it matters, nobody knows who decides or when the gate applies.",
+        "b": "Correct. It has all three parts: a threshold that triggers it, a named person who decides, and a place where the decision is recorded.",
+        "c": "The agent never promotes its own work, and it never approves a production action. A human gate is where a person decides, not the model.",
+        "d": "A confirmation dialog is the same person clicking twice. A gate pauses for someone other than the person who started the action."
+      }
+    },
+    {
+      "id": "l2-q5",
+      "type": "mc",
+      "prompt": "Why is spec.md committed in the same pull request as the code built from it?",
+      "options": [
+        { "id": "a", "text": "So the repository holds what was asked and what was built side by side, at the same commit, and any later change to one shows up against the other." },
+        { "id": "b", "text": "Because Quill cannot read files outside the repository." },
+        { "id": "c", "text": "So the spec can be edited later without a review." },
+        { "id": "d", "text": "Because a wiki page would be too long for reviewers." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. This is the file pair. Mr. Hale can check out the commit and see the exact spec that produced the exact code, and a refund limit that moves in the code without moving in the spec is visible in the diff.",
+        "b": "Where the agent reads from is not the reason. The reason is the audit trail: a versioned file at the same commit as the code it produced.",
+        "c": "The opposite. A file in the repo changes only through a reviewed commit. A wiki page can change after merge with no record of which version Quill built from.",
+        "d": "Length is not the concern. The lesson asks you to keep the spec under one screen wherever it lives. The concern is versioning and proof."
+      }
+    },
+    {
+      "id": "l2-q6",
+      "type": "mc",
+      "prompt": "What is a data boundary?",
+      "options": [
+        { "id": "a", "text": "The maximum size of a database table the change may create." },
+        { "id": "b", "text": "A line between data the change may read or write and data it must never reach, named specifically enough that a diff or a grep can check it." },
+        { "id": "c", "text": "The point at which Priya must approve a refund." },
+        { "id": "d", "text": "A test that checks the gift card balance after a refund." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Size limits are a capacity concern. A data boundary is about which data the change is allowed to touch at all.",
+        "b": "Correct. For CR-102 the boundary is: reads and writes gift_cards and refunds, never reads customers.email. It lives in constraints and is routed to Priya.",
+        "c": "That is a human gate. It names a threshold and a person. A data boundary names tables and fields.",
+        "d": "That is a verification command for an acceptance criterion. It checks a behavior, not a boundary on data access."
+      }
+    },
+    {
+      "id": "l2-q7",
+      "type": "short",
+      "prompt": "Nadia's ticket for CR-103 says \"the export should be safe.\" Turn that sentence into two observable acceptance criteria for the newsletter email export.",
+      "rubric": [
+        "Writes exactly two criteria, each a single true-or-false statement",
+        "At least one criterion names consent explicitly (only customers who opted in appear in the export)",
+        "Each criterion names something observable: a row, a count, a file, a response code, or a log entry",
+        "Neither criterion uses a vague word such as safe, correct, secure, or appropriate"
+      ],
+      "modelAnswer": "Criterion 1: The export file contains only customers whose newsletter_consent field is true at the time of export. A test creates three customers, two consented and one not, runs the export, and expects exactly two rows, neither of which is the non-consenting email. Criterion 2: Every export run writes one row to the exports log with the user id who ran it, the row count, and the timestamp, and a run by any role other than marketing_admin returns 403 and writes no file. Both are observable from outside the code: a file's contents, a log row, and a response code. Neither uses the word safe, which cannot be tested.",
+      "maxWords": 150
+    },
+    {
+      "id": "l2-q8",
+      "type": "free",
+      "prompt": "Write the Constraints and Human gates sections of spec.md for CR-103, the newsletter email export. Name the systems touched, the data boundary, the policy that applies, and at least one gate with a condition, a named person, and where the decision is recorded.",
+      "rubric": [
+        "Constraints name at least one system the change touches and at least one it must never touch",
+        "Constraints state a data boundary in terms of specific tables or fields, and mention consent",
+        "Constraints name Priya as the policy owner for customer data",
+        "Human gates section names a condition that triggers the gate",
+        "Human gates section names a specific person who decides",
+        "Human gates section says where the decision is recorded"
+      ],
+      "modelAnswer": "```markdown\n## 2. Constraints\n- Touches the customers table (read only) and the exports service (write). Never touches the orders, payments, or gift_cards tables.\n- Data boundary: reads customers.email and customers.newsletter_consent only. Never reads customers.address, customers.phone, or any order history.\n- Only rows with newsletter_consent = true at the time of the run may appear in the file.\n- The file is written to the exports bucket, never to a local disk or an email attachment.\n- Customer data policy applies. Priya is the policy owner and confirms this section before generation.\n\n## 5. Human gates\n- Any export run is created in status pending_approval. Priya (customer data policy owner) approves or rejects in Shelf admin before the file is released to the newsletter tool. Nadia covers when Priya is away.\n- An export that would include more than 5,000 rows escalates to Priya with the row count shown, because a jump in size usually means the consent filter was dropped.\n- The approver's user id, the decision, the row count, and the time are written to the exports log row for that run. Nobody else can approve, including the engineer who ran it.\n```\n\nThe constraints section does two jobs. It names the tables Quill may open, so the diff can be checked against the boundary, and it puts consent in writing as a rule rather than a hope. The human gate exists because an email list is personal data that cannot be recalled once sent. The gate names Priya, a fallback, a numeric threshold for escalation, and the log row where the decision lands, which is what Mr. Hale will ask to see."
+    }
+  ],
+  "homework": {
+    "id": "l2-hw1",
+    "title": "Homework 1 — An executable spec for CR-102",
+    "prompt": "Write a complete six-part `spec.md` for CR-102, \"Let a store manager refund a gift card purchase,\" as if you were Omar and Priya had not yet seen it.\n\nUse the Bramble Books world exactly: Shelf is the app, Quill is the agent, Nadia owns intent, Priya owns payments policy, Mr. Hale will read it next year. Your file must have these six headed sections, in this order: Intent, Constraints, Acceptance criteria, Verification, Human gates, Evidence.\n\nRequirements:\n\n- **Intent** is one sentence in business terms with no implementation detail.\n- **Constraints** name the systems touched, at least one system never touched, a data boundary in terms of tables or fields, and Priya as policy owner.\n- **Acceptance criteria** are at least four observable, true-or-false behaviors written before any code. Do not copy the lesson's five verbatim; at least one criterion must be your own.\n- **Verification** pairs every criterion with one command (a `make` target or a test command) and states that it exits non-zero on failure. For one command, describe in two or three sentences what the test sets up and what it expects.\n- **Human gates** name a condition, a named person, a fallback person, and where the decision is recorded.\n- **Evidence** names what is logged, where it lands, and what the PR must carry.\n\nKeep the whole file under 60 lines. Submit it as one markdown code block, followed by a short paragraph (under 100 words) saying which single line you think Priya would push back on and why.",
+    "deliverables": [
+      "One `spec.md` in a markdown code block with all six headed sections in order",
+      "A description of what one verification command sets up and expects",
+      "A paragraph under 100 words naming the line Priya would question and why"
+    ],
+    "rubric": [
+      "All six parts are present, headed, and in the order intent, constraints, acceptance criteria, verification, human gates, evidence",
+      "Every acceptance criterion is observable and can be judged true or false; none uses a vague word such as correctly, safely, or appropriately",
+      "Each acceptance criterion is paired with a verification command that can fail, and the spec states that failure is a non-zero exit",
+      "The human gate names a specific person and a numeric threshold or explicit condition",
+      "The evidence section names a location where the record lands (a log, a table, a bucket, or the PR)",
+      "The constraints section names a data boundary in terms of specific tables or fields and names at least one system the change must never touch"
+    ]
+  }
+}

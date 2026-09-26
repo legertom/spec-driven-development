@@ -1,0 +1,121 @@
+{
+  "lessonSlug": "l0-what-is-spec-driven-development",
+  "questions": [
+    {
+      "id": "l0-q1",
+      "type": "mc",
+      "prompt": "Quill finished CR-101 in nine minutes and the tests passed. Which sentence best describes what a coding agent like Quill is bad at?",
+      "options": [
+        { "id": "a", "text": "Typing TypeScript quickly and without syntax errors." },
+        { "id": "b", "text": "Knowing anything you did not tell it, such as whose gift card balance may be shown." },
+        { "id": "c", "text": "Reading a large repository and finding the right files." },
+        { "id": "d", "text": "Running the test suite and reporting the exit code." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Typing is the thing a coding agent is good at. Quill produced a tidy diff across four files in nine minutes.",
+        "b": "Correct. An agent fills every gap in the request with a plausible guess. Nobody wrote down the ownership rule, so Quill showed every balance it could find.",
+        "c": "Reading files is part of the loop and agents do it well. Quill found the GiftCard model on its own; the problem was what it did not know about it.",
+        "d": "Running commands and reading results is a core part of the agent loop. The tests ran and passed. They passed because no test asked the missing question."
+      }
+    },
+    {
+      "id": "l0-q2",
+      "type": "mc",
+      "prompt": "Why does a ticket title such as \"Add gift card balances to the order page\" fail as a definition of done?",
+      "options": [
+        { "id": "a", "text": "Tickets are stored outside the repository, so an agent has no way to open them." },
+        { "id": "b", "text": "It is a topic, not a set of observable behaviors, so neither an agent nor an auditor can check the work against it." },
+        { "id": "c", "text": "Ticket titles are too short; a longer title would have been enough." },
+        { "id": "d", "text": "Only the product owner is allowed to write tickets, so engineers cannot use them." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Where the ticket lives is a detail. Even a ticket pasted into the repository would still fail, because its content is a topic and not a test.",
+        "b": "Correct. Three people gave three different definitions of done for the same ticket. A definition of done has to be observable so a test or a person can say yes or no.",
+        "c": "Length is not the issue. A long paragraph that never states observable behaviors is still a topic. The fix is criteria written before the code.",
+        "d": "Anyone can write a ticket. The lesson is about what a ticket cannot hold, not who holds it."
+      }
+    },
+    {
+      "id": "l0-q3",
+      "type": "mc",
+      "prompt": "In the opening story, Quill showed balances of gift cards belonging to other customers. Which of the four rules was most directly broken before any code was generated?",
+      "options": [
+        { "id": "a", "text": "Rule 2: acceptance criteria were not written before the code, so no criterion said whose balance may be shown." },
+        { "id": "b", "text": "Rule 4: Quill merged its own pull request." },
+        { "id": "c", "text": "Rule 3: the pull request was missing a timestamp." },
+        { "id": "d", "text": "No rule was broken; the tests passed, so the process worked." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. The criterion \"a customer never sees the balance of a card linked to another account\" existed in Priya's head but not in a file, so nothing checked it.",
+        "b": "Omar merged the pull request, not Quill. The direction was correct. The problem was that Omar had no spec to check the diff against.",
+        "c": "There was no spec at all, so headers were missing too, but the missing timestamp did not cause the leak. The missing criterion did.",
+        "d": "Green tests only prove the code does what the tests say. No test asked about other customers, so passing tests told the team nothing about the leak."
+      }
+    },
+    {
+      "id": "l0-q4",
+      "type": "mc",
+      "prompt": "Under Rule 4, who may move work across a stage boundary, for example from an open pull request to a merged one?",
+      "options": [
+        { "id": "a", "text": "The agent, as long as the full test suite is green." },
+        { "id": "b", "text": "A named human who accepts or rejects; the agent never promotes its own work." },
+        { "id": "c", "text": "Either the agent or a human, whichever is available first." },
+        { "id": "d", "text": "The CI system, automatically, once every check passes." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Green tests mean the code matches the tests. Someone still has to judge whether the tests match the intent, and that judgment needs a name attached.",
+        "b": "Correct. Quill opens the pull request and Omar merges it, never the reverse. If the agent can promote, nobody accepted anything.",
+        "c": "Availability is not the rule. A boundary with no named person at it is not a boundary.",
+        "d": "CI runs checks and produces evidence, but acceptance at a boundary is a human decision. The gate informs the decision; it does not replace it."
+      }
+    },
+    {
+      "id": "l0-q5",
+      "type": "mc",
+      "prompt": "In the one-liner \"the spec is the contract, the agent is the implementer, the gate is the evidence,\" what does the gate provide?",
+      "options": [
+        { "id": "a", "text": "A faster way for the agent to write code." },
+        { "id": "b", "text": "A record that the required checks ran and what they found, which proves a rule was followed." },
+        { "id": "c", "text": "The one-paragraph business outcome that Nadia accepts." },
+        { "id": "d", "text": "A replacement for the reviewer of record." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Speed is not the point of a gate. A gate is a check the work must pass before it moves on, with a record that it ran.",
+        "b": "Correct. Evidence is anything that proves a rule was followed: a test log, a decision log, a signed header. The gate produces it, and Mr. Hale reads it.",
+        "c": "That is the intent, the first artifact in the chain. The gate comes after the code exists and checks it against the spec.",
+        "d": "The gate produces evidence for a person to accept. It never replaces the human at the boundary."
+      }
+    },
+    {
+      "id": "l0-q6",
+      "type": "short",
+      "prompt": "Pick a workflow you know, at work or in a side project. Where is \"done\" defined in it today, and who would an auditor ask to prove a change was approved?",
+      "rubric": [
+        "Names a specific workflow or project",
+        "States where the definition of done currently lives (for example a ticket, a chat thread, a document, or someone's head)",
+        "Names the person or role an auditor would have to ask",
+        "Says whether that definition could be checked by an agent or an auditor, and why"
+      ],
+      "modelAnswer": "On my team's internal reporting tool, \"done\" lives in the Jira ticket title and whatever the engineer and the requester agreed in a Slack thread. The ticket usually says something like \"add export button.\" There are no written acceptance criteria, and the tests cover whatever the engineer thought of while building. If an auditor asked who approved the last export change, they would have to ask me, and I would have to search Slack for a thumbs-up from the analytics lead. None of that can be checked by an agent, because the definition is a topic in a ticket and a conversation, not observable behaviors in a file with a named reviewer. The first fix would be an intent.md and three criteria per change.",
+      "maxWords": 150
+    },
+    {
+      "id": "l0-q7",
+      "type": "free",
+      "prompt": "Rewrite the CR-101 request (\"show a gift card's remaining balance on the order page\") as an intent paragraph that Nadia could accept, followed by three acceptance criteria that Quill could be measured against. At least one criterion must address whose balance may be shown.",
+      "rubric": [
+        "The intent is one paragraph in business terms and does not describe implementation",
+        "The intent names who benefits and why the outcome matters",
+        "Exactly three acceptance criteria are listed",
+        "Each criterion is observable: a person or a test could say yes or no to it",
+        "At least one criterion states that a customer sees only balances for gift cards linked to their own account"
+      ],
+      "modelAnswer": "```markdown\n# intent.md for CR-101\n\nA customer who pays with a gift card should be able to see how much\nvalue remains on that card from their own order page, so they know\nbefore checkout whether they need a second payment method. This\napplies only to gift cards linked to the customer's own account.\nStore staff already see balances in the back office; that view is\nunchanged.\n\nAccepted by: Nadia\n```\n\nAcceptance criteria:\n\n1. A logged-in customer sees the remaining balance, in dollars and cents, for every gift card linked to their own account, on their order page.\n2. A customer never sees the balance of a gift card linked to a different account, even when that card was used on an order the customer can view.\n3. The balance displayed matches the payments service to the cent at the moment the page loads, and the page shows \"balance unavailable\" rather than a stale number if the payments service does not respond.\n\nThe intent stays in business language: it says who, what, where, and why, and it names what is out of scope without saying how to build anything. Each criterion can be turned into a test. Criterion 2 is the one that was missing from the nine-minute version, and it is the one Priya would be asked to confirm when the spec is routed to her."
+    }
+  ]
+}

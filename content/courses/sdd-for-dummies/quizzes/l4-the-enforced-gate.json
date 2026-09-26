@@ -1,0 +1,141 @@
+{
+  "lessonSlug": "l4-the-enforced-gate",
+  "questions": [
+    {
+      "id": "l4-q1",
+      "type": "mc",
+      "prompt": "gate.sh runs its checks in a fixed order and stops at the first failure. Which order does it use, and why?",
+      "options": [
+        { "id": "a", "text": "Eval suite, lint, tests, build, because the most expensive check should run first to save time later." },
+        { "id": "b", "text": "Build, tests, lint, eval suite, because each check only means something if the earlier ones passed, and the slowest check runs last." },
+        { "id": "c", "text": "Tests, build, eval suite, lint, because tests are the acceptance criteria and should always go first." },
+        { "id": "d", "text": "Any order, because all four checks run every time regardless of results." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Running the eval suite first spends the slowest and most expensive check on code that may not even compile. The cheap checks go first.",
+        "b": "Correct. A failed build makes the tests meaningless, lint on broken code is noise, and the eval suite is the slowest, so it runs last and only on code that passed everything else.",
+        "c": "Tests are the criteria, but they cannot run on code that does not build. The build must come first.",
+        "d": "gate.sh stops on the first failure and exits non-zero. Running every check regardless would waste eval budget and bury the real failure in later noise."
+      }
+    },
+    {
+      "id": "l4-q2",
+      "type": "mc",
+      "prompt": "A hook in .claude/settings.json runs before every Bash, Edit, or Write action. What are the three verdicts it can return?",
+      "options": [
+        { "id": "a", "text": "Pass, fail, and retry." },
+        { "id": "b", "text": "Allow, ask, and block." },
+        { "id": "c", "text": "Approve, reject, and escalate to the auditor." },
+        { "id": "d", "text": "Log, warn, and ignore." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Pass and fail describe a check like make test. A hook decides whether an action may happen, and retry is not a verdict the hook gives.",
+        "b": "Correct. Allow lets the action run (exit 0), block stops it and shows the stderr text to the agent (exit 2), and ask pauses the action for a named person (permissionDecision: ask).",
+        "c": "The auditor asks for proof after the fact. He is never in the path of an agent action. Approval comes from the person the spec names, such as Priya.",
+        "d": "Every verdict is logged, but logging is what the hook does alongside its decision, not a decision itself."
+      }
+    },
+    {
+      "id": "l4-q3",
+      "type": "mc",
+      "prompt": "Which of these is a self-explaining block?",
+      "options": [
+        { "id": "a", "text": "\"Permission denied.\"" },
+        { "id": "b", "text": "\"BLOCKED: this command is not allowed. Try something else.\"" },
+        { "id": "c", "text": "\"BLOCKED by prod-delete: this deletes production data. Rule: spec.md §5. Approver: Priya. Route: put the command in plan.md and request her review. Instead: run it against staging.\"" },
+        { "id": "d", "text": "\"Error code 2.\"" }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "This says nothing about which rule fired or who can approve. The agent will retry a variation and the engineer will open a chat to ask what happened.",
+        "b": "\"Try something else\" is not a route. Without the rule and the approver, the agent and the human both have to guess.",
+        "c": "Correct. It names what was blocked, the rule that blocked it, the person who can approve, the route to reach them, and a safe alternative. Both the agent and the human know what to do next.",
+        "d": "Exit code 2 is how the hook signals a block to the runner. The text on stderr is what explains it, and this option has none."
+      }
+    },
+    {
+      "id": "l4-q4",
+      "type": "mc",
+      "prompt": "Why should the authoritative copy of .gates/log.jsonl be written by a CI run rather than kept on Omar's laptop?",
+      "options": [
+        { "id": "a", "text": "Because laptops run out of disk space." },
+        { "id": "b", "text": "Because a log that one engineer can edit is a log an auditor cannot trust; the copy that counts must come from a timestamped run nobody can rewrite by hand." },
+        { "id": "c", "text": "Because CI is faster at appending JSON lines." },
+        { "id": "d", "text": "Because Claude Code cannot write files locally." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Disk space is not the concern. A log of a few thousand short lines fits anywhere.",
+        "b": "Correct. The point of the log is proof. If Omar could delete the line showing a block, Mr. Hale could not rely on any line. The local file is a working copy; the run-produced copy is evidence.",
+        "c": "Speed is irrelevant here. The log is small and appends are cheap wherever they happen.",
+        "d": "The hook writes the local log fine. The issue is trust, not capability."
+      }
+    },
+    {
+      "id": "l4-q5",
+      "type": "mc",
+      "prompt": "Quill proposes shelf refund --amount 350. The hook returns ask. What happens next?",
+      "options": [
+        { "id": "a", "text": "The refund runs, and Priya is emailed a summary afterwards." },
+        { "id": "b", "text": "The action is cancelled and Quill must find a different way to refund the customer." },
+        { "id": "c", "text": "The action pauses, the reason names Priya and the spec section, and the refund runs only after her approval is recorded in the PR and the log." },
+        { "id": "d", "text": "Quill asks the customer whether they really want the refund." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "That is an allow with a notification, not an ask. A human gate means the action does not proceed until the person has decided.",
+        "b": "That is a block. Ask keeps the attempt alive; the command is fine and the only question is whether Bramble wants to pay it.",
+        "c": "Correct. Ask hands the decision to the named person, the approval lands in the PR with a name and timestamp, the log gains an allow line with approver: priya, and the refund runs once.",
+        "d": "The customer is the person receiving the money. The spec names Priya as the approver for refunds over $200, and the hook routes to her."
+      }
+    },
+    {
+      "id": "l4-q6",
+      "type": "mc",
+      "prompt": "What does a gate cost, and how do you find the number?",
+      "options": [
+        { "id": "a", "text": "The CI minutes spent running gate.sh, found in the billing dashboard." },
+        { "id": "b", "text": "The wait time between an ask and its matching allow, computed per rule from the decision log and made visible to the team." },
+        { "id": "c", "text": "Nothing, because a gate that protects money is always worth it." },
+        { "id": "d", "text": "The number of blocks per week, because every block is wasted agent work." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Compute cost is real but small. The cost that makes teams skip a gate is the human wait, not the CI bill.",
+        "b": "Correct. The log has a timestamp on the ask and on the allow. The gap, summarised as a median per rule, is the wait-time cost. A gate with a visible cost gets tuned; one with an invisible cost gets skipped.",
+        "c": "A gate nobody can afford gets skipped on Fridays, and a skipped gate protects nothing. Measuring the cost is how you keep the gate alive.",
+        "d": "Blocks are the gate working. A block on a production delete is not waste; it is the cheapest outcome available."
+      }
+    },
+    {
+      "id": "l4-q7",
+      "type": "short",
+      "prompt": "Write the block message for a hook that stops a production database delete. It should be something both Quill and Omar can act on.",
+      "rubric": [
+        "States what was blocked (a delete or destructive command against production)",
+        "Names the rule or the spec section that fired",
+        "Names the approver (Priya, the policy owner)",
+        "Gives a route to approval (a PR, plan.md, or a named channel)",
+        "Offers a safe alternative or next step (for example, run against staging)"
+      ],
+      "modelAnswer": "BLOCKED by prod-delete: this command deletes rows from the production database (DELETE FROM gift_cards). Rule: spec.md §5, human gates, \"no destructive write to production without Priya.\" Approver: Priya, policy owner for payments and customer data. Route: add the exact command and the reason to plan.md under \"production step, needs Priya,\" open or update the PR, and request her review; or post the command in #shelf-gates. Instead, for now: run the same query with --env staging and attach the row count to the plan so Priya can see how many cards are affected before she decides. This message names the action, the rule, the person, the route, and a safe next move, so neither Quill nor Omar has to guess.",
+      "maxWords": 150
+    },
+    {
+      "id": "l4-q8",
+      "type": "free",
+      "prompt": "Design the gate for CR-102's refund action. Cover the automated checks that run first, the hook decision for a refund over $200 and one under $200, who approves, and the log entry that records the approval.",
+      "rubric": [
+        "Lists the automated checks in order (build, tests, lint, eval suite) and says they run before any person looks",
+        "States that a refund over $200 returns ask and a refund at or under $200 returns allow",
+        "Names Priya as the approver and says where the approval is recorded (the PR or a named channel)",
+        "Shows or describes a log entry with a timestamp, actor, action, verdict, rule, and approver",
+        "Says the authoritative log is written by CI or a shared location, not kept only on one laptop",
+        "Mentions measuring or displaying the wait time for the gate"
+      ],
+      "modelAnswer": "Checks first. gate.sh runs npm run build, make test (including test-refund-limit, which proves a refund never exceeds the original purchase and that only a store manager can trigger one), npm run lint, and the eval suite at a 0.9 threshold. It stops at the first failure and exits non-zero, so Omar never reviews a refund change that does not pass its own criteria.\n\nHook decision. The PreToolUse hook in .claude/settings.json matches Bash and parses --amount from shelf refund commands. At or under $200 it logs allow and exits 0; the refund runs without a pause. Over $200 it logs ask and prints {\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"Refund of $350 is over $200: needs Priya's approval. See spec.md §5.\"}}. The action pauses.\n\nApprover. Priya, the policy owner for payments, approves in the CR-102 PR so her decision has a name, a timestamp, and a URL. Nadia is the backup if Priya is out.\n\nLog entry. After approval, Omar re-runs the command and the hook appends:\n\n```json\n{\"ts\":\"2026-09-14T10:02:17Z\",\"actor\":\"priya\",\"tool\":\"Bash\",\"action\":\"shelf refund --gift-card GC-4471 --amount 350\",\"verdict\":\"allow\",\"rule\":\"refund-over-200\",\"approver\":\"priya\"}\n```\n\nThe local .gates/log.jsonl is a working copy. CI writes the authoritative copy to a shared bucket where no engineer has write access from a laptop, and the two lines (ask, then allow) are attached to the PR.\n\nCost. The gap between the ask and the allow is the wait. It is reported as a median per rule each week; if the refund gate's median climbs past an hour, the team tunes the threshold in spec.md first, with Priya reviewing the change."
+    }
+  ]
+}

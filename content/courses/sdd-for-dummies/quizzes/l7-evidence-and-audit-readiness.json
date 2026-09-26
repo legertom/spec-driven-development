@@ -1,0 +1,202 @@
+{
+  "lessonSlug": "l7-evidence-and-audit-readiness",
+  "questions": [
+    {
+      "id": "l7-q1",
+      "type": "mc",
+      "prompt": "Before letting Quill work on more of Shelf, Omar asks four questions about every gate. Which set is correct?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Build, tests, lint, evals"
+        },
+        {
+          "id": "b",
+          "text": "Control, evidence, metric, cost"
+        },
+        {
+          "id": "c",
+          "text": "Intent, constraints, criteria, verification"
+        },
+        {
+          "id": "d",
+          "text": "Allow, ask, block, log"
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Those are the checks gate.sh runs, from L4. They are what a gate does, not the questions you ask about whether the gate is worth keeping and provable.",
+        "b": "Correct. Control asks which rule the gate satisfies and who owns it; evidence asks what proves it ran; metric asks whether it keeps working; cost asks what people wait for it.",
+        "c": "Those are four of the six parts of an executable spec from L2. They describe the change, not the gate around it.",
+        "d": "Allow, ask, and block are the three hook outcomes, and the log records them. They are mechanics of one gate, not the four questions for scaling."
+      }
+    },
+    {
+      "id": "l7-q2",
+      "type": "mc",
+      "prompt": "Which of these counts as evidence that make test ran before CR-102 merged?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Omar remembers running it on his laptop that morning."
+        },
+        {
+          "id": "b",
+          "text": "The PR description says \"tests pass\" in the summary paragraph."
+        },
+        {
+          "id": "c",
+          "text": "A CI run record linked from the PR showing make test with exit code 0 and a timestamp before the merge."
+        },
+        {
+          "id": "d",
+          "text": "A screenshot of a green terminal that Omar attaches on the day of the audit."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "A memory is not an artifact. The auditor cannot check it, and it is exactly what the lesson calls answering with a memory instead of a file.",
+        "b": "A sentence a person typed is a description. It could be written whether or not the tests ran. The auditor will ask for the run anyway.",
+        "c": "Correct. It is a timestamped run stored in a system no single engineer controls, produced automatically by the gate, and findable from the PR.",
+        "d": "A screenshot assembled after the fact is a story, not evidence. It is not automatic, not timestamped by a trusted system, and easy to fake."
+      }
+    },
+    {
+      "id": "l7-q3",
+      "type": "mc",
+      "prompt": "The refund threshold is checked by hand before merging. Most weeks it happens, but on busy Fridays it is skipped. What is the audit readiness of this gate?",
+      "options": [
+        {
+          "id": "a",
+          "text": "High, because it is followed most of the time."
+        },
+        {
+          "id": "b",
+          "text": "About half, because one of the two factors is missing."
+        },
+        {
+          "id": "c",
+          "text": "Zero, because a gate that can be skipped is not enforced every time, and the product of the two factors is zero."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "The auditor picks one change, and it may be a Friday one. A gate that holds most of the time cannot prove anything about the change in front of them.",
+        "b": "Audit readiness is a product, not a sum. If it were added, a skippable gate would score half. Multiplying captures that the missing factor takes the whole score to zero.",
+        "c": "Correct. Enforced every time is zero for the skipped PRs, so the product is zero regardless of how good the evidence would have been."
+      }
+    },
+    {
+      "id": "l7-q4",
+      "type": "mc",
+      "prompt": "What is a control, in the sense this lesson uses?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A hook in .claude/settings.json that returns allow, ask, or deny."
+        },
+        {
+          "id": "b",
+          "text": "A rule the organisation has already agreed to follow, with a named owner, that a gate is built to satisfy."
+        },
+        {
+          "id": "c",
+          "text": "The test that fails before Quill starts and passes when the work is done."
+        },
+        {
+          "id": "d",
+          "text": "The person who clicks approve on the pull request."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "That is the gate, the mechanism. The control is the rule the mechanism enforces, and it exists before the hook does.",
+        "b": "Correct. The refund gate satisfies the existing control \"dual approval for stored-value changes,\" owned by Priya. The gate did not invent the rule.",
+        "c": "That is the failing-test-first loop from L3. A test verifies a criterion; it is not an organisational rule with an owner.",
+        "d": "That is the reviewer of record. A person can own a control, but the control itself is the written rule, not the person."
+      }
+    },
+    {
+      "id": "l7-q5",
+      "type": "mc",
+      "prompt": "Why must the decision log at .gates/log.jsonl be appended by CI rather than kept on Omar's laptop?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Because laptops run out of disk space."
+        },
+        {
+          "id": "b",
+          "text": "Because evidence must live where no single engineer can edit it without a trace, or it proves nothing."
+        },
+        {
+          "id": "c",
+          "text": "Because Quill cannot write files on a laptop."
+        },
+        {
+          "id": "d",
+          "text": "Because the auditor only accepts JSON files hosted in the cloud."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Storage is not the concern. A log line is tiny. The problem is who could change it.",
+        "b": "Correct. If Omar could edit or delete a line and nobody could tell, the log could not prove a decision happened. Evidence lives outside any one engineer's control.",
+        "c": "Quill runs in the terminal and writes files all the time. The question is about trust in the record, not the agent's abilities.",
+        "d": "The format and hosting are not the rule. A file in the repository history or in the CI system qualifies because the history of changes to it is visible."
+      }
+    },
+    {
+      "id": "l7-q6",
+      "type": "mc",
+      "prompt": "Omar's table shows the test-lock gate fires 87 times a quarter with a median wait of 31 minutes and a longest wait of two days. What does the lesson say to do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Keep it exactly as it is, because a gate that fires often must be important."
+        },
+        {
+          "id": "b",
+          "text": "Remove it quietly so people stop complaining."
+        },
+        {
+          "id": "c",
+          "text": "Use the numbers to change or retire the human step, keep the control satisfied another way, and record the decision in the log."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Firing often is a cost, not proof of value. A gate that is expensive and unexamined gets skipped, which is worse than no gate.",
+        "b": "A gate removed without a record leaves the spec claiming a gate that does not exist, and the auditor will find the gap. The control still has to be satisfied.",
+        "c": "Correct. Omar replaces the human approval with a hook that blocks Quill from writing under tests/ and lets humans edit tests with a reviewer. The control holds and the change is logged."
+      }
+    },
+    {
+      "id": "l7-q7",
+      "type": "short",
+      "prompt": "Name the control, the evidence, the metric, and the cost for the refund gate (a refund over $200 pauses for Priya's approval).",
+      "rubric": [
+        "Names the control as an existing rule about dual approval or stored-value changes and names Priya as its owner",
+        "Names at least one evidence artifact (the .gates/log.jsonl line with approver, the CI run, or the PR approval) and where it lives",
+        "Names a metric that tracks the gate over time (pass rate, regressions caught in CI versus production, or count of approved refunds)",
+        "Names the cost as wait time between the ask and Priya's approval, and says it is measured from the log"
+      ],
+      "modelAnswer": "Control: Bramble's finance rule \"dual approval for stored-value changes above $200,\" owned by Priya. The gate enforces that rule; it did not invent the threshold. Evidence: the line in .gates/log.jsonl with the timestamp, the action, verdict ask, rule refund-over-200, and Priya as approver with her approval time. CI appends it, so no engineer can edit it, and Priya's PR approval as reviewer of record backs it up. Metric: the count of refunds over $200 that went through the gate each quarter, and the lagging number of refund incidents found in production, which should be zero. Cost: the wait between the ask timestamp and approved_at in the log, reported as a median per quarter so Nadia can see it.",
+      "maxWords": 150
+    },
+    {
+      "id": "l7-q8",
+      "type": "free",
+      "prompt": "Assemble the evidence pack for CR-103 (export customer emails for the newsletter). List each item, who accepted it or produced it, and say where each item lives so Mr. Hale could find it without asking you.",
+      "rubric": [
+        "Includes intent.md with Nadia as the accepter",
+        "Includes spec.md with Priya named for the consent constraint or its evidence section",
+        "Includes plan.md approved by Omar before the build",
+        "Includes the make test run and the eval run with a CI run record or timestamp as the location",
+        "Includes a decision log entry in .gates/log.jsonl for the export gate with an approver",
+        "Includes the merged PR with a named reviewer of record, and states a location for every item"
+      ],
+      "modelAnswer": "```markdown\n## Evidence pack: CR-103, export customer emails for the newsletter\n\n- [x] intent.md: \"Marketing can send the newsletter to customers who opted in.\"\n      Accepted by Nadia, 2026-09-18, commit c72d0a1. Lives in the repository.\n- [x] spec.md v1.1: constraint \"only customers with consent: true are exported;\n      the export never leaves the newsletter bucket.\" Reviewed by Priya, 2026-09-19.\n      Evidence section maps the consent check to the privacy control\n      \"personal data leaves the system only with recorded consent,\" owner Priya.\n      Lives in the repository next to the code.\n- [x] plan.md: steps and files, approved by Omar before build, 2026-09-19.\n- [x] make test: exit 0, CI run 5602, 2026-09-22T10:14Z. Lives in the CI system,\n      linked from the PR.\n- [x] evals: 48/49 passed (98%), threshold 90%, run 5602, including\n      evals/newsletter-consent.json. Same CI run record.\n- [x] Decision log: one .gates/log.jsonl entry, rule newsletter-export,\n      verdict ask, approved by Priya 10:31Z. Appended by CI.\n- [x] PR #221 approved by Priya (reviewer of record), merged by Omar, 2026-09-22.\n      Lives on the repository host.\n```\n\nEvery item names a file or a run, a person, and a time. If Mr. Hale asks who approved the export, the answer is PR #221 and Priya. If he asks how we know non-consenting customers were excluded, the answer is the consent eval in run 5602 and the constraint in spec.md, not a description of how careful we were. Nothing in the pack was written on the day of the audit; each item was produced at its stage boundary by the step that ran there."
+    }
+  ]
+}

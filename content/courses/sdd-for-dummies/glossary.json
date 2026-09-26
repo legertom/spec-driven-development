@@ -1,0 +1,929 @@
+[
+  {
+    "id": "acceptance-criteria",
+    "term": "Acceptance criteria",
+    "definition": "Short statements of behavior you can observe that say when a change is finished. They are written before any code is generated, and the agent's work is measured against them.",
+    "example": "For CR-101, one criterion reads: a customer sees only the balance of gift cards linked to their own account. Quill is measured against that line, not against 'looks good'.",
+    "lessons": [
+      "l0-what-is-spec-driven-development",
+      "l2-writing-an-executable-spec",
+      "l3-from-spec-to-failing-test"
+    ],
+    "related": [
+      "done",
+      "verification-command",
+      "executable-spec",
+      "failing-test-first"
+    ]
+  },
+  {
+    "id": "allow-ask-block",
+    "term": "Allow, ask, or block",
+    "definition": "The three answers a hook can give when an agent proposes an action. Allow lets it run, ask pauses for a human, and block stops it and explains why.",
+    "example": "When Quill tries to write under tests/ for CR-101, the hook in .claude/settings.json blocks it; when a CR-102 refund goes over $200, the hook answers ask and names Priya.",
+    "lessons": [
+      "l4-the-enforced-gate"
+    ],
+    "related": [
+      "hook",
+      "self-explaining-block",
+      "route-to-approval",
+      "human-gate"
+    ]
+  },
+  {
+    "id": "artifact-chain",
+    "term": "Artifact chain",
+    "definition": "The ordered set of files and outputs one change produces, each accepted by a named person before the next one starts. It runs from intent through spec, plan, tests, evals, and the merged pull request.",
+    "example": "CR-103 travels the chain as intent.md accepted by Nadia, spec.md routed to Priya, plan.md approved by Omar, the make test log, evals/*.json, and a merged PR with a reviewer of record.",
+    "lessons": [
+      "l1-the-artifact-chain",
+      "b1-adopting-it-on-your-team"
+    ],
+    "related": [
+      "intent-md",
+      "spec-md",
+      "plan-md",
+      "pull-request"
+    ]
+  },
+  {
+    "id": "audit-readiness",
+    "term": "Audit readiness",
+    "definition": "The state where every gate is enforced every time and its evidence is produced automatically, so an auditor's questions can be answered from files. If either factor is zero, the whole thing is zero.",
+    "example": "When Mr. Hale picks CR-102 and asks who approved the refund feature, Omar answers in four minutes from spec.md, the PR, and .gates/log.jsonl.",
+    "lessons": [
+      "l7-evidence-and-audit-readiness"
+    ],
+    "related": [
+      "evidence",
+      "control",
+      "auditable-change",
+      "enforced-gate"
+    ]
+  },
+  {
+    "id": "auditable-change",
+    "term": "Auditable change",
+    "definition": "A merged change that carries its code, its evidence, and its named approver together, so anyone can later see what was asked, what was checked, and who said yes.",
+    "example": "CR-103's final PR holds the export code, the make test log, the eval pass rate, and Omar's approval, with the spec that Priya confirmed linked from the description.",
+    "lessons": [
+      "l1-the-artifact-chain",
+      "l7-evidence-and-audit-readiness"
+    ],
+    "related": [
+      "pull-request",
+      "evidence",
+      "reviewer-of-record",
+      "audit-readiness"
+    ]
+  },
+  {
+    "id": "change-control",
+    "term": "Change control",
+    "definition": "The practice of recording what changed, when, and who approved it, so behavior changes can be traced back to a cause. In this course, timestamped eval runs are the change control for agent configuration.",
+    "example": "Each nightly run for Shelf is stored with its commit, the model id behind Quill, and a hash of CLAUDE.md, so the Tuesday model upgrade can be tied to Thursday's drop in pass rate.",
+    "lessons": [
+      "l6-why-the-gate-lives-in-ci"
+    ],
+    "related": [
+      "timestamped-run",
+      "config-is-code",
+      "model-drift",
+      "merge-threshold"
+    ]
+  },
+  {
+    "id": "ci",
+    "term": "CI (continuous integration)",
+    "definition": "A shared service that runs checks automatically on every pull request or on a schedule, outside any one engineer's laptop. Putting the gate in CI means it runs every time and its results are stored where nobody can quietly edit them.",
+    "example": "Bramble's .github/workflows/agent-evals.yml runs the eval suite whenever CLAUDE.md or .claude/** changes in a PR, and again every night at 2 a.m.",
+    "lessons": [
+      "l6-why-the-gate-lives-in-ci"
+    ],
+    "related": [
+      "enforced-gate",
+      "merge-threshold",
+      "timestamped-run",
+      "regression"
+    ]
+  },
+  {
+    "id": "claude-md",
+    "term": "CLAUDE.md",
+    "definition": "A plain text file in the repository that gives the coding agent standing instructions about how to work in that codebase. Because it steers the agent, a one-line edit can change behavior without changing any code.",
+    "example": "Omar adds 'prefer concise diffs' to Shelf's CLAUDE.md and Quill starts stripping docstrings across the codebase, which the eval suite catches on the next run.",
+    "lessons": [
+      "l5-eval-cases-for-coding-agents"
+    ],
+    "related": [
+      "config-is-code",
+      "skill",
+      "hook",
+      "prompt-drift"
+    ]
+  },
+  {
+    "id": "coding-agent",
+    "term": "Coding agent",
+    "definition": "A language model running in a loop that reads files, edits files, runs commands, and opens pull requests. It is fast at typing and has no idea about anything you did not write down.",
+    "example": "Quill is Bramble's coding agent. Asked to add gift card balances to the order page, it finishes CR-101 in nine minutes and shows other customers' balances because nobody told it not to.",
+    "lessons": [
+      "l0-what-is-spec-driven-development",
+      "l3-from-spec-to-failing-test",
+      "l5-eval-cases-for-coding-agents"
+    ],
+    "related": [
+      "spec-driven-development",
+      "claude-md",
+      "hook",
+      "promotion"
+    ]
+  },
+  {
+    "id": "config-is-code",
+    "term": "Config is code",
+    "definition": "The rule that anything steering the agent, such as CLAUDE.md, skills, and hooks, gets the same versioning, review, and regression testing as the application code. Changing it changes what ships.",
+    "example": "At Bramble a pull request that touches .claude/settings.json triggers the eval workflow, and a drop in pass rate blocks the merge until the owning team reviews it.",
+    "lessons": [
+      "l5-eval-cases-for-coding-agents",
+      "l6-why-the-gate-lives-in-ci",
+      "b1-adopting-it-on-your-team"
+    ],
+    "related": [
+      "claude-md",
+      "skill",
+      "hook",
+      "regression"
+    ]
+  },
+  {
+    "id": "constraint",
+    "term": "Constraint",
+    "definition": "A limit the change must respect, written into the spec: which systems it may touch, which data it must not cross, and which rules apply. Constraints are where policy shows up while writing, not in review.",
+    "example": "The constraints section of spec.md for CR-102 says: touches the payments service, never touches the card processor, manager role only, and names Priya as the policy owner.",
+    "lessons": [
+      "l2-writing-an-executable-spec"
+    ],
+    "related": [
+      "executable-spec",
+      "data-boundary",
+      "policy-owner",
+      "acceptance-criteria"
+    ]
+  },
+  {
+    "id": "contract",
+    "term": "Contract",
+    "definition": "The role the spec plays: a written agreement about what will be built and what counts as done, that both the agent and the humans work from. The one-liner is spec equals contract, agent equals implementer, gate equals evidence.",
+    "example": "For CR-101 the contract is spec.md, Quill is the implementer, and gate.sh plus the decision log are the evidence that the contract was kept.",
+    "lessons": [
+      "l0-what-is-spec-driven-development"
+    ],
+    "related": [
+      "spec",
+      "executable-spec",
+      "gate",
+      "evidence"
+    ]
+  },
+  {
+    "id": "control",
+    "term": "Control",
+    "definition": "A rule an organization already has for reducing a risk, with a named owner, such as requiring two approvals before money moves. A good gate satisfies an existing control instead of inventing a new one.",
+    "example": "The CR-102 refund gate satisfies Bramble's dual approval for stored-value changes control, which Priya owns, so Mr. Hale can map the gate to a rule he already checks.",
+    "lessons": [
+      "l7-evidence-and-audit-readiness"
+    ],
+    "related": [
+      "human-gate",
+      "evidence",
+      "audit-readiness",
+      "policy-owner"
+    ]
+  },
+  {
+    "id": "data-boundary",
+    "term": "Data boundary",
+    "definition": "A line in the spec's constraints that says which data the change may read or write and which it must never touch. It turns privacy and money rules into something an agent can be checked against.",
+    "example": "CR-103's data boundary says the export may read emails only for customers with newsletter consent and may never include gift card numbers or order history.",
+    "lessons": [
+      "l2-writing-an-executable-spec"
+    ],
+    "related": [
+      "constraint",
+      "policy-owner",
+      "executable-spec",
+      "production-action"
+    ]
+  },
+  {
+    "id": "decision-log",
+    "term": "Decision log",
+    "definition": "An append-only record of every gate decision, with a timestamp, the actor, the action, the verdict, the rule applied, and the approver. It lives outside any one engineer's control so it can serve as evidence.",
+    "example": "Shelf's .gates/log.jsonl gains a line when Priya approves the $250 refund in CR-102, recording the time, the rule, her name, and the verdict allow.",
+    "lessons": [
+      "l4-the-enforced-gate",
+      "l7-evidence-and-audit-readiness"
+    ],
+    "related": [
+      "evidence",
+      "human-gate",
+      "timestamped-run",
+      "route-to-approval"
+    ]
+  },
+  {
+    "id": "done",
+    "term": "Done",
+    "definition": "The written, checkable definition of when a change is finished. In spec-driven development it lives in a file as acceptance criteria, not in a ticket, a chat thread, or someone's head.",
+    "example": "Before the spec existed, Omar, Nadia, and Priya each gave a different definition of done for CR-101; after it, done is the list of criteria in spec.md.",
+    "lessons": [
+      "l0-what-is-spec-driven-development"
+    ],
+    "related": [
+      "acceptance-criteria",
+      "spec",
+      "versioned-file",
+      "intent"
+    ]
+  },
+  {
+    "id": "enforced-gate",
+    "term": "Enforced gate",
+    "definition": "A gate that runs automatically every time, cannot be skipped by asking nicely, and records what it decided. A spec with no enforced gate is only a wish.",
+    "example": "Quill once deleted stale gift cards straight from a production database; with gate.sh wired as a hook, the same command pauses, explains itself, and names Priya as the approver.",
+    "lessons": [
+      "l4-the-enforced-gate"
+    ],
+    "related": [
+      "gate",
+      "gate-script",
+      "hook",
+      "decision-log"
+    ]
+  },
+  {
+    "id": "eval-case",
+    "term": "Eval case",
+    "definition": "One real task, in the words it arrived in, paired with checks that describe the outcome the team accepted. Running the agent on the case and scoring the checks tells you whether it still behaves as expected.",
+    "example": "evals/gift-balance-isolation.json holds the CR-101 request as its prompt and three checks: tests pass, lint is clean, and no other customer's balance appears in the rendered page.",
+    "lessons": [
+      "l5-eval-cases-for-coding-agents"
+    ],
+    "related": [
+      "eval-suite",
+      "pass-rate",
+      "incident-to-eval",
+      "regression"
+    ]
+  },
+  {
+    "id": "eval-suite",
+    "term": "Eval suite",
+    "definition": "The full collection of eval cases for a codebase, versioned in the repository and run as a whole. Its pass rate is one of the checks that gates a merge.",
+    "example": "Bramble starts with twenty cases mined from last month's Shelf pull requests, stored one per file under evals/, and reports the pass rate in every PR's checks.",
+    "lessons": [
+      "l1-the-artifact-chain",
+      "l5-eval-cases-for-coding-agents",
+      "b1-adopting-it-on-your-team"
+    ],
+    "related": [
+      "eval-case",
+      "pass-rate",
+      "merge-threshold",
+      "ci"
+    ]
+  },
+  {
+    "id": "evidence",
+    "term": "Evidence",
+    "definition": "An artifact that proves a gate ran and who accepted the result, stored somewhere a third party can read it later. A passing build is not evidence on its own; the log of the run is.",
+    "example": "For CR-102 the evidence is the make test log pasted into the PR, the CI run URL for the evals, the .gates/log.jsonl line for Priya's approval, and Omar's merge.",
+    "lessons": [
+      "l0-what-is-spec-driven-development",
+      "l2-writing-an-executable-spec",
+      "l7-evidence-and-audit-readiness",
+      "b1-adopting-it-on-your-team"
+    ],
+    "related": [
+      "decision-log",
+      "auditable-change",
+      "audit-readiness",
+      "gate"
+    ]
+  },
+  {
+    "id": "executable-spec",
+    "term": "Executable spec",
+    "definition": "A spec written so an agent can build from it and a machine can check it, with six parts: intent, constraints, acceptance criteria, verification, human gates, and evidence. Each criterion pairs with a command that can fail.",
+    "example": "Omar's one-line 'add gift card refunds' becomes an executable spec for CR-102 with five criteria, a make test-refund-limit command for each, and a gate for refunds over $200.",
+    "lessons": [
+      "l2-writing-an-executable-spec"
+    ],
+    "related": [
+      "spec",
+      "spec-md",
+      "verification-command",
+      "human-gate"
+    ]
+  },
+  {
+    "id": "failing-test-first",
+    "term": "Failing test first",
+    "definition": "Writing a test from an acceptance criterion before any implementation exists, watching it fail for the expected reason, and only then letting the agent make it pass. The failure proves the test is checking something real.",
+    "example": "Omar writes a Vitest test with two customers for CR-101, sees it fail with 'expected hidden, got 42', and then tells Quill to make it pass without touching tests/.",
+    "lessons": [
+      "l3-from-spec-to-failing-test"
+    ],
+    "related": [
+      "red-green",
+      "test-lock",
+      "acceptance-criteria",
+      "verification-command"
+    ]
+  },
+  {
+    "id": "file-pair",
+    "term": "File pair",
+    "definition": "The spec and the code derived from it, committed together so the repository records both what was asked and what was built. Separating them loses the reason for every decision.",
+    "example": "CR-102's spec.md is committed in the same PR as the refund code, so a year later Mr. Hale can read what Priya required next to the lines that enforce it.",
+    "lessons": [
+      "l2-writing-an-executable-spec"
+    ],
+    "related": [
+      "spec-md",
+      "versioned-file",
+      "auditable-change",
+      "executable-spec"
+    ]
+  },
+  {
+    "id": "gate",
+    "term": "Gate",
+    "definition": "A check plus a decision: automated checks the agent's work must pass, followed by a point where a human accepts or rejects. Gates are where the agent's work becomes trusted work.",
+    "example": "CR-101 passes through gate.sh for build, tests, lint, and evals, then waits for Omar to review and merge the PR.",
+    "lessons": [
+      "l0-what-is-spec-driven-development"
+    ],
+    "related": [
+      "enforced-gate",
+      "human-gate",
+      "gate-script",
+      "stage-boundary"
+    ]
+  },
+  {
+    "id": "gate-script",
+    "term": "Gate script",
+    "definition": "A short script, usually gate.sh, that runs the automated checks in order, stops at the first failure, and exits non-zero. It runs before any person looks at the change.",
+    "example": "Shelf's gate.sh runs the build, make test, lint, and the eval suite in that order; when the CR-102 refund limit test fails, it stops there and returns exit code 1.",
+    "lessons": [
+      "l4-the-enforced-gate"
+    ],
+    "related": [
+      "enforced-gate",
+      "make-test",
+      "non-zero-exit",
+      "hook"
+    ]
+  },
+  {
+    "id": "hook",
+    "term": "Hook",
+    "definition": "A small program that runs automatically before an agent action, reads what the agent proposes to do, and decides whether to allow it, ask a human, or block it. Hooks enforce rules that a request in a prompt cannot.",
+    "example": "Quill's .claude/settings.json runs ./gate.sh hook before every Bash, Edit, or Write, and that hook blocks any write under tests/ during CR-101.",
+    "lessons": [
+      "l4-the-enforced-gate",
+      "l5-eval-cases-for-coding-agents"
+    ],
+    "related": [
+      "allow-ask-block",
+      "test-lock",
+      "self-explaining-block",
+      "config-is-code"
+    ]
+  },
+  {
+    "id": "human-gate",
+    "term": "Human gate",
+    "definition": "A point in the spec where a named person must approve, override, or escalate before the work continues. The spec says who the person is and what threshold triggers the pause.",
+    "example": "CR-102's human gate reads: a refund over $200 pauses for Priya. The hook returns ask, Priya approves in the PR, the approval is logged, and the refund proceeds.",
+    "lessons": [
+      "l2-writing-an-executable-spec",
+      "l4-the-enforced-gate",
+      "l7-evidence-and-audit-readiness",
+      "b1-adopting-it-on-your-team"
+    ],
+    "related": [
+      "gate",
+      "route-to-approval",
+      "production-action",
+      "decision-log"
+    ]
+  },
+  {
+    "id": "incident-to-eval",
+    "term": "Incident to eval",
+    "definition": "The rule that every production incident becomes a permanent eval case, written by the team that owned the incident. Once it is in the suite and running in CI, the same mistake cannot return unnoticed.",
+    "example": "The CR-101 bug that showed other customers' balances becomes evals/gift-balance-isolation.json, written by Omar's team and run every night from then on.",
+    "lessons": [
+      "l5-eval-cases-for-coding-agents",
+      "l6-why-the-gate-lives-in-ci",
+      "b1-adopting-it-on-your-team"
+    ],
+    "related": [
+      "eval-case",
+      "regression",
+      "leading-indicator",
+      "ci"
+    ]
+  },
+  {
+    "id": "intent",
+    "term": "Intent",
+    "definition": "The business outcome a change should produce, stated in one sentence or paragraph with no implementation detail. It is written down first, before anything is generated.",
+    "example": "Nadia's intent for CR-101: a customer checking out on Shelf can see how much is left on their own gift card so they know whether it covers the order.",
+    "lessons": [
+      "l0-what-is-spec-driven-development",
+      "l2-writing-an-executable-spec"
+    ],
+    "related": [
+      "intent-md",
+      "product-owner",
+      "spec",
+      "done"
+    ]
+  },
+  {
+    "id": "intent-md",
+    "term": "intent.md",
+    "definition": "The first file in the artifact chain, holding the intent in business terms. The product owner accepts it before a spec is written.",
+    "example": "For CR-103, Nadia writes intent.md in one paragraph about reaching newsletter subscribers, and Priya's consent rule is added later in spec.md, not here.",
+    "lessons": [
+      "l1-the-artifact-chain"
+    ],
+    "related": [
+      "intent",
+      "product-owner",
+      "artifact-chain",
+      "spec-md"
+    ]
+  },
+  {
+    "id": "lagging-indicator",
+    "term": "Lagging indicator",
+    "definition": "A metric that tells you how things went after the fact, such as how many regressions reached production versus how many CI caught. It confirms whether the gate is working but cannot warn you early.",
+    "example": "Bramble's quarterly table shows four regressions caught in CI and one found in production, which is the number Mr. Hale asks about first.",
+    "lessons": [
+      "l6-why-the-gate-lives-in-ci",
+      "l7-evidence-and-audit-readiness"
+    ],
+    "related": [
+      "leading-indicator",
+      "regression",
+      "pass-rate",
+      "ci"
+    ]
+  },
+  {
+    "id": "leading-indicator",
+    "term": "Leading indicator",
+    "definition": "A metric that moves before problems reach production, such as the eval pass rate over time or the days between an incident and its permanent eval. Watching it lets a team act early.",
+    "example": "Shelf's nightly pass rate slid from 96% to 81% after the model upgrade behind Quill; it was a leading indicator nobody was watching until three PRs went wrong.",
+    "lessons": [
+      "l6-why-the-gate-lives-in-ci",
+      "l7-evidence-and-audit-readiness"
+    ],
+    "related": [
+      "lagging-indicator",
+      "pass-rate",
+      "incident-to-eval",
+      "model-drift"
+    ]
+  },
+  {
+    "id": "make-test",
+    "term": "make test",
+    "definition": "The single command that runs the build, the tests, and the lint for the project. Its output and exit code are attached to the pull request as part of the evidence.",
+    "example": "Omar pastes the make test log for CR-103 into the PR description so the reviewer sees the same 42 passing tests and the exit code 0 that Quill saw.",
+    "lessons": [
+      "l1-the-artifact-chain",
+      "l3-from-spec-to-failing-test"
+    ],
+    "related": [
+      "verification-command",
+      "non-zero-exit",
+      "gate-script",
+      "pull-request"
+    ]
+  },
+  {
+    "id": "merge-threshold",
+    "term": "Merge threshold",
+    "definition": "The minimum eval pass rate a change must keep for the merge check to stay green. A config change that drops the rate below it is reviewed before merging by the team that owns the affected cases.",
+    "example": "Bramble's CONTRIBUTING.md sets the threshold at 90%; Omar's 'prefer concise diffs' edit to CLAUDE.md drops the rate to 84% and the check turns red.",
+    "lessons": [
+      "l6-why-the-gate-lives-in-ci"
+    ],
+    "related": [
+      "pass-rate",
+      "ci",
+      "regression",
+      "config-is-code"
+    ]
+  },
+  {
+    "id": "model-drift",
+    "term": "Model drift",
+    "definition": "A change in agent behavior caused by the underlying model being swapped or updated, with no change to the repository. Only a regularly run eval suite makes it visible.",
+    "example": "The model behind Quill is upgraded on a Tuesday; by Thursday three Shelf PRs handle errors differently from what the spec asked, and nothing in git explains why.",
+    "lessons": [
+      "l6-why-the-gate-lives-in-ci"
+    ],
+    "related": [
+      "prompt-drift",
+      "regression",
+      "timestamped-run",
+      "leading-indicator"
+    ]
+  },
+  {
+    "id": "non-zero-exit",
+    "term": "Non-zero exit",
+    "definition": "An exit code other than zero, which is how a command tells a script or a CI system that it failed. A verification command is only useful if it exits non-zero when the criterion is not met.",
+    "example": "make test-refund-limit for CR-102 exits with code 1 when a refund larger than the original purchase goes through, which is what lets gate.sh stop.",
+    "lessons": [
+      "l2-writing-an-executable-spec",
+      "l3-from-spec-to-failing-test"
+    ],
+    "related": [
+      "verification-command",
+      "make-test",
+      "gate-script",
+      "red-green"
+    ]
+  },
+  {
+    "id": "pass-rate",
+    "term": "Pass rate",
+    "definition": "The share of eval cases the agent passes in one run of the suite. It is the number the merge threshold checks and the leading indicator teams watch over time.",
+    "example": "The nightly Shelf run reports 46 of 50 cases passing, a pass rate of 92%, and the line appears in the PR checks for every config change.",
+    "lessons": [
+      "l5-eval-cases-for-coding-agents",
+      "l6-why-the-gate-lives-in-ci"
+    ],
+    "related": [
+      "eval-suite",
+      "merge-threshold",
+      "leading-indicator",
+      "regression"
+    ]
+  },
+  {
+    "id": "plan-md",
+    "term": "plan.md",
+    "definition": "The file where the agent lays out the steps it will take, the files it will touch, the commands it will run, and what it will leave alone. The engineer approves it before the build starts.",
+    "example": "Quill's plan.md for CR-103 lists a new export script and a consent filter; Omar edits it twice, removing a database migration and adding 'do not edit files under tests/'.",
+    "lessons": [
+      "l1-the-artifact-chain",
+      "l3-from-spec-to-failing-test"
+    ],
+    "related": [
+      "artifact-chain",
+      "spec-md",
+      "test-lock",
+      "promotion"
+    ]
+  },
+  {
+    "id": "policy-owner",
+    "term": "Policy owner",
+    "definition": "The person who owns the rules for a risky area, such as payments or personal data, and who must confirm a spec's constraints before code is generated. Routing the spec to them moves policy from review time to writing time.",
+    "example": "Priya owns Bramble's gift card and email rules, so spec.md for CR-103 is routed to her and she adds the consent constraint before Quill writes a line.",
+    "lessons": [
+      "l1-the-artifact-chain",
+      "l2-writing-an-executable-spec"
+    ],
+    "related": [
+      "product-owner",
+      "constraint",
+      "data-boundary",
+      "human-gate"
+    ]
+  },
+  {
+    "id": "product-owner",
+    "term": "Product owner",
+    "definition": "The person who decides what outcome a change should produce and accepts the intent. They own the why, not the how.",
+    "example": "Nadia is Shelf's product owner; she accepts intent.md for CR-101 and would reject one that talked about database columns instead of what a customer sees.",
+    "lessons": [
+      "l1-the-artifact-chain"
+    ],
+    "related": [
+      "intent-md",
+      "intent",
+      "policy-owner",
+      "reviewer-of-record"
+    ]
+  },
+  {
+    "id": "production-action",
+    "term": "Production action",
+    "definition": "Any action that changes live systems or moves real money or data, as opposed to editing code in a branch. Production actions need a human gate because a mistake cannot be undone by reverting a commit.",
+    "example": "A CR-102 refund is a production action: it moves money out of Bramble's account, so the hook answers ask and waits for Priya above $200.",
+    "lessons": [
+      "l4-the-enforced-gate"
+    ],
+    "related": [
+      "human-gate",
+      "allow-ask-block",
+      "data-boundary",
+      "route-to-approval"
+    ]
+  },
+  {
+    "id": "promotion",
+    "term": "Promotion",
+    "definition": "Moving work from one stage of the chain to the next, such as from an open pull request to a merged one. Only a human may promote; the agent never promotes its own work.",
+    "example": "Quill opens the CR-101 pull request and stops. Omar reads the diff and merges it, which is the promotion. Quill merging its own PR would break the rule.",
+    "lessons": [
+      "l0-what-is-spec-driven-development",
+      "l1-the-artifact-chain"
+    ],
+    "related": [
+      "stage-boundary",
+      "reviewer-of-record",
+      "pull-request",
+      "coding-agent"
+    ]
+  },
+  {
+    "id": "prompt-drift",
+    "term": "Prompt drift",
+    "definition": "A change in agent behavior caused by edits to the instructions it reads, such as CLAUDE.md, a skill, or a system prompt, rather than by a model swap. Small wording changes can have large effects.",
+    "example": "One line added to Shelf's CLAUDE.md, 'prefer concise diffs', makes Quill delete comments across the codebase for a month before anyone notices.",
+    "lessons": [
+      "l6-why-the-gate-lives-in-ci"
+    ],
+    "related": [
+      "model-drift",
+      "claude-md",
+      "config-is-code",
+      "regression"
+    ]
+  },
+  {
+    "id": "pull-request",
+    "term": "Pull request",
+    "definition": "The proposed change in the repository, holding the code, the attached evidence, and the approval of a named reviewer. Once merged, it is the auditable change.",
+    "example": "Quill opens the CR-103 pull request with the export code and the make test log; Omar approves it and his name becomes the reviewer of record.",
+    "lessons": [
+      "l1-the-artifact-chain"
+    ],
+    "related": [
+      "auditable-change",
+      "reviewer-of-record",
+      "make-test",
+      "promotion"
+    ]
+  },
+  {
+    "id": "red-green",
+    "term": "Red green",
+    "definition": "The rhythm of seeing a test fail (red) and then pass (green) once the code is written. The red step matters because it proves the test can detect the missing behavior.",
+    "example": "Omar's CR-101 isolation test goes red with 'expected hidden, got 42', then green after Quill adds the ownership check, with the test file untouched between the two.",
+    "lessons": [
+      "l3-from-spec-to-failing-test"
+    ],
+    "related": [
+      "failing-test-first",
+      "test-lock",
+      "non-zero-exit",
+      "verification-command"
+    ]
+  },
+  {
+    "id": "regression",
+    "term": "Regression",
+    "definition": "Behavior that used to be correct and has quietly gone wrong again. Eval suites exist to catch regressions in agent behavior, especially ones caused by config or model changes rather than code.",
+    "example": "When Quill starts stripping docstrings after the CLAUDE.md edit, six Shelf eval cases that passed last week fail, and the check names the regression.",
+    "lessons": [
+      "l5-eval-cases-for-coding-agents",
+      "l6-why-the-gate-lives-in-ci"
+    ],
+    "related": [
+      "eval-suite",
+      "incident-to-eval",
+      "model-drift",
+      "merge-threshold"
+    ]
+  },
+  {
+    "id": "reviewer-of-record",
+    "term": "Reviewer of record",
+    "definition": "The named person who accepted an artifact, recorded on the artifact itself with a timestamp. Every file in the chain carries an author, a timestamp, and a reviewer of record.",
+    "example": "The header block on CR-102's spec.md names Omar as author, Priya as reviewer of record, and the date she confirmed the refund constraints.",
+    "lessons": [
+      "l0-what-is-spec-driven-development",
+      "l1-the-artifact-chain",
+      "l7-evidence-and-audit-readiness"
+    ],
+    "related": [
+      "promotion",
+      "auditable-change",
+      "stage-boundary",
+      "evidence"
+    ]
+  },
+  {
+    "id": "route-to-approval",
+    "term": "Route to approval",
+    "definition": "The instructions in a block or ask message that say who can approve the action and how to reach them. Without a route, a block is a dead end and people work around it.",
+    "example": "The CR-102 refund block reads: refund over $200 needs Priya's approval, see spec.md section 5, request it by commenting on the PR.",
+    "lessons": [
+      "l4-the-enforced-gate"
+    ],
+    "related": [
+      "self-explaining-block",
+      "allow-ask-block",
+      "human-gate",
+      "decision-log"
+    ]
+  },
+  {
+    "id": "self-explaining-block",
+    "term": "Self-explaining block",
+    "definition": "A block message that states what was stopped, which rule stopped it, who can approve, and how to ask. Both the agent and the human read the same text.",
+    "example": "When Quill tries to run a delete against Shelf's production database, the hook prints: blocked production write, rule no-prod-mutations, approver Priya, request via PR comment.",
+    "lessons": [
+      "l4-the-enforced-gate"
+    ],
+    "related": [
+      "route-to-approval",
+      "allow-ask-block",
+      "hook",
+      "enforced-gate"
+    ]
+  },
+  {
+    "id": "skill",
+    "term": "Skill",
+    "definition": "A packaged set of instructions the coding agent loads for a particular kind of task, stored under .claude/skills/. Like CLAUDE.md, it steers behavior and so counts as config that is code.",
+    "example": "Bramble keeps a refund-handling skill under .claude/skills/ that tells Quill to log every refund; editing it triggers the eval workflow like any config change.",
+    "lessons": [
+      "l5-eval-cases-for-coding-agents"
+    ],
+    "related": [
+      "claude-md",
+      "hook",
+      "config-is-code",
+      "coding-agent"
+    ]
+  },
+  {
+    "id": "spec",
+    "term": "Spec",
+    "definition": "A written description of what a change must do and how anyone will know it is done. In this course the spec is the contract the agent builds against and the auditor reads.",
+    "example": "Omar's first spec for CR-102 was one line, and Quill built a refund button any staff member could press; the second spec named the manager role, the limit, and the log.",
+    "lessons": [
+      "l0-what-is-spec-driven-development"
+    ],
+    "related": [
+      "executable-spec",
+      "spec-md",
+      "contract",
+      "acceptance-criteria"
+    ]
+  },
+  {
+    "id": "spec-driven-development",
+    "term": "Spec-driven development",
+    "definition": "A way of working with coding agents where intent and acceptance criteria are written as versioned files before anything is generated, every artifact is signed, and humans accept at each stage boundary. It replaces memory with files.",
+    "example": "Bramble adopts it one change at a time: CR-101 gets an intent, a spec, a failing test, a gate, and a merged PR with Omar's name on it.",
+    "lessons": [
+      "l0-what-is-spec-driven-development",
+      "b1-adopting-it-on-your-team"
+    ],
+    "related": [
+      "spec",
+      "gate",
+      "evidence",
+      "artifact-chain"
+    ]
+  },
+  {
+    "id": "spec-md",
+    "term": "spec.md",
+    "definition": "The file that holds the executable spec: intent, constraints, acceptance criteria, verification, human gates, and evidence. Its concerns are routed to the policy owner before code is generated, and it is committed with the code.",
+    "example": "spec.md for CR-102 names Priya in the constraints, lists five criteria with a make command each, and sets the $200 human gate.",
+    "lessons": [
+      "l1-the-artifact-chain",
+      "l2-writing-an-executable-spec"
+    ],
+    "related": [
+      "executable-spec",
+      "intent-md",
+      "plan-md",
+      "file-pair"
+    ]
+  },
+  {
+    "id": "stage-boundary",
+    "term": "Stage boundary",
+    "definition": "The line between two stages of the chain, such as between plan and build or between open PR and merged PR. A human accepts or rejects at every boundary.",
+    "example": "Omar approving plan.md is one stage boundary for CR-103; Nadia accepting intent.md is another. Quill cannot cross either on its own.",
+    "lessons": [
+      "l0-what-is-spec-driven-development",
+      "l1-the-artifact-chain"
+    ],
+    "related": [
+      "promotion",
+      "gate",
+      "reviewer-of-record",
+      "artifact-chain"
+    ]
+  },
+  {
+    "id": "test-lock",
+    "term": "Test lock",
+    "definition": "A mechanical rule, such as a hook or a protected path, that stops the agent from editing tests while it makes them pass. Asking the agent not to touch tests is a request; a lock is an enforcement.",
+    "example": "After Quill turned a red CR-101 test green by changing the assertion, Omar adds a hook that blocks every write under tests/.",
+    "lessons": [
+      "l3-from-spec-to-failing-test",
+      "l4-the-enforced-gate"
+    ],
+    "related": [
+      "hook",
+      "failing-test-first",
+      "red-green",
+      "plan-md"
+    ]
+  },
+  {
+    "id": "timestamped-run",
+    "term": "Timestamped run",
+    "definition": "A stored record of one gate or eval run with its time, commit, model id, and config hash. A series of them is the change control history for the agent's behavior.",
+    "example": "Each Shelf eval run is saved as a record like run 2026-09-14T02:00Z, commit a41f, model id, CLAUDE.md hash, pass rate 92%, which lets Omar find the night the rate dropped.",
+    "lessons": [
+      "l4-the-enforced-gate",
+      "l6-why-the-gate-lives-in-ci",
+      "l7-evidence-and-audit-readiness"
+    ],
+    "related": [
+      "change-control",
+      "decision-log",
+      "evidence",
+      "pass-rate"
+    ]
+  },
+  {
+    "id": "verification-command",
+    "term": "Verification command",
+    "definition": "The one command paired with each acceptance criterion that checks it and exits non-zero on failure. It is what makes a criterion executable instead of a sentence.",
+    "example": "The CR-102 criterion 'a refund never exceeds the original purchase' is paired with make test-refund-limit, which runs a Vitest case that tries to refund $60 on a $50 gift card.",
+    "lessons": [
+      "l2-writing-an-executable-spec",
+      "l3-from-spec-to-failing-test"
+    ],
+    "related": [
+      "acceptance-criteria",
+      "non-zero-exit",
+      "make-test",
+      "executable-spec"
+    ]
+  },
+  {
+    "id": "versioned-file",
+    "term": "Versioned file",
+    "definition": "A file kept in the repository under version control, so every change to it has an author, a time, and a history. Intent, specs, plans, agent config, and eval cases are all versioned files.",
+    "example": "Nadia's intent for CR-101 lives in intent.md in the Shelf repo, so Mr. Hale can see when it was written and who changed it, unlike the chat thread it replaced.",
+    "lessons": [
+      "l0-what-is-spec-driven-development",
+      "l5-eval-cases-for-coding-agents"
+    ],
+    "related": [
+      "intent-md",
+      "file-pair",
+      "config-is-code",
+      "done"
+    ]
+  },
+  {
+    "id": "wait-time-cost",
+    "term": "Wait time cost",
+    "definition": "The time a change spends paused at a gate waiting for a person, measured per gate and made visible. It is the main price of gating, and the number to tune thresholds against.",
+    "example": "Bramble's table shows the CR-102 refund gate has a median wait of forty minutes for Priya, while a lint approval gate with a two-day median is retired.",
+    "lessons": [
+      "l4-the-enforced-gate",
+      "l7-evidence-and-audit-readiness",
+      "b1-adopting-it-on-your-team"
+    ],
+    "related": [
+      "human-gate",
+      "control",
+      "decision-log",
+      "enforced-gate"
+    ]
+  }
+]
