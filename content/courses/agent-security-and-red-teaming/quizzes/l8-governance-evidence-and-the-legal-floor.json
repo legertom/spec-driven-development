@@ -1,0 +1,140 @@
+{
+  "lessonSlug": "l8-governance-evidence-and-the-legal-floor",
+  "questions": [
+    {
+      "id": "l8-q1",
+      "type": "mc",
+      "prompt": "Sprout's governance record is organized by the NIST AI RMF's four functions. Under which heading does the kill switch SPROUT_DISABLE_T2 belong?",
+      "options": [
+        { "id": "a", "text": "Govern, because Pip decides who may pull it" },
+        { "id": "b", "text": "Map, because it is part of the system's description" },
+        { "id": "c", "text": "Manage, because it is what you do about a risk or an incident" },
+        { "id": "d", "text": "Measure, because pulling it produces a log line" }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Who may pull the switch is a Govern question. The switch itself, as a control that stops harm, is Manage.",
+        "b": "Map describes purpose, roles, tools, data, and risks. The switch is a response to a risk, not a description of the system.",
+        "c": "Correct. Manage holds guards, the approval queue, the kill switch, the runbook, and open risks: the things you do about what could go wrong.",
+        "d": "Measure holds the suite results, red-team findings, and log summaries that show how the agent is behaving. The switch producing a log line does not make it a measurement."
+      }
+    },
+    {
+      "id": "l8-q2",
+      "type": "mc",
+      "prompt": "For a customer-support agent like Sprout, what does the EU AI Act's transparency obligation most likely require?",
+      "options": [
+        { "id": "a", "text": "That Sprout publishes its system prompt to customers" },
+        { "id": "b", "text": "That customers are told they are interacting with an AI system, not a person" },
+        { "id": "c", "text": "That every refund is approved by a human" },
+        { "id": "d", "text": "That the adversarial suite passes at zero tolerance" }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Transparency here means disclosure that the user is talking to an AI, not publication of internals.",
+        "b": "Correct. Sprout introduces itself as an AI assistant and never claims to be Maya. That is the floor, and the lesson repeats that it is a sketch, not legal advice.",
+        "c": "Human approval of T2 actions is Pip's own policy and a good control, but it is not what the transparency duty asks for.",
+        "d": "The suite is how you aim at the spec. It is above the floor, not part of it."
+      }
+    },
+    {
+      "id": "l8-q3",
+      "type": "mc",
+      "prompt": "Which set of files belongs in Sprout's evidence pack?",
+      "options": [
+        { "id": "a", "text": "The system prompt, the model's temperature setting, and the chat UI screenshots" },
+        { "id": "b", "text": "The threat model, the red-team playbook and reports, the adversarial suite results, guard and approval log summaries, and incident reports" },
+        { "id": "c", "text": "A paragraph from Dev describing the safeguards, signed by Pip" },
+        { "id": "d", "text": "The full raw logs/guard.jsonl file for the year" }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Those describe the product, not the controls or what they did. None of them is evidence that a refund was stopped.",
+        "b": "Correct. Each item either documents what the system should do or shows what it did, and each already exists, so the pack regenerates from the repository and the logs.",
+        "c": "That is the paragraph the processor would reply to with more questions. A pack points at files and numbers a reviewer can check.",
+        "d": "Raw logs stay where they are. The pack carries summaries so a reviewer never opens a 40,000-line file."
+      }
+    },
+    {
+      "id": "l8-q4",
+      "type": "mc",
+      "prompt": "A Fernworks care-guide PDF with hidden instructions is ingested into search_care_guide. In the governance record, which supply-chain category does it fall under, and what is the control?",
+      "options": [
+        { "id": "a", "text": "Dependencies; pin the PDF version in the lockfile" },
+        { "id": "b", "text": "The model provider; upgrade the model so it ignores hidden text" },
+        { "id": "c", "text": "Ingested documents; an input guard plus a review step before ingestion" },
+        { "id": "d", "text": "MCP servers; remove the search tool from the allowlist" }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Dependency pinning is for packages. A supplier's document is a different row of the supply chain with a different control.",
+        "b": "No model version reliably ignores injected text. The control has to sit outside the model.",
+        "c": "Correct. Anything loaded into an index is a dependency on its author. The input guard strips and flags, and a review step decides what enters the index at all.",
+        "d": "search_care_guide is Pip's own tool, and removing it removes a feature customers need. The problem is the document, not the tool."
+      }
+    },
+    {
+      "id": "l8-q5",
+      "type": "mc",
+      "prompt": "Why does the OWASP Top 10 for Agentic Applications list insufficient logging alongside attacks like injection and privilege abuse?",
+      "options": [
+        { "id": "a", "text": "Because logs are where attackers hide injected instructions" },
+        { "id": "b", "text": "Because without logs there is no evidence, no incident reconstruction, and no red-team baseline, so none of the other risks can be handled" },
+        { "id": "c", "text": "Because logging slows the agent down and causes resource exhaustion" },
+        { "id": "d", "text": "Because regulators require logs for every AI system" }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Logs are an output of the harness, not an entry point the model reads.",
+        "b": "Correct. The A-2 story with logs is five lines and a test. Without logs it is an unexplained refund and a longer email from the processor.",
+        "c": "Appending a JSON line per decision is cheap. The cost of not having it is an incident you cannot understand.",
+        "d": "Some uses carry record-keeping duties, but that is not why the category is on the list. Logging is a security control in its own right."
+      }
+    },
+    {
+      "id": "l8-q6",
+      "type": "mc",
+      "prompt": "During the monthly review, Maya reports that the median time to decide an approval request rose from 2 hours to 3 hours 40 minutes, and that four requests timed out. What is the right next step?",
+      "options": [
+        { "id": "a", "text": "Change the queue so timed-out requests are approved automatically" },
+        { "id": "b", "text": "Record an action with an owner and a due date, such as a second approver covering the busy period, and check it at the next review" },
+        { "id": "c", "text": "Remove approval metrics from the agenda since they are not security findings" },
+        { "id": "d", "text": "Lower the timeout to 4 hours so requests fail faster" }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A request that runs because nobody looked is a hole in the wall. Timeout denies, always.",
+        "b": "Correct. The review turns numbers into owned actions. Rising decision time is an early sign of approver fatigue, which is a security risk because tired approvers click approve.",
+        "c": "Approval metrics are how you detect approver fatigue before it becomes an approved attack.",
+        "d": "A shorter timeout denies more legitimate customers without adding any capacity to decide."
+      }
+    },
+    {
+      "id": "l8-q7",
+      "type": "short",
+      "prompt": "Name one evidence artifact an agent you know could produce today and one it cannot. For the one it cannot, say what would have to exist first.",
+      "rubric": [
+        "Names a specific artifact the agent can produce today (a log, a test result, a document, a report)",
+        "Names a specific artifact it cannot produce today",
+        "States a concrete prerequisite for the missing artifact (a log line, a test suite, a review process, a file)",
+        "Distinguishes documentation (what the system should do) from evidence (what it did)"
+      ],
+      "modelAnswer": "An internal ticket-triage agent I know can produce a suite result today: it has a regression set that runs in CI, so a timestamped pass rate per release exists and can be copied into a dated folder. It cannot produce an approval log summary, because its one irreversible action, closing a ticket, has no approval queue and no log line recording who allowed it. For that artifact to exist, the close action would need a tool guard that appends a JSON line with the user, the decision, and the reason, and a queue with a person's id on every approval. The suite result is evidence of behavior. Our design doc is documentation of intent; a reviewer wants both.",
+      "maxWords": 150
+    },
+    {
+      "id": "l8-q8",
+      "type": "free",
+      "prompt": "Write the Measure and Manage sections of docs/governance-record.md for Sprout as it stands after L6 and L7. Include the numbers you would report and where each number comes from.",
+      "rubric": [
+        "Measure names the adversarial suite with a case count, a pass rate, and when it runs",
+        "Measure includes the last red-team run with its date, finding count, and tests added",
+        "Measure includes a guard log summary or an approval log summary with figures and the source file",
+        "Manage names the three guards, the approval queue with its timeout behavior, and the kill switch",
+        "Manage names the incident runbook and at least one open risk with an owner and a due date",
+        "Every number or claim points at a file, a log, or a person rather than standing alone"
+      ],
+      "modelAnswer": "## Measure\n- Adversarial suite: 31 cases in evals/adversarial/, tagged zero-tolerance, run by promptfoo on every pull request. Latest release v2.1: 31/31 pass at k = 5. Source: suite-results-v2.1.json in the evidence pack.\n- Red team: last run 2026-09-10 by Rosa, 2 findings, both turned into tests (tc-adv-a4-subtotal-034 and a roleplay-as-staff case), 0 open. Source: docs/evidence/2026-09/red-team-2026-09-10.md.\n- Guard log, last 30 days: 412 denials from logs/guard.jsonl. Top reasons: not_owner 188, invalid_amount 97, outside_return_window 61, rate_limited 44, kill_switch 0.\n- Approval log, last 30 days: 64 requests from logs/approval.jsonl; 51 approved, 9 denied, 4 timed out and therefore denied. Median time to decision 3h 40m, up from 2h last month.\n\n## Manage\n- Guards: src/guards/input.ts, src/guards/output.ts, src/guards/tool.ts. The tool guard enforces the role allowlist, per-user scoping, argument validation against the order, tiering, and rate limits. Every decision is appended to logs/guard.jsonl.\n- Approval queue: src/approval/queue.ts. T2 calls never run in the guard; they wait for Maya (backup Pip). Cards show the order record, the customer's message, the policy check, and the model's summary in a labeled box. The 24-hour timeout denies. Decisions go to logs/approval.jsonl with the approver's id.\n- Kill switch: SPROUT_DISABLE_T2=true stops all refund requests; Pip and Dev may pull it; tested monthly, last test 2026-09-02.\n- Incident runbook: docs/incident-runbook.md (detect, contain, eradicate, recover, learn). One incident in 90 days, A-2 on 2026-07-18, closed with a test and a runbook edit.\n- Open risks: Fernworks PDFs are ingested without a review step (owner Dev, due 2026-10-01); Thursday approval backlog (owner Pip, covering from 2026-09-18)."
+    }
+  ]
+}

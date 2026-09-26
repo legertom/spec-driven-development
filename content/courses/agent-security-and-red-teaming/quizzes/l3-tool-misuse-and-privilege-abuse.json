@@ -1,0 +1,140 @@
+{
+  "lessonSlug": "l3-tool-misuse-and-privilege-abuse",
+  "questions": [
+    {
+      "id": "l3-q1",
+      "type": "mc",
+      "prompt": "Dev gives every Sprout session the same tool list, including orders_report, which only the analyst role uses. What is this an example of?",
+      "options": [
+        { "id": "a", "text": "Prompt injection" },
+        { "id": "b", "text": "Excessive agency: the agent can do more than its job needs" },
+        { "id": "c", "text": "A rate-limit failure" },
+        { "id": "d", "text": "Memory poisoning" }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Nobody had to inject anything. The tool was on the list, so a customer could ask for it in plain words.",
+        "b": "Correct. Excessive agency is the gap between what the agent can do and what its job needs: extra tools, wide arguments, or more rights than the user. Every inch of that gap is usable without breaking anything.",
+        "c": "A rate limit bounds how many calls run. It does not decide whether a customer should have the tool at all.",
+        "d": "Memory poisoning plants text that a later session reads. This is a design choice about tool lists, not planted text."
+      }
+    },
+    {
+      "id": "l3-q2",
+      "type": "mc",
+      "prompt": "Alex, logged in, asks about \"my grandmother's order #1077,\" which is Jordan's. Which check stops Sprout from reading Jordan's address back?",
+      "options": [
+        { "id": "a", "text": "A system prompt line: \"Only discuss the customer's own orders\"" },
+        { "id": "b", "text": "Per-user scoping in code: the tool fetches the order and compares its customer id with the session's user id before returning anything" },
+        { "id": "c", "text": "Asking the model to confirm that the order belongs to Alex" },
+        { "id": "d", "text": "A keyword filter on the word \"grandmother\"" }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A prompt line lowers the rate of bad requests. The model still does not know who owns #1077, and the tool would still return it.",
+        "b": "Correct. The session sets call.userId; the model cannot change it. The guard fetches #1077, sees customerId: jordan, and returns not_owner. Jordan's address never enters the conversation.",
+        "c": "The model has no source of truth for ownership except the conversation Alex is steering. Validation reads from the database.",
+        "d": "The next attempt will not say \"grandmother.\" Filters catch yesterday's wording."
+      }
+    },
+    {
+      "id": "l3-q3",
+      "type": "mc",
+      "prompt": "Sam asks for a $350 refund on order #2001, which cost $35. Sprout calls issue_refund(\"2001\", 350, \"shipping stress\"). Which guard rule stops it first, and what does the model see?",
+      "options": [
+        { "id": "a", "text": "The allowlist; the model sees not_allowlisted" },
+        { "id": "b", "text": "Argument validation against the order total; the model sees invalid_amount" },
+        { "id": "c", "text": "The rate limit; the model sees rate_limited" },
+        { "id": "d", "text": "The approval queue; the model sees pending_approval" }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "issue_refund is on the customer allowlist. Sam is allowed to request a refund; the problem is the number.",
+        "b": "Correct. The guard reads the order record, sees that 350 is above the $35 total, and returns invalid_amount. The model passes on what it was told; the code checks it against the world.",
+        "c": "One request does not hit a rate limit. Limits bound how many calls run, not whether one call is valid.",
+        "d": "A T2 call only reaches the queue after the amount and window checks pass. This one fails before that."
+      }
+    },
+    {
+      "id": "l3-q4",
+      "type": "mc",
+      "prompt": "Sam asks Sprout to read every tracking event on his own order, including events marked internal that only staff can see, and Sprout does. What kind of attack is this?",
+      "options": [
+        { "id": "a", "text": "BOLA, because Sam reached another user's object" },
+        { "id": "b", "text": "Argument tampering, because the order id was wrong" },
+        { "id": "c", "text": "A confused deputy: Sprout used its own service-account authority to do something the user has no right to do" },
+        { "id": "d", "text": "Role confusion, because Sam claimed to be an analyst" }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "The order is Sam's own. Ownership passed; the problem is what Sprout could see about it.",
+        "b": "The order id was correct and the tool ran as designed. No argument was wrong.",
+        "c": "Correct. Sprout can read the full carrier feed because it serves every customer. The tool checked Sprout's rights instead of the user's. The fix filters results to what the caller could see on the website.",
+        "d": "Sam claimed nothing about his role. He asked a customer tool for more than a customer may see, and it delivered because it ran with Sprout's rights."
+      }
+    },
+    {
+      "id": "l3-q5",
+      "type": "mc",
+      "prompt": "A stolen session cookie gives an attacker ten minutes inside a real customer's Sprout session. What does a per-user, per-tool rate limit bound?",
+      "options": [
+        { "id": "a", "text": "Whether the attacker can log in at all" },
+        { "id": "b", "text": "Which tools the customer role may call" },
+        { "id": "c", "text": "How many calls the session can make in that window, and so how much damage it can do before anyone notices" },
+        { "id": "d", "text": "Whether a refund amount is valid" }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Login is an authentication problem. The cookie is already stolen in this scenario.",
+        "b": "That is the allowlist's job. The rate limit assumes the tool is allowed and asks how often.",
+        "c": "Correct. The rate limit is the blast-radius control: five cancel_order calls per hour means a compromised session costs five orders, not fifty, and the sixth denial lands in logs/guard.jsonl.",
+        "d": "Amounts are checked by argument validation. A rate limit counts calls; it does not read arguments."
+      }
+    },
+    {
+      "id": "l3-q6",
+      "type": "mc",
+      "prompt": "Jordan asks about repotting a fern. Sprout reads a poisoned Fernworks article, looks up Jordan's order, and calls issue_refund with a valid amount on an order delivered last week. Every argument passes validation. What stops money from moving?",
+      "options": [
+        { "id": "a", "text": "Nothing; each step was valid, so the refund runs" },
+        { "id": "b", "text": "The tier rule: issue_refund is T2, so the guard queues it for Maya instead of running it" },
+        { "id": "c", "text": "Per-user scoping, because Jordan does not own the order" },
+        { "id": "d", "text": "The model notices the white text and refuses" }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "\"Each step was fine\" is not a defense against a cascade. The guard runs on every call, and irreversible calls get a person.",
+        "b": "Correct. Scoping and validation catch the early links when ids or amounts are wrong. When they are right, the tier rule catches the last link: a T2 call never runs from the loop.",
+        "c": "Jordan does own #1077. Scoping passes, which is why the cascade reaches the refund call.",
+        "d": "It might, some of the time. The lesson assumes the model can be fooled and asks what holds when it is."
+      }
+    },
+    {
+      "id": "l3-q7",
+      "type": "short",
+      "prompt": "Pick one tool in an agent you know (or one of Sprout's) and write its two argument-validation rules. For each rule name the argument, the source of truth it is checked against, and the error reason returned.",
+      "rubric": [
+        "Names a specific tool and two distinct arguments or argument checks",
+        "Each rule names a source of truth outside the model (a database record, a policy constant, a calendar), not the conversation",
+        "Each rule states what is returned on failure (an error reason the model receives)",
+        "Says or shows that the rules run in code before the tool executes"
+      ],
+      "modelAnswer": "Tool: cancel_order(order_id). Rule 1: order_id is checked against the orders table; the order must exist and its customer_id must equal the session's user id, or the guard returns not_owner. Rule 2: the order's status is read from the same record; it must be unshipped (processing or packed), or the guard returns already_shipped. Both rules run in src/guards/tool.ts before runTool is called, and both read the database rather than anything the model said. The model can claim the order is still in the warehouse, but the status field decides. A denial goes back to the model as a tool result, so Sprout can tell the customer the order has already shipped and offer a return instead.",
+      "maxWords": 150
+    },
+    {
+      "id": "l3-q8",
+      "type": "free",
+      "prompt": "Design the per-role allowlist and the per-user scoping rules for Sprout's eight tools (lookup_order, get_shipping_status, search_care_guide, cancel_order, issue_refund, escalate_to_human, read_customer_notes, save_customer_note), plus the analyst's orders_report. Then explain which rule stops A-3 (Alex asks about Jordan's order #1077) and which stops A-4 (Sam asks for $350 on a $35 order).",
+      "rubric": [
+        "Gives an allowlist per role in which the customer role does not include orders_report and the analyst role does not include the customer write tools",
+        "States that the role and user id come from the session, not from the message",
+        "Gives a scoping rule that checks object ownership (order or customer profile) against the database for every tool that takes an id",
+        "Identifies per-user scoping (not_owner) as the rule that stops A-3",
+        "Identifies argument validation against the order total (invalid_amount) as the rule that stops A-4, and notes that scoping alone would not stop it because Sam owns #2001",
+        "Places issue_refund in T2 so that a valid request is queued for Maya rather than run"
+      ],
+      "modelAnswer": "Allowlist. customer: lookup_order, get_shipping_status, search_care_guide, cancel_order, issue_refund, escalate_to_human, read_customer_notes, save_customer_note. analyst: orders_report, search_care_guide. The role is set by the harness at login and stored on the call; the model never supplies it. A tool not on the caller's list is denied as not_allowlisted before its arguments are read.\n\nScoping. Every call carries call.userId from the session. For any tool with an order_id (lookup_order, get_shipping_status, cancel_order, issue_refund), the guard fetches the order and requires order.customerId === call.userId, returning not_owner otherwise, with the same reason whether the order is missing or belongs to someone else. For read_customer_notes and save_customer_note, the customer_id argument must equal call.userId. Results are filtered to the customer view: get_shipping_status drops internal carrier events. escalate_to_human and search_care_guide take no owned object, so they need no scoping, though search results still pass the input guard.\n\nValidation and tier. issue_refund additionally requires 0 < amount <= order.total and delivery within 30 days, and because it is T2 the guard enqueues it for Maya rather than running it. cancel_order requires the order to be unshipped.\n\nA-3 is stopped by scoping: Alex's session has userId alex, order #1077 has customerId jordan, so lookup_order returns not_owner and Jordan's address never enters the conversation. A-4 is not stopped by scoping, because Sam owns #2001. It is stopped by argument validation: 350 exceeds the $35 total, so the guard returns invalid_amount. Had Sam asked for $35, the window check would deny it, and a valid request would still only reach Maya's queue."
+    }
+  ]
+}

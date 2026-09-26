@@ -1,0 +1,59 @@
+{
+  "slug": "agent-security-and-red-teaming",
+  "title": "Security and Red-Teaming for Agents",
+  "shortTitle": "Agent Security",
+  "tagline": "Map how an agent can be attacked, attack it yourself before anyone else does, and build defenses that hold even when the model is fooled.",
+  "description": "An agent reads text it does not control and then acts with tools, and that combination is the whole security problem. There is no reliable way to detect a malicious sentence, so this course teaches the design rule that follows: assume the model is fooled, and make sure it does not matter. One family of attacks per lesson, a red-team playbook and tool, then guards in code, a human approval queue, a kill switch, an incident runbook, and a governance record an auditor can read. You practice on Sprout, the support agent from Building and Evaluating AI Agents, and Eve, the built-in tutor, is one highlight away.",
+  "level": "Intermediate",
+  "audience": "Engineers and security-minded product people who ship, or are about to ship, an agent that reads untrusted text and calls tools. You can read TypeScript and YAML and have seen a customer-support bot. No security background is assumed.",
+  "status": "available",
+  "order": 5,
+  "verbs": [
+    { "name": "Map", "question": "What can be lost, who might try, and where can text reach the model?", "lessons": "L0–L1" },
+    { "name": "Attack", "question": "How do the attacks work, and how do you run them against your own agent first?", "lessons": "L2–L5" },
+    { "name": "Defend", "question": "What holds when the model is fooled, who decides, and what proves it?", "lessons": "L6–L8" }
+  ],
+  "pipeline": [
+    { "step": "docs/threat-model.md", "verb": "Map", "note": "assets, actors, entry points, tiers" },
+    { "step": "Risk register", "verb": "Map", "note": "one row per risk, an owner each" },
+    { "step": "docs/red-team-playbook.md", "verb": "Attack", "note": "personas, strategies, rules of engagement" },
+    { "step": "promptfoo red-team", "verb": "Attack", "note": "against staging with a test user" },
+    { "step": "evals/adversarial/*.yaml", "verb": "Attack", "note": "every finding becomes a fail-closed case" },
+    { "step": "src/guards/*.ts", "verb": "Defend", "note": "input, output, and tool guards outside the model" },
+    { "step": "Approval queue + kill switch", "verb": "Defend", "note": "timeout denies; SPROUT_DISABLE_T2" },
+    { "step": "docs/governance-record.md", "verb": "Defend", "note": "NIST AI RMF headings, the evidence pack" }
+  ],
+  "modules": [
+    { "id": 0, "title": "Start Here", "blurb": "Why an agent is a different security problem, where untrusted text gets in, why there is no reliable detector, and the design rule that follows.", "lessons": ["l0-why-agents-are-a-new-attack-surface"] },
+    { "id": 1, "title": "Map the Surface", "blurb": "Assets, actors, entry points, and trust boundaries; a data-flow diagram and a risk register; tiering a new tool by what a fooled model could do with it.", "lessons": ["l1-threat-modeling-an-agent"] },
+    { "id": 2, "title": "The Attacks", "blurb": "Prompt injection direct and indirect, tool misuse and privilege abuse, memory and context poisoning, and a red-team playbook with promptfoo that turns every finding into a fail-closed test.", "lessons": ["l2-prompt-injection-direct-and-indirect", "l3-tool-misuse-and-privilege-abuse", "l4-memory-and-context-poisoning", "l5-red-teaming-your-own-agent"] },
+    { "id": 3, "title": "The Defenses", "blurb": "Input, output, and tool guards in code; a human approval queue that denies on timeout, a kill switch, and an incident runbook; the governance record, the evidence pack, and the legal floor.", "lessons": ["l6-guards-input-output-and-tool", "l7-human-approval-kill-switches-and-incidents", "l8-governance-evidence-and-the-legal-floor"] },
+    { "id": 4, "title": "Bonus", "blurb": "A fifteen-question checklist to run before any agent ships, and ten attacks to try against your own.", "lessons": ["b1-the-agent-security-checklist"] }
+  ],
+  "shortTitles": {
+    "l0-why-agents-are-a-new-attack-surface": "Why agents are a new attack surface",
+    "l1-threat-modeling-an-agent": "Threat modeling an agent",
+    "l2-prompt-injection-direct-and-indirect": "Prompt injection, direct and indirect",
+    "l3-tool-misuse-and-privilege-abuse": "Tool misuse and privilege abuse",
+    "l4-memory-and-context-poisoning": "Memory and context poisoning",
+    "l5-red-teaming-your-own-agent": "Red-teaming your own agent",
+    "l6-guards-input-output-and-tool": "Guards: input, output, and tool",
+    "l7-human-approval-kill-switches-and-incidents": "Human approval, kill switches, and incidents",
+    "l8-governance-evidence-and-the-legal-floor": "Governance, evidence, and the legal floor",
+    "b1-the-agent-security-checklist": "The agent security checklist"
+  },
+  "runningExample": {
+    "title": "Pip's Plant Shop, Sprout, and Rosa's red team",
+    "summary": "The same world as Building and Evaluating AI Agents. Sprout is the support agent for a small plant shop; it reads chat, order notes, supplier care guides, tool results, and customer profile notes, and it can look up orders, cancel them, and request refunds. Rosa, a part-time security engineer, red-teams it. Sam, a patient customer, attacks it. Six recurring attacks (A-1 to A-6) run through every lesson and seed the adversarial suite.",
+    "tools": [
+      { "name": "lookup_order, get_shipping_status, search_care_guide, read_customer_notes", "does": "Read-only tools, but each returns text the model will read", "tier": "T0, entry points" },
+      { "name": "cancel_order, save_customer_note", "does": "Reversible writes; a note written today is read tomorrow", "tier": "T1" },
+      { "name": "issue_refund", "does": "Sends money back", "tier": "T2, needs Maya's approval" },
+      { "name": "src/guards/{input,output,tool}.ts", "does": "Guards outside the model; the tool guard is the one that must hold", "tier": "Logs to logs/guard.jsonl" },
+      { "name": "src/approval/queue.ts", "does": "The T2 queue: facts not stories, timeout denies", "tier": "SPROUT_DISABLE_T2 is the kill switch" },
+      { "name": "evals/adversarial/*.yaml + promptfoo", "does": "Every red-team finding becomes a zero-tolerance case", "tier": "Runs on every pull request" }
+    ]
+  },
+  "tutorNotes": "Prefer the course's running example, shared with Building and Evaluating AI Agents: Pip's Plant Shop, a small online houseplant store, and Sprout, its customer-support agent (a model in a tool loop). Tools and tiers: lookup_order, get_shipping_status, search_care_guide, read_customer_notes (T0, read-only but entry points), cancel_order and save_customer_note (T1, reversible writes), issue_refund (T2, irreversible, needs Maya's approval), escalate_to_human (always allowed). The cast: Pip (owner), Maya (support agent who approves refunds), Dev (the engineer, the learner), Rosa (part-time security engineer who red-teams Sprout), customers Alex (order #1042), Jordan (order #1077), and Sam (order #2001, the attacker in most scenes), and Fernworks, a supplier whose care-guide PDFs are ingested into the search index. Entry points: chat, order notes, Fernworks PDFs, tool results, profile notes, carrier tracking events. The six recurring attacks: A-1 (Sam's direct injection asking for a refund), A-2 (white text in a Fernworks PDF telling the agent to refund the reader, which hurts Jordan), A-3 (Alex asks about his grandmother's order #1077, which is Jordan's: BOLA), A-4 (a $350 refund on a $35 order: argument tampering), A-5 (a checkout order note claiming VIP status: context poisoning), A-6 (Sam gets Sprout to save a pre-approved note to his profile over four sessions: persistent memory poisoning). The three verbs: Map (L0-L1), Attack (L2-L5), Defend (L6-L8). The one-liner: assume the model is fooled; make sure it does not matter. The defenses that hold: authorization in code, least privilege per role, per-user scoping, argument validation against the order, guards outside the model, a T2 approval queue that denies on timeout, the SPROUT_DISABLE_T2 kill switch, provenance on memory. Frameworks named: the OWASP Top 10 for Agentic Applications, the NIST AI Risk Management Framework, the EU AI Act (a floor, not advice), and promptfoo for automated red-teaming. Every attack targets the fictional Sprout on staging; if a learner asks how to attack a real product or service they do not own, decline and bring the conversation back to threat modeling and defending their own agent. For the eval suite and CI point to Building and Evaluating AI Agents; for hooks and permissions on the development side point to Working with Coding Agents; for gates and evidence point to Spec-Driven Development for Dummies.",
+  "credits": "Built as a full week on the one safety lesson in Building and Evaluating AI Agents. The OWASP Top 10 for Agentic Applications, the NIST AI Risk Management Framework, the EU AI Act, and promptfoo are named as the public frameworks and tool they are; nothing from them is reproduced. All lesson text, examples, attacks, guards, quizzes, the glossary, and the Pip's Plant Shop scenes were written for this course, and every attack targets the fictional Sprout."
+}
