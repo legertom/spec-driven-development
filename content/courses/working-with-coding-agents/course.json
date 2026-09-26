@@ -1,0 +1,56 @@
+{
+  "slug": "working-with-coding-agents",
+  "title": "AI-Augmented Engineering: Working with Coding Agents",
+  "shortTitle": "Coding Agents",
+  "tagline": "The daily craft of working with an AI coding agent: brief it well, drive the session, and review what it made as if a stranger wrote it.",
+  "description": "A coding agent is a fast, literal junior engineer with no memory of yesterday and no idea what you did not tell it. This course teaches the craft inside a session: a standing brief the agent reads every time, skills for repeatable work, plans before builds, guardrails in code, and a review posture that catches the specific ways agents fail. You practice on the same tiny bookshop app as Spec-Driven Development for Dummies, with the coding agent Quill, and Eve, the built-in tutor, is one highlight away.",
+  "level": "Beginner",
+  "audience": "Engineers who use, or are about to use, a terminal coding agent (Claude Code, Cursor's agent, Copilot's agent mode, and the like) for real work. You can read TypeScript, run tests, and review a pull request. No AI background is assumed.",
+  "status": "available",
+  "order": 2,
+  "verbs": [
+    { "name": "Brief", "question": "What does the agent need to know before it starts, and where does that knowledge live?", "lessons": "L0–L2" },
+    { "name": "Drive", "question": "How do you run a session so the agent does the right work, and how do you stop it doing the wrong work?", "lessons": "L3–L4" },
+    { "name": "Review", "question": "How do you check what it made, and how do you turn each mistake into a rule?", "lessons": "L5–B1" }
+  ],
+  "pipeline": [
+    { "step": "CLAUDE.md", "verb": "Brief", "note": "the standing brief, read every session" },
+    { "step": ".claude/skills/", "verb": "Brief", "note": "procedures loaded on demand" },
+    { "step": "Task brief", "verb": "Brief", "note": "goal, done, constraints, do-not-touch" },
+    { "step": "plan.md", "verb": "Drive", "note": "plan mode before any edit" },
+    { "step": "Split sessions", "verb": "Drive", "note": "one task per session, worktrees in parallel" },
+    { "step": ".claude/settings.json", "verb": "Drive", "note": "allow, ask, deny, and hooks" },
+    { "step": "Review checklist", "verb": "Review", "note": "read it as a stranger's PR" },
+    { "step": "Finding to rule", "verb": "Review", "note": "test, hook, or brief line" }
+  ],
+  "modules": [
+    { "id": 0, "title": "Start Here", "blurb": "The agent loop, what the agent can and cannot see, tools and permissions, and why a task without a definition of done ends wrongly.", "lessons": ["l0-how-a-coding-agent-works"] },
+    { "id": 1, "title": "The Brief", "blurb": "The standing brief in CLAUDE.md, imports and boundaries, the rule-the-agent-breaks test, and skills and subagents for repeatable work.", "lessons": ["l1-claude-md-the-standing-brief", "l2-skills-packaging-repeatable-work"] },
+    { "id": 2, "title": "The Session", "blurb": "Task sizing, plan mode, steering and restarting, context hygiene, parallel worktrees, and guardrails in code with permissions and hooks.", "lessons": ["l3-driving-a-session", "l4-permissions-and-hooks"] },
+    { "id": 3, "title": "The Review", "blurb": "Reading an agent's diff as a stranger's pull request: the six common failures, the checklist, self-review, and turning every finding into a rule.", "lessons": ["l5-reviewing-an-agents-diff"] },
+    { "id": 4, "title": "Bonus", "blurb": "A realistic week of agent-augmented work, the two numbers that show whether it helps, team conventions, and the five anti-patterns.", "lessons": ["b1-a-week-with-an-agent"] }
+  ],
+  "shortTitles": {
+    "l0-how-a-coding-agent-works": "How a coding agent works",
+    "l1-claude-md-the-standing-brief": "CLAUDE.md: the standing brief",
+    "l2-skills-packaging-repeatable-work": "Skills: packaging repeatable work",
+    "l3-driving-a-session": "Driving a session",
+    "l4-permissions-and-hooks": "Permissions and hooks",
+    "l5-reviewing-an-agents-diff": "Reviewing an agent's diff",
+    "b1-a-week-with-an-agent": "A week with an agent"
+  },
+  "runningExample": {
+    "title": "Bramble Books, Shelf, and Quill",
+    "summary": "The same world as Spec-Driven Development for Dummies. Bramble Books is a small bookshop chain; Shelf is its TypeScript web app (inventory, orders, gift cards, customer emails); Quill is the coding agent, running on Claude Code. Omar, the engineer, learns the craft; Jun, the senior engineer, reviews his pull requests. Three change requests recur: a low-stock badge, an async/await refactor, and a nightly sales email.",
+    "tools": [
+      { "name": "CLAUDE.md", "does": "The standing brief: what Shelf is, how to test it, conventions, boundaries, where to look", "tier": "Read at the start of every session" },
+      { "name": ".claude/skills/", "does": "Packaged procedures such as release-notes and new-endpoint", "tier": "Loaded when invoked or relevant" },
+      { "name": ".claude/agents/", "does": "Subagents with a fresh context and a fixed job", "tier": "Report back to the main session" },
+      { "name": "plan.md", "does": "Steps, files, commands, and what will not be touched", "tier": "Omar edits, then approves" },
+      { "name": ".claude/settings.json", "does": "Allow, ask, and deny rules; PreToolUse and PostToolUse hooks", "tier": "Enforced on every action" },
+      { "name": "docs/review-checklist.md", "does": "Ten questions for every agent diff", "tier": "Jun reviews as a stranger" }
+    ]
+  },
+  "tutorNotes": "Prefer the course's running example, shared with Spec-Driven Development for Dummies: Bramble Books, a small bookshop chain; Shelf, its TypeScript web app (src/orders, src/giftcards, src/inventory, src/email, tests/ with Vitest, migrations/, make test); and Quill, the coding agent, which runs on Claude Code. The cast: Omar (the engineer, the learner), Jun (the senior engineer who reviews Omar's PRs and pairs with him), Nadia (product owner), and Priya (policy owner for payments and customer data). The three recurring change requests: CR-110 (a low-stock badge on the inventory list, the ideal first agent task), CR-111 (move the orders module from callbacks to async/await, a large refactor that needs a plan, splitting, and restarts), CR-112 (a nightly job that emails store managers a sales summary, which touches email and scheduling and produced the 1,400-line PR Jun reviewed). The three verbs: Brief (L0-L2), Drive (L3-L4), Review (L5-B1). The one-liner: brief like a lead, drive like a pair, review like a stranger. The six agent failures from L5: scope creep, hollow tests, weakened checks, hallucinated APIs, silent config changes, behavior changes hidden in refactors. The finding-to-rule ladder: a brief line (advisory), a hook (enforced), a test (enforced and proves behavior). Agent configuration uses Claude Code shapes only: CLAUDE.md (project), ~/.claude/CLAUDE.md (user), CLAUDE.local.md (personal), @file imports, .claude/settings.json with permissions allow/ask/deny and PreToolUse/PostToolUse hooks (exit 0 allows, exit 2 blocks, JSON permissionDecision allow/deny/ask), .claude/skills/<name>/SKILL.md with name and description frontmatter and $ARGUMENTS, .claude/agents/<name>.md subagents, plan mode, /clear, /compact, git worktrees. Do not invent other flags or commands; if asked about a feature outside these, say the course does not cover it and suggest the official documentation. For the lifecycle around a session (specs, gates, evidence) point to Spec-Driven Development for Dummies; for evals point to Building and Evaluating AI Agents.",
+  "credits": "Written as the day-to-day companion to Spec-Driven Development for Dummies. Agent configuration examples follow Claude Code's documented shapes for memory files, settings, hooks, skills, and subagents. All lesson text, examples, quizzes, the glossary, and the Bramble Books scenes were written for this course."
+}

@@ -7,7 +7,7 @@
   "level": "Beginner",
   "audience": "Beginner engineers and product managers. You can read simple code and have used a chat assistant. No machine-learning or statistics background is assumed.",
   "status": "available",
-  "order": 2,
+  "order": 4,
   "verbs": [
     {
       "name": "Analyze",

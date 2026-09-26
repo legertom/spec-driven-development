@@ -1,0 +1,140 @@
+{
+  "lessonSlug": "l0-how-a-coding-agent-works",
+  "questions": [
+    {
+      "id": "l0-q1",
+      "type": "mc",
+      "prompt": "Which description best matches the agent loop?",
+      "options": [
+        { "id": "a", "text": "The model writes the whole solution in one pass, then a script applies it to the files." },
+        { "id": "b", "text": "The agent reads the prompt and its context, picks a tool, runs it, reads the result, and repeats until it decides the task is done." },
+        { "id": "c", "text": "The agent asks the person a question before every action and waits for the answer." },
+        { "id": "d", "text": "The agent runs the test suite repeatedly until it passes, then stops." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A one-pass answer is what a bare model does. An agent acts step by step, and each tool result feeds the next decision.",
+        "b": "Correct. Read, decide, act, observe, repeat. The four tool calls Quill made to answer 'what does stock.ts export' are four turns of this loop.",
+        "c": "Permissions decide which actions pause for a person. Most reads and many edits run without a question, otherwise nothing would get done.",
+        "d": "Running tests is one tool the loop may call. The loop itself is more general: the agent chooses among reading, searching, editing, and running."
+      }
+    },
+    {
+      "id": "l0-q2",
+      "type": "mc",
+      "prompt": "Omar tells Quill to 'show total stock on the inventory list.' Quill sums stock over two stores when Bramble has three. Which of these was in Quill's context?",
+      "options": [
+        { "id": "a", "text": "The chat message where Nadia explained that totals must cover all three stores." },
+        { "id": "b", "text": "Last week's session in which Omar mentioned the third store." },
+        { "id": "c", "text": "The test fixture file Quill read, which happened to contain two store ids." },
+        { "id": "d", "text": "Omar's intent that the total should match what a store manager expects." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Team chat is not part of the context. The agent only sees what is in front of the model: the prompt, the brief, files it has read, and command output.",
+        "b": "A session's context ends with the session. Nothing from last week carries over unless a file records it.",
+        "c": "Correct. Quill read the fixture, so the fixture was in its context, and two store ids was the only evidence it had. The fix is a line in a file the agent reads.",
+        "d": "Intent lives in Omar's head. The agent sees the words he typed, not what he meant by them."
+      }
+    },
+    {
+      "id": "l0-q3",
+      "type": "mc",
+      "prompt": "Why did the 40-turn session rename an exported function's parameter even though Omar said on turn 3 to keep the public signatures unchanged?",
+      "options": [
+        { "id": "a", "text": "The model decided the constraint was wrong and overrode it." },
+        { "id": "b", "text": "The context window filled up, early turns were summarized, and the constraint was no longer in the text the model was reading." },
+        { "id": "c", "text": "Edits under src/ were denied by permissions, so Quill had to work around them." },
+        { "id": "d", "text": "The test suite was green, so Quill assumed any change was acceptable." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Agents do not override instructions they can see. The constraint had dropped out of view.",
+        "b": "Correct. The window is finite. Files read and outputs seen spend the budget, and a summary of the early turns kept 'refactor the orders module' but lost the signature rule.",
+        "c": "Permissions decide whether an action runs, asks, or is refused. They do not cause an agent to forget a constraint.",
+        "d": "A green suite says nothing about a rule that has no test. The reason was the shrinking context, not the test result."
+      }
+    },
+    {
+      "id": "l0-q4",
+      "type": "mc",
+      "prompt": "What does a permission decide?",
+      "options": [
+        { "id": "a", "text": "Which model the agent uses for a given task." },
+        { "id": "b", "text": "Whether a proposed edit or command runs, asks a person first, or is refused." },
+        { "id": "c", "text": "How many tokens the agent may spend in one session." },
+        { "id": "d", "text": "Which files the agent should read first." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Model choice is a separate setting. Permissions are about actions.",
+        "b": "Correct. Each edit and each command is proposed by the agent, and a permission rule decides run, ask, or refuse. Quill ran make test freely and paused on npm install.",
+        "c": "The context window limits tokens, and that is a property of the model, not a permission rule.",
+        "d": "Reading order comes from the agent's own decisions and from pointers in the brief. Permissions do not schedule reads."
+      }
+    },
+    {
+      "id": "l0-q5",
+      "type": "mc",
+      "prompt": "Quill made the flaky inventory test pass by deleting the failing assertion. Why was that the wrong fix?",
+      "options": [
+        { "id": "a", "text": "Because agents are not allowed to edit test files under any circumstances." },
+        { "id": "b", "text": "Because deleting an assertion is slower than fixing the code." },
+        { "id": "c", "text": "Because the task said 'fix the flaky test' and nothing about what must still be true afterwards, so Quill took the nearest state that matched the words." },
+        { "id": "d", "text": "Because the test suite should have been run twenty times before any change." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Some teams lock tests with a hook, but that is a guardrail, not the reason this fix was wrong. The test setup itself needed to change here.",
+        "b": "Speed is not the issue. Deleting the assertion was fast, which is part of why the literal reading won.",
+        "c": "Correct. Without a definition of done, 'fix' meant 'make it stop failing.' The missing sentence was 'the test still asserts that restocking one store does not change another, and no assertion is removed.'",
+        "d": "Repeating the run is a good way to confirm flakiness, but it would not have told Quill that the assertion had to survive."
+      }
+    },
+    {
+      "id": "l0-q6",
+      "type": "mc",
+      "prompt": "Quill writes inventory.countByStore(title.id), a method Shelf never had. What is the cheapest defense?",
+      "options": [
+        { "id": "a", "text": "Have the agent run the type check or the tests, so the invented call fails inside its own loop and it corrects course." },
+        { "id": "b", "text": "Ask the agent to promise it will only use real methods." },
+        { "id": "c", "text": "Read every method in the diff against the documentation by hand before running anything." },
+        { "id": "d", "text": "Switch to a larger model, which never invents methods." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. npm run typecheck or make test turns the guess into a fact within seconds, and the error lands in the agent's context so it can fix it. One loop iteration instead of a review finding.",
+        "b": "The model is completing a pattern, not choosing to lie. A promise does not change how completion works.",
+        "c": "Manual checking works but costs your attention on every line. The tools give the same answer faster, and the agent can act on it without you.",
+        "d": "Every model completes patterns, and every model will sometimes complete one wrongly. Running the code is the defense that does not depend on the model."
+      }
+    },
+    {
+      "id": "l0-q7",
+      "type": "short",
+      "prompt": "What is one thing you know about your codebase that no file says? Where would you write it down so an agent could see it?",
+      "rubric": [
+        "Names a specific fact or rule about a real or plausible codebase (not a generic statement)",
+        "Explains why the agent could not know it (it lives in people's heads, chat, or a past session)",
+        "Names a concrete place to write it down that an agent reads (CLAUDE.md, a docs file it imports or is pointed at, a comment near the code, or a test)",
+        "The chosen place matches how often the fact is needed (always needed goes in the brief; sometimes needed goes in a pointed-at file or test)"
+      ],
+      "modelAnswer": "In Shelf, stock is counted per store, and there are three stores, but the test fixtures only ever set up two. Nothing in the code says 'three,' and the rule that a total must cover every store lives in Nadia's head and in an old chat thread. An agent that reads the fixtures will happily sum two stores and call it a total. I would put one line in CLAUDE.md under conventions: 'Stock is per store; Bramble has three stores; any total must cover all stores, see docs/inventory.md.' That is short enough to load every session. The longer explanation, with the store ids and the reasoning, goes in docs/inventory.md, which the brief points at, and I would add a fixture with all three stores so a test also proves the rule.",
+      "maxWords": 150
+    },
+    {
+      "id": "l0-q8",
+      "type": "free",
+      "prompt": "Rewrite 'fix the flaky inventory test' as a task with a definition of done. Say which test, what counts as fixed, what must still be true afterwards, and how the agent should verify it.",
+      "rubric": [
+        "Identifies the specific test (file and test name, or an equally precise reference)",
+        "States what 'fixed' means in terms of the cause, not only the symptom (find and correct the source of flakiness)",
+        "States at least one thing that must still be true afterwards (the assertion is kept, the test still proves its original behavior)",
+        "Forbids weakening the test (no assertion removed, skipped, or loosened)",
+        "Names a verification the agent must run and the result that counts as passing (a repeated run, a command, a count)",
+        "Bounds the change (which files may be touched, or what must not be touched)"
+      ],
+      "modelAnswer": "Task: The test in tests/inventory/stock.test.ts named 'restocks across stores' fails roughly one run in five on the main branch.\n\nGoal: Find why it is flaky and fix the cause. Start by reproducing it: run `npx vitest run tests/inventory --repeat 20` and confirm at least one failure before changing anything.\n\nDefinition of done:\n- The test passes 20 consecutive runs with the same command.\n- The test still asserts that restocking one store does not change any other store's count. That assertion stays as written.\n- No assertion is removed, skipped, marked as todo, or loosened, and no timeout or retry is added to make it pass.\n- The rest of the suite passes with `make test`.\n\nConstraints: The fix may change code under src/inventory/ or the test's setup and fixtures. Do not change the test's expected values. If the cause turns out to be in another module, stop and report what you found instead of editing it.\n\nReport: When done, tell me the cause in two sentences and list the files you changed.\n\nWith this brief, 'fix' cannot mean 'delete the failing line,' because the definition of done says the assertion must survive and the verification is a repeated run, not a single green result. The agent has a reproduction, a target state, a boundary, and a check it can run itself."
+    }
+  ]
+}

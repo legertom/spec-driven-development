@@ -1,0 +1,1035 @@
+[
+  {
+    "id": "agent-loop",
+    "term": "Agent loop",
+    "definition": "The cycle a coding agent repeats until the task is done: read the prompt and its context, choose a tool, run it, read the result, and decide again. Everything the agent does is some number of turns around this loop.",
+    "example": "To answer 'what does src/inventory/stock.ts export?', Quill runs four turns of the loop: search for the file, read it, grep for its callers, then write the answer.",
+    "lessons": [
+      "l0-how-a-coding-agent-works"
+    ],
+    "related": [
+      "coding-agent",
+      "tool",
+      "context",
+      "model"
+    ]
+  },
+  {
+    "id": "allow-list",
+    "term": "Allow list",
+    "definition": "The permission rules that let an action run without asking, reserved for actions that are safe and frequent. In Claude Code they live under permissions.allow in .claude/settings.json.",
+    "example": "Shelf's allow list holds Bash(make test), Bash(npm run lint), Bash(npm run typecheck), and Edit(src/**), so Quill can test and edit source without stopping Omar every minute.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "ask-list",
+      "deny-list",
+      "permission",
+      "settings-json"
+    ]
+  },
+  {
+    "id": "allow-ask-block",
+    "term": "Allow, ask, or block",
+    "definition": "The three outcomes a PreToolUse hook can produce for a proposed action. Exit code 0 allows it, exit code 2 blocks it and the text on stderr becomes the reason the agent reads, and JSON with permissionDecision set to ask pauses for a human.",
+    "example": "Shelf's gate.sh hook blocks any command containing migrations/ unless the branch name starts with migration/, and answers ask, naming Priya, for any edit under src/email/ during CR-112.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "pre-tool-use",
+      "hook",
+      "guardrail",
+      "decision-log"
+    ]
+  },
+  {
+    "id": "anti-pattern",
+    "term": "Anti-pattern",
+    "definition": "A common way of working with an agent that feels productive and reliably produces bad results. The course names five: the walk-away prompt, the 900-line brief, the argue-with-it session, the trust-the-green-checks review, and the shared checkout.",
+    "example": "Omar's first day was the walk-away prompt: he typed 'fix the flaky inventory test', went for coffee, and came back to a deleted assertion.",
+    "lessons": [
+      "b1-a-week-with-an-agent"
+    ],
+    "related": [
+      "brief-bloat",
+      "restart",
+      "stranger-review",
+      "worktree"
+    ]
+  },
+  {
+    "id": "arguments",
+    "term": "Arguments",
+    "definition": "The text a person types after a slash command, which the agent substitutes into the skill body wherever $ARGUMENTS appears. They let one procedure serve many inputs.",
+    "example": "When Omar runs /release-notes v2.4, the step 'git log <previous-tag>..$ARGUMENTS --merges --oneline' runs with v2.4 in place of $ARGUMENTS.",
+    "lessons": [
+      "l2-skills-packaging-repeatable-work"
+    ],
+    "related": [
+      "slash-command",
+      "skill",
+      "skill-md",
+      "procedure"
+    ]
+  },
+  {
+    "id": "ask-list",
+    "term": "Ask list",
+    "definition": "The permission rules that pause and wait for a human decision before an action runs. Use it for actions that are sometimes right and sometimes costly, where a person should look each time.",
+    "example": "Shelf's ask list holds Bash(git push:*) and Edit(src/email/**), so Quill can propose a push or an email change for CR-112 but Omar has to say yes.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "allow-list",
+      "deny-list",
+      "permission",
+      "protected-path"
+    ]
+  },
+  {
+    "id": "boundary",
+    "term": "Boundary",
+    "definition": "A line in the standing brief that says what the agent must never touch or must ask about first. Boundaries are the brief's rules about actions, as opposed to conventions, which are rules about style.",
+    "example": "Shelf's CLAUDE.md has two boundaries: never edit migrations/ during a feature task, and ask before touching src/email/ because Priya owns customer data.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief"
+    ],
+    "related": [
+      "convention",
+      "standing-brief",
+      "protected-path",
+      "guardrail"
+    ]
+  },
+  {
+    "id": "brief",
+    "term": "Brief",
+    "definition": "Everything you tell the agent before and while it works: the standing brief it reads every session, the skills it can load, and the task brief that starts a piece of work. A good brief closes the gap between what you know and what the agent can see.",
+    "example": "For CR-110, Omar's brief is Shelf's CLAUDE.md plus an eight-line message: the badge appears when a title has fewer than 5 copies, tests go in tests/inventory/, and make test must stay green.",
+    "lessons": [
+      "l0-how-a-coding-agent-works",
+      "l2-skills-packaging-repeatable-work",
+      "b1-a-week-with-an-agent"
+    ],
+    "related": [
+      "standing-brief",
+      "task-brief",
+      "definition-of-done",
+      "skill"
+    ]
+  },
+  {
+    "id": "brief-bloat",
+    "term": "Brief bloat",
+    "definition": "A standing brief that has grown so long it costs a large share of the context window on every turn and buries the few rules that matter. Prune anything the code already shows, anything a tool enforces, and anything that is only true today.",
+    "example": "Omar's first CLAUDE.md was 900 lines, including the whole README and a pasted architecture doc. Quill still ran npm test instead of make test. Jun cut it to about 50 lines.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief"
+    ],
+    "related": [
+      "standing-brief",
+      "claude-md",
+      "context-window",
+      "rule-the-agent-breaks"
+    ]
+  },
+  {
+    "id": "claude-md",
+    "term": "CLAUDE.md",
+    "definition": "The Claude Code file that holds the standing brief. The copy in the repository root is committed and read at the start of every session; copies in subfolders are read when the agent works there, and ~/.claude/CLAUDE.md and CLAUDE.local.md hold personal versions.",
+    "example": "Shelf's CLAUDE.md says the project is a bookshop app, tests run with make test, tests live in tests/<area>/, and src/email/ needs Priya. The line @docs/testing.md imports the longer testing guide.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief"
+    ],
+    "related": [
+      "standing-brief",
+      "project-memory",
+      "user-memory",
+      "import"
+    ]
+  },
+  {
+    "id": "coding-agent",
+    "term": "Coding agent",
+    "definition": "A program that pairs a language model with tools for reading, searching, editing, and running commands in a repository, and loops until a task is done. It is fast and literal, has no memory of earlier sessions, and knows only what its context holds.",
+    "example": "Quill is Bramble Books' coding agent: it runs in the terminal, reads Shelf, edits files, runs make test, and opens pull requests, all inside Claude Code.",
+    "lessons": [
+      "l0-how-a-coding-agent-works"
+    ],
+    "related": [
+      "agent-loop",
+      "model",
+      "tool",
+      "context"
+    ]
+  },
+  {
+    "id": "command-reference",
+    "term": "Command reference",
+    "definition": "The section of the standing brief that lists the exact commands for running, testing, linting, and type-checking the project. It exists because an agent that has to guess will guess a plausible command rather than the right one.",
+    "example": "Shelf's command reference is four lines: make test for the full check, npm run lint, npm run typecheck, and npm run dev. Before it existed, Quill kept running npm test and skipping the build.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief"
+    ],
+    "related": [
+      "standing-brief",
+      "claude-md",
+      "convention",
+      "definition-of-done"
+    ]
+  },
+  {
+    "id": "compaction",
+    "term": "Compaction",
+    "definition": "Replacing the session so far with a shorter summary to free space in the context window, done in Claude Code with /compact. It keeps a long session alive, but anything the summary leaves out is gone for good.",
+    "example": "Forty turns into CR-111, Omar compacts the session. The summary says 'refactoring orders to async' and drops 'keep the public API', and Quill's next edit changes a function signature.",
+    "lessons": [
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "context-window",
+      "context-hygiene",
+      "drift",
+      "restart"
+    ]
+  },
+  {
+    "id": "context",
+    "term": "Context",
+    "definition": "Everything the agent can see right now: your messages, the standing brief, the files it has read, and the output of commands it has run. If a fact is not in the context, the agent does not know it, however obvious it is to you.",
+    "example": "Quill does not know that Bramble counts stock per store, because no file says so and Omar never mentioned it. Its first CR-110 badge counted stock across all three shops.",
+    "lessons": [
+      "l0-how-a-coding-agent-works"
+    ],
+    "related": [
+      "context-window",
+      "standing-brief",
+      "agent-loop",
+      "context-hygiene"
+    ]
+  },
+  {
+    "id": "context-hygiene",
+    "term": "Context hygiene",
+    "definition": "Habits that keep a session's context small and on topic: one task per session, /clear between tasks, /compact only when a long session must continue, and never carrying an unrelated job into a running session.",
+    "example": "After CR-110 merges, Omar runs /clear before starting the CR-112 task brief, so Quill does not carry the inventory badge's files and assumptions into the email job.",
+    "lessons": [
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "context-window",
+      "compaction",
+      "session",
+      "drift"
+    ]
+  },
+  {
+    "id": "context-window",
+    "term": "Context window",
+    "definition": "The fixed amount of text a model can attend to at once, measured in tokens. Everything in the context has to fit inside it, so long briefs and long sessions push older material out or force it to be summarized.",
+    "example": "A 200-line release-notes procedure pasted into CLAUDE.md is paid for on every turn of every session; the same procedure in a skill costs nothing until Friday.",
+    "lessons": [
+      "l0-how-a-coding-agent-works",
+      "l2-skills-packaging-repeatable-work"
+    ],
+    "related": [
+      "context",
+      "token",
+      "compaction",
+      "brief-bloat"
+    ]
+  },
+  {
+    "id": "convention",
+    "term": "Convention",
+    "definition": "A rule about how code in the project is written or organized that a linter cannot enforce, recorded in the standing brief so the agent follows it. Conventions describe the shape of good work; boundaries describe what not to touch.",
+    "example": "Shelf's conventions section says tests live in tests/<area>/ next to the code they cover, not in __tests__, and that the low-stock threshold comes from config, never a literal 5.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief"
+    ],
+    "related": [
+      "boundary",
+      "standing-brief",
+      "rule-the-agent-breaks",
+      "team-conventions"
+    ]
+  },
+  {
+    "id": "decision-log",
+    "term": "Decision log",
+    "definition": "An append-only file where a hook records every decision it made: the time, the tool, a summary of the input, the decision, and the reason. It turns 'we think the agent never touched that' into a line someone can read.",
+    "example": "Priya asks whether Quill touched the email table during CR-112. Jun opens .gates/log.jsonl and finds the line where the hook asked, the reason naming her, and the deny that followed.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "hook",
+      "allow-ask-block",
+      "guardrail",
+      "protected-path"
+    ]
+  },
+  {
+    "id": "definition-of-done",
+    "term": "Definition of done",
+    "definition": "The sentence in a task brief that says what must be true when the work is finished, including what must still be true afterward. Without it the agent will pick the easiest reading of the task and finish that.",
+    "example": "'Fix the flaky inventory test' had no definition of done, so Quill deleted the failing assertion. 'Make tests/inventory/stock.test.ts pass reliably while it still checks per-store counts' would have stopped that.",
+    "lessons": [
+      "l0-how-a-coding-agent-works",
+      "l1-claude-md-the-standing-brief",
+      "l3-driving-a-session",
+      "l5-reviewing-an-agents-diff"
+    ],
+    "related": [
+      "task-brief",
+      "task-sizing",
+      "verify-first",
+      "hollow-test"
+    ]
+  },
+  {
+    "id": "deny-list",
+    "term": "Deny list",
+    "definition": "The permission rules for actions that must never run, whatever the task. Deny wins over ask, and ask wins over allow, so a deny rule cannot be overridden by a broader allow rule.",
+    "example": "Shelf denies Read(./.env) and Bash(rm -rf:*). When Quill tries to read .env while debugging the CR-112 mailer config, the read is refused before it happens.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "allow-list",
+      "ask-list",
+      "permission",
+      "protected-path"
+    ]
+  },
+  {
+    "id": "diff-size",
+    "term": "Diff size",
+    "definition": "The number of lines a pull request changes, read as a review finding in its own right. A diff far larger than the task calls for means the task was too big, the agent padded it, or both.",
+    "example": "CR-112's first PR was 1,400 lines for a nightly email. Jun treated the size itself as a finding, and the two PRs that replaced it were 210 and 140 lines.",
+    "lessons": [
+      "l5-reviewing-an-agents-diff"
+    ],
+    "related": [
+      "scope-creep",
+      "task-sizing",
+      "stranger-review",
+      "restart"
+    ]
+  },
+  {
+    "id": "drift",
+    "term": "Drift",
+    "definition": "The way a long session slowly loses its early constraints and wanders from the task, as older turns are dropped or summarized and the agent's recent actions start to shape its next ones. Drift is a reason to restart, not to argue.",
+    "example": "By turn 40 of the CR-111 session, Quill has forgotten the constraint from turn 3 and reintroduces callbacks for the third time.",
+    "lessons": [
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "compaction",
+      "context-window",
+      "restart",
+      "steer"
+    ]
+  },
+  {
+    "id": "finding-to-rule",
+    "term": "Finding to rule",
+    "definition": "The habit of sending every review finding somewhere permanent: a test if it is about behavior, a hook if it is about an action, or a line in the brief if it is about a habit. A finding that only lives in a PR comment will come back.",
+    "example": "Jun's three CR-112 findings landed as a test for the retry count, a hook that blocks disabling lint rules, and a brief line saying to check the mailer's exported methods before calling one.",
+    "lessons": [
+      "l5-reviewing-an-agents-diff",
+      "b1-a-week-with-an-agent"
+    ],
+    "related": [
+      "guardrail",
+      "rule-the-agent-breaks",
+      "review-checklist",
+      "stranger-review"
+    ]
+  },
+  {
+    "id": "formatter-hook",
+    "term": "Formatter hook",
+    "definition": "A PostToolUse hook on Edit and Write that runs the project's formatter on the file the agent changed. It beats a 'please format your code' line in the brief because it runs every time instead of being remembered sometimes.",
+    "example": "Shelf's format.sh reads tool_input.file_path from stdin and runs prettier on it, six lines in total, so every file Quill touches during CR-112 comes back formatted.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "post-tool-use",
+      "hook",
+      "guardrail",
+      "settings-json"
+    ]
+  },
+  {
+    "id": "guardrail",
+    "term": "Guardrail",
+    "definition": "A rule enforced in code rather than asked for in prose: a permission rule, a hook, or a test. The ladder goes from a brief line, which is cheap and advisory, to a hook, which is enforced, to a test, which is enforced and proves behavior.",
+    "example": "'Never write to tests/ during a fix' started as a brief line. After Quill ignored it once, Jun made it a PreToolUse hook that blocks the edit and says why.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "hook",
+      "permission",
+      "finding-to-rule",
+      "protected-path"
+    ]
+  },
+  {
+    "id": "hallucinated-api",
+    "term": "Hallucinated API",
+    "definition": "A function, method, or option the agent calls that does not exist, produced because the model completed a plausible pattern instead of checking. Running the tests, or asking the agent to read the module first, is the cheapest defense.",
+    "example": "Quill called inventory.countByStore() in an early CR-110 attempt and mailer.sendBatch() in the CR-112 PR. Shelf has never had either method.",
+    "lessons": [
+      "l0-how-a-coding-agent-works",
+      "l5-reviewing-an-agents-diff"
+    ],
+    "related": [
+      "model",
+      "verify-first",
+      "stranger-review",
+      "weakened-check"
+    ]
+  },
+  {
+    "id": "hollow-test",
+    "term": "Hollow test",
+    "definition": "A test that passes without checking the behavior it is named for: it asserts a constant, mocks the function under test, or never calls the code at all. Green checks from hollow tests are the main way an agent's mistakes get through.",
+    "example": "The CR-112 test file contained expect(true).toBe(true) next to a test name promising to check that each manager gets one email. Tests were green.",
+    "lessons": [
+      "l5-reviewing-an-agents-diff"
+    ],
+    "related": [
+      "weakened-check",
+      "test-lock",
+      "verify-first",
+      "review-checklist"
+    ]
+  },
+  {
+    "id": "hook",
+    "term": "Hook",
+    "definition": "A command Claude Code runs around an agent action, configured in .claude/settings.json. It receives JSON on stdin describing the tool and its input, and can allow, block, or ask before the action or react after it.",
+    "example": "Shelf wires ./gate.sh hook to PreToolUse for Bash, Edit, and Write, and ./format.sh to PostToolUse for Edit and Write. Jun added the first one after Quill ran a migration against the development database.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "pre-tool-use",
+      "post-tool-use",
+      "allow-ask-block",
+      "guardrail"
+    ]
+  },
+  {
+    "id": "import",
+    "term": "Import",
+    "definition": "A line in CLAUDE.md of the form @path/to/file.md that pulls that file into the standing brief every session. Import what is always needed; for material only sometimes needed, write a pointer that tells the agent where to look.",
+    "example": "Shelf's CLAUDE.md imports @docs/testing.md because every task runs tests, but only points at docs/email.md with 'read this before touching src/email/'.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief"
+    ],
+    "related": [
+      "claude-md",
+      "standing-brief",
+      "brief-bloat",
+      "project-memory"
+    ]
+  },
+  {
+    "id": "local-memory",
+    "term": "Local memory",
+    "definition": "A CLAUDE.local.md file in the repository that holds one person's notes for this project and is ignored by git. It is for things true for you and this checkout, not for the team.",
+    "example": "Omar's CLAUDE.local.md notes that his Postgres runs on port 5433 and that he wants Quill to leave TODO comments in his own name.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief"
+    ],
+    "related": [
+      "project-memory",
+      "user-memory",
+      "claude-md",
+      "standing-brief"
+    ]
+  },
+  {
+    "id": "model",
+    "term": "Model",
+    "definition": "The language model at the center of a coding agent: the part that reads the context and decides what to say or which tool to call next. It completes patterns, which makes it fast and also makes it invent things when the pattern is wrong.",
+    "example": "Quill's model has read thousands of inventory modules, so when Shelf's stock.ts lacks a per-store method it produces countByStore() as if it were there.",
+    "lessons": [
+      "l0-how-a-coding-agent-works"
+    ],
+    "related": [
+      "coding-agent",
+      "agent-loop",
+      "token",
+      "hallucinated-api"
+    ]
+  },
+  {
+    "id": "parallel-sessions",
+    "term": "Parallel sessions",
+    "definition": "Running two or more agent sessions at once, each in its own worktree and terminal, so they never share a working tree. Two sessions in one checkout will edit and test each other's half-finished work.",
+    "example": "Omar runs CR-110 in the main checkout and CR-112 in ../shelf-cr112, created with git worktree add ../shelf-cr112 -b cr-112, so neither session's make test sees the other's edits.",
+    "lessons": [
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "worktree",
+      "session",
+      "context-hygiene",
+      "task-sizing"
+    ]
+  },
+  {
+    "id": "permission",
+    "term": "Permission",
+    "definition": "The decision, for each action the agent proposes, about whether it runs at once, waits for a human, or is refused. Reads, edits, and commands all pass through permissions before anything happens.",
+    "example": "With Shelf's settings, Quill edits under src/ freely, asks before npm install, and is refused when it tries to read .env.",
+    "lessons": [
+      "l0-how-a-coding-agent-works",
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "permission-mode",
+      "allow-list",
+      "deny-list",
+      "tool"
+    ]
+  },
+  {
+    "id": "permission-mode",
+    "term": "Permission mode",
+    "definition": "The session-wide setting that decides how much the agent may do without asking. Claude Code has default (ask for anything not allowed), accept edits (edits free, commands ask), plan (read only), and a bypass mode meant for sandboxes only; Shift+Tab cycles through the first three.",
+    "example": "Omar runs CR-110 in accept edits mode, and starts CR-111 in plan mode so Quill can read the orders module but not change it until the plan is approved.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "permission",
+      "plan-mode",
+      "allow-list",
+      "settings-json"
+    ]
+  },
+  {
+    "id": "plan-mode",
+    "term": "Plan mode",
+    "definition": "A permission mode in which the agent can read and search but cannot edit or run anything that changes state. It proposes a plan, the person edits or approves it, and only then does the session leave plan mode.",
+    "example": "Jun stops the runaway CR-111 session, restarts in plan mode, and Quill produces a four-step plan before touching a file.",
+    "lessons": [
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "permission-mode",
+      "plan-md",
+      "task-sizing",
+      "verify-first"
+    ]
+  },
+  {
+    "id": "plan-md",
+    "term": "plan.md",
+    "definition": "A file where a plan is saved in the repository once it is approved, so it can be read, edited, and pointed at from later sessions. It records the steps, the files each touches, the commands, and what the plan will not change.",
+    "example": "Quill's CR-111 plan, with Omar's two edits (keep the public API, do src/orders/create.ts first), is saved as plan.md so each of the four follow-up sessions can start from it.",
+    "lessons": [
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "plan-mode",
+      "task-sizing",
+      "restart",
+      "task-brief"
+    ]
+  },
+  {
+    "id": "post-tool-use",
+    "term": "PostToolUse hook",
+    "definition": "A hook that runs after an action has happened, receiving the tool name, its input, and its response on stdin. It cannot stop the action, so it is used for reactions such as formatting a file or logging what was done.",
+    "example": "Shelf's PostToolUse entry matches Edit|Write and runs ./format.sh, which formats whichever file Quill changed.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "pre-tool-use",
+      "hook",
+      "formatter-hook",
+      "settings-json"
+    ]
+  },
+  {
+    "id": "pre-tool-use",
+    "term": "PreToolUse hook",
+    "definition": "A hook that runs before an action, sees the proposed tool and input on stdin, and decides its fate: exit 0 allows, exit 2 blocks with the stderr text as the reason, and JSON with permissionDecision can allow, deny, or ask.",
+    "example": "Shelf's PreToolUse entry matches Bash|Edit|Write and runs ./gate.sh hook, which blocks migration commands on the wrong branch and asks for src/email/ edits.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "post-tool-use",
+      "hook",
+      "allow-ask-block",
+      "protected-path"
+    ]
+  },
+  {
+    "id": "procedure",
+    "term": "Procedure",
+    "definition": "The body of a skill: numbered steps with exact commands, the output format, and a done check. It is the part that makes a repeated job come out the same way each time.",
+    "example": "The release-notes procedure has four steps: run git log between the tags, group the PRs under Features, Fixes, and Internal, fill template.md, and print without committing.",
+    "lessons": [
+      "l2-skills-packaging-repeatable-work"
+    ],
+    "related": [
+      "skill",
+      "skill-md",
+      "arguments",
+      "slash-command"
+    ]
+  },
+  {
+    "id": "project-memory",
+    "term": "Project memory",
+    "definition": "The CLAUDE.md committed in the repository root, shared by everyone who works on the project, and read at the start of every session. It holds what is true about the project, not about any one person.",
+    "example": "Shelf's project memory says how to run tests and which folders are off limits; Omar's preference for small diffs lives in his user memory instead.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief"
+    ],
+    "related": [
+      "user-memory",
+      "local-memory",
+      "claude-md",
+      "standing-brief"
+    ]
+  },
+  {
+    "id": "protected-path",
+    "term": "Protected path",
+    "definition": "A folder or file that permissions or a hook guard so the agent cannot change it, or cannot change it without a human saying yes. It turns a boundary from a sentence in the brief into a rule that is enforced.",
+    "example": "On Shelf, migrations/ and .env are protected paths: the migration hook blocks commands that mention migrations/ on a feature branch, and Read(./.env) is denied outright.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "boundary",
+      "deny-list",
+      "ask-list",
+      "guardrail"
+    ]
+  },
+  {
+    "id": "restart",
+    "term": "Restart",
+    "definition": "Ending a session that has drifted or is arguing with you, adding what you learned to the brief, and starting again with a fresh context. A restart with a better brief is usually cheaper than a fourth correction.",
+    "example": "After Quill reintroduces callbacks three times in CR-111, Jun restarts with 'convert bodies only; every public signature stays as it is' in the task brief, and the step finishes cleanly.",
+    "lessons": [
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "steer",
+      "drift",
+      "context-hygiene",
+      "plan-mode"
+    ]
+  },
+  {
+    "id": "review-checklist",
+    "term": "Review checklist",
+    "definition": "A fixed list of questions, kept in docs/review-checklist.md, that every review of an agent's diff walks through. It makes the review the same no matter who does it and gives the agent something concrete to self-review against.",
+    "example": "Jun applies the ten checklist questions to CR-112 and finds the retry loop on the question 'does any refactor change behavior?', which he would not have asked from memory.",
+    "lessons": [
+      "l5-reviewing-an-agents-diff",
+      "b1-a-week-with-an-agent"
+    ],
+    "related": [
+      "stranger-review",
+      "self-review",
+      "team-conventions",
+      "finding-to-rule"
+    ]
+  },
+  {
+    "id": "review-time",
+    "term": "Review time",
+    "definition": "The minutes a person spends reading and checking an agent's diff for one task. When review time exceeds the time it would take to write the change yourself, the brief is missing something.",
+    "example": "Jun records 18 minutes of review time for CR-110 and 95 for the first CR-112 PR, which is the number that told Nadia the email job had been briefed wrong.",
+    "lessons": [
+      "b1-a-week-with-an-agent"
+    ],
+    "related": [
+      "wait-time",
+      "diff-size",
+      "task-sizing",
+      "stranger-review"
+    ]
+  },
+  {
+    "id": "rule-the-agent-breaks",
+    "term": "Rule the agent breaks",
+    "definition": "The test for whether a line belongs in the standing brief: it earns its place only by naming a mistake the agent made or would make. Lines that describe what the code already shows or what a tool already enforces fail the test.",
+    "example": "'Tests live in tests/<area>/, not __tests__' went into Shelf's CLAUDE.md after Quill put three tests in the wrong folder. 'We use TypeScript' did not, because every file says so.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief"
+    ],
+    "related": [
+      "brief-bloat",
+      "standing-brief",
+      "convention",
+      "finding-to-rule"
+    ]
+  },
+  {
+    "id": "scope-creep",
+    "term": "Scope creep",
+    "definition": "Changes in a diff that nobody asked for, usually introduced as improvements the agent noticed along the way. Each one widens the review, hides the real change, and can break something the task never touched.",
+    "example": "While building CR-112, Quill renamed a helper across 12 files 'while I was here'. Jun sent it back with the rename stripped out and the task brief's do-not-touch list extended.",
+    "lessons": [
+      "l5-reviewing-an-agents-diff"
+    ],
+    "related": [
+      "diff-size",
+      "task-brief",
+      "stranger-review",
+      "task-sizing"
+    ]
+  },
+  {
+    "id": "self-review",
+    "term": "Self-review",
+    "definition": "Asking the agent to review its own diff against the checklist before opening the pull request, and to list what it is unsure about. It catches the mechanical findings and misses the ones that need judgment, so it comes before a human review, never instead of one.",
+    "example": "Quill's self-review of CR-112 found the disabled lint rule and flagged the mailer call as uncertain, but missed the retry loop that would email each manager five times.",
+    "lessons": [
+      "l5-reviewing-an-agents-diff"
+    ],
+    "related": [
+      "review-checklist",
+      "stranger-review",
+      "hollow-test",
+      "weakened-check"
+    ]
+  },
+  {
+    "id": "session",
+    "term": "Session",
+    "definition": "One continuous run of the agent from a fresh context to the point you clear it or close it. Nothing carries from one session to the next except the files on disk and the standing brief.",
+    "example": "CR-110 fits in one session. CR-111 took four, each started with /clear and one step of the plan, and each ending with make test green.",
+    "lessons": [
+      "l0-how-a-coding-agent-works",
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "context",
+      "context-hygiene",
+      "restart",
+      "parallel-sessions"
+    ]
+  },
+  {
+    "id": "settings-json",
+    "term": "settings.json",
+    "definition": "The Claude Code configuration file at .claude/settings.json that holds the permission lists and the hook wiring for a project. It is committed, so the team's guardrails travel with the repository.",
+    "example": "Shelf's settings.json allows make test, asks for git push, denies reading .env, and wires ./gate.sh hook to every Bash, Edit, and Write action.",
+    "lessons": [
+      "l4-permissions-and-hooks"
+    ],
+    "related": [
+      "permission",
+      "hook",
+      "allow-list",
+      "team-conventions"
+    ]
+  },
+  {
+    "id": "silent-config-change",
+    "term": "Silent config change",
+    "definition": "An edit to a configuration file that changes how tests, builds, or checks behave, made without being mentioned and usually to make something pass. It is easy to miss because config files are rarely the first thing a reviewer reads.",
+    "example": "Deep in the CR-112 diff, Quill raised the test timeout in vitest.config.ts so a slow mailer test would stop failing. The PR description did not mention it.",
+    "lessons": [
+      "l5-reviewing-an-agents-diff"
+    ],
+    "related": [
+      "weakened-check",
+      "stranger-review",
+      "review-checklist",
+      "protected-path"
+    ]
+  },
+  {
+    "id": "skill",
+    "term": "Skill",
+    "definition": "A packaged procedure the agent loads only when it is invoked or when its description matches the task, rather than on every session. Skills hold the repeatable jobs that would bloat the standing brief.",
+    "example": "Jun turned Omar's Friday release-notes explanation into .claude/skills/release-notes/SKILL.md. The next Friday it was one command and the output matched.",
+    "lessons": [
+      "l2-skills-packaging-repeatable-work"
+    ],
+    "related": [
+      "skill-md",
+      "slash-command",
+      "standing-brief",
+      "subagent"
+    ]
+  },
+  {
+    "id": "skill-md",
+    "term": "SKILL.md",
+    "definition": "The file that defines a skill, at .claude/skills/<name>/SKILL.md: frontmatter with a name and a description that says when to use it, then the procedure. Other files in the same folder, such as a template, are referenced by name.",
+    "example": "The release-notes SKILL.md has the description 'Write the release notes for a tag from the merged PRs since the previous tag' and four numbered steps, one of which fills template.md.",
+    "lessons": [
+      "l2-skills-packaging-repeatable-work"
+    ],
+    "related": [
+      "skill",
+      "procedure",
+      "arguments",
+      "claude-md"
+    ]
+  },
+  {
+    "id": "slash-command",
+    "term": "Slash command",
+    "definition": "A command typed into the session that starts with a slash, either a built-in such as /clear or /compact, or a skill invoked by its name with any arguments after it.",
+    "example": "Omar types /release-notes v2.4 and Quill loads the skill with v2.4 as $ARGUMENTS; between tasks he types /clear.",
+    "lessons": [
+      "l2-skills-packaging-repeatable-work"
+    ],
+    "related": [
+      "skill",
+      "arguments",
+      "context-hygiene",
+      "compaction"
+    ]
+  },
+  {
+    "id": "standing-brief",
+    "term": "Standing brief",
+    "definition": "The short document the agent reads at the start of every session, before it looks at any code: what the project is, how to run and test it, its conventions, its boundaries, and where to look. In Claude Code it is CLAUDE.md.",
+    "example": "Without a standing brief, Quill's CR-110 attempt used npm test and put the test in __tests__. With Shelf's 40-line brief it used make test and tests/inventory/.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief",
+      "l2-skills-packaging-repeatable-work"
+    ],
+    "related": [
+      "claude-md",
+      "brief",
+      "task-brief",
+      "brief-bloat"
+    ]
+  },
+  {
+    "id": "steer",
+    "term": "Steer",
+    "definition": "Correcting a running session with one short, specific sentence as soon as the first reads or the first edit show the agent has misunderstood. Steering works early and for small misreadings; a paragraph of corrections late in a session usually does not.",
+    "example": "Two edits into a CR-111 step, Omar sees a changed signature and types: 'Stop. Do not change the function signatures; only the bodies.' Quill reverts and continues.",
+    "lessons": [
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "restart",
+      "drift",
+      "plan-mode",
+      "task-brief"
+    ]
+  },
+  {
+    "id": "stranger-review",
+    "term": "Stranger review",
+    "definition": "Reading an agent's diff as though a contractor you have never met sent it: the whole diff, tests first, trusting nothing the description claims until you have verified it. The agent has no memory, no shame, and no model of consequences, so its work needs more scrutiny than a colleague's, not less.",
+    "example": "CR-112's PR said 'all tests pass'. Jun read it as a stranger's and found a retry loop, a test asserting true, a disabled lint rule, and a call to mailer.sendBatch(), which does not exist.",
+    "lessons": [
+      "l5-reviewing-an-agents-diff"
+    ],
+    "related": [
+      "review-checklist",
+      "self-review",
+      "hollow-test",
+      "diff-size"
+    ]
+  },
+  {
+    "id": "subagent",
+    "term": "Subagent",
+    "definition": "A helper agent defined in .claude/agents/<name>.md with its own name, description, allowed tools, and instructions. It runs with a fresh context, does one fixed job such as a long exploration or a checklist review, and reports back to the main session.",
+    "example": "Shelf's test-reviewer subagent reads a diff and reports, for every changed function, whether its test would still pass if the body were replaced with return undefined.",
+    "lessons": [
+      "l2-skills-packaging-repeatable-work"
+    ],
+    "related": [
+      "skill",
+      "context-window",
+      "review-checklist",
+      "tool"
+    ]
+  },
+  {
+    "id": "task-brief",
+    "term": "Task brief",
+    "definition": "The message that starts a piece of work, not a file: the goal, the definition of done, the constraints, what not to touch, and how the agent should verify. It is where the standing brief's general rules meet this task's specifics.",
+    "example": "Omar's CR-110 task brief is eight lines: show a low-stock badge when a title has fewer than 5 copies, per store, test in tests/inventory/, do not touch src/orders/, make test green. 'Add a low stock badge' is not a task brief.",
+    "lessons": [
+      "l2-skills-packaging-repeatable-work"
+    ],
+    "related": [
+      "definition-of-done",
+      "standing-brief",
+      "task-sizing",
+      "brief"
+    ]
+  },
+  {
+    "id": "task-sizing",
+    "term": "Task sizing",
+    "definition": "Choosing tasks a single session can finish: a clear definition of done, a handful of files, and one command that verifies it. A task that fails those tests gets split into steps, each with its own session and its own done check.",
+    "example": "CR-110 is one session. CR-111, the async refactor, is four: Quill's plan split it by module, starting with src/orders/create.ts, each step ending with make test green.",
+    "lessons": [
+      "l3-driving-a-session",
+      "b1-a-week-with-an-agent"
+    ],
+    "related": [
+      "definition-of-done",
+      "plan-mode",
+      "parallel-sessions",
+      "diff-size"
+    ]
+  },
+  {
+    "id": "team-conventions",
+    "term": "Team conventions",
+    "definition": "The agreements that make agent work reviewable by anyone on the team: a committed brief, committed skills, settings in the repository, the checklist in docs/, PR descriptions that separate what was asked from what was done, and one task per PR.",
+    "example": "When Jun is away, another engineer can review Omar's CR-110 PR because Shelf's checklist, brief, and settings are all in the repository and the PR says what was asked and what was done.",
+    "lessons": [
+      "b1-a-week-with-an-agent"
+    ],
+    "related": [
+      "review-checklist",
+      "settings-json",
+      "convention",
+      "claude-md"
+    ]
+  },
+  {
+    "id": "test-lock",
+    "term": "Test lock",
+    "definition": "Keeping the agent from editing tests during a fix or feature task, so a passing suite still means the behavior works. The lock can be a brief line, a hook that blocks edits under tests/, or a review rule that any test change needs its own justification.",
+    "example": "The flaky-test story is why Shelf has a test lock: Quill made the suite green by deleting the assertion. Now a fix task cannot write under tests/ without the hook asking first.",
+    "lessons": [
+      "l5-reviewing-an-agents-diff"
+    ],
+    "related": [
+      "hollow-test",
+      "weakened-check",
+      "protected-path",
+      "verify-first"
+    ]
+  },
+  {
+    "id": "token",
+    "term": "Token",
+    "definition": "The unit a model reads and writes text in, roughly a short word or part of a longer one. The context window is measured in tokens, so every line in the brief and every file the agent reads has a token cost on each turn.",
+    "example": "Omar's 900-line CLAUDE.md cost tens of thousands of tokens at the start of every session, before Quill had read a single line of Shelf.",
+    "lessons": [
+      "l0-how-a-coding-agent-works"
+    ],
+    "related": [
+      "context-window",
+      "model",
+      "brief-bloat",
+      "compaction"
+    ]
+  },
+  {
+    "id": "tool",
+    "term": "Tool",
+    "definition": "One of the actions a coding agent can take on the world: read a file, search the repository, edit a file, or run a command. Each tool call is proposed by the model and passes through permissions before it runs.",
+    "example": "To build CR-110, Quill reads src/inventory/stock.ts, greps for the list component, edits two files, and runs make test: four tool types, many calls.",
+    "lessons": [
+      "l0-how-a-coding-agent-works"
+    ],
+    "related": [
+      "agent-loop",
+      "permission",
+      "coding-agent",
+      "hook"
+    ]
+  },
+  {
+    "id": "user-memory",
+    "term": "User memory",
+    "definition": "The ~/.claude/CLAUDE.md file that holds one person's preferences and applies to every project they work on. It is for how you like to work, not for facts about any one repository.",
+    "example": "Omar's user memory says 'prefer small diffs' and 'ask before adding a dependency', and those lines follow him from Shelf to every other repository.",
+    "lessons": [
+      "l1-claude-md-the-standing-brief"
+    ],
+    "related": [
+      "project-memory",
+      "local-memory",
+      "claude-md",
+      "standing-brief"
+    ]
+  },
+  {
+    "id": "verify-first",
+    "term": "Verify first",
+    "definition": "Asking for the failing test or the reproduction before the fix, so there is evidence the problem exists and evidence when it is gone. It stops the agent from fixing a symptom it imagined, and it is the session-level version of the SDD course's failing test first.",
+    "example": "For CR-110, Omar has Quill write the badge test and run it red before any badge code exists, then watches it go green with the change.",
+    "lessons": [
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "definition-of-done",
+      "hollow-test",
+      "test-lock",
+      "hallucinated-api"
+    ]
+  },
+  {
+    "id": "wait-time",
+    "term": "Wait time",
+    "definition": "The minutes a person spends idle while the agent works on one task. When wait time exceeds review time, the tasks are too big and should be split.",
+    "example": "Jun's numbers show four minutes of wait for CR-110 and forty for the first CR-111 attempt, which is the number that says the refactor needed splitting.",
+    "lessons": [
+      "b1-a-week-with-an-agent"
+    ],
+    "related": [
+      "review-time",
+      "task-sizing",
+      "anti-pattern",
+      "parallel-sessions"
+    ]
+  },
+  {
+    "id": "weakened-check",
+    "term": "Weakened check",
+    "definition": "A change that makes a safeguard pass more easily instead of making the code correct: a disabled lint rule, a loosened type, a removed assertion, or a raised threshold. It shows up as green checks with less behind them.",
+    "example": "CR-112's diff disabled a lint rule with a comment above the retry loop, and the HW2 diff removes the strict flag from a config so a type error stops being reported.",
+    "lessons": [
+      "l5-reviewing-an-agents-diff"
+    ],
+    "related": [
+      "hollow-test",
+      "silent-config-change",
+      "test-lock",
+      "stranger-review"
+    ]
+  },
+  {
+    "id": "worktree",
+    "term": "Worktree",
+    "definition": "A second checkout of the same git repository in another folder, created with git worktree add, that shares history but has its own working files. It is how two agent sessions run side by side without editing each other's work.",
+    "example": "Omar runs git worktree add ../shelf-cr112 -b cr-112, opens a second terminal there, and starts the CR-112 session while CR-110 continues in the main folder.",
+    "lessons": [
+      "l3-driving-a-session"
+    ],
+    "related": [
+      "parallel-sessions",
+      "session",
+      "context-hygiene",
+      "anti-pattern"
+    ]
+  }
+]

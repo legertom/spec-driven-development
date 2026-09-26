@@ -1,0 +1,208 @@
+{
+  "lessonSlug": "l2-skills-packaging-repeatable-work",
+  "questions": [
+    {
+      "id": "l2-q1",
+      "type": "mc",
+      "prompt": "When does Quill read a skill stored in .claude/skills/release-notes/SKILL.md?",
+      "options": [
+        {
+          "id": "a",
+          "text": "At the start of every session, along with CLAUDE.md."
+        },
+        {
+          "id": "b",
+          "text": "When Omar invokes it with /release-notes, or when its description matches the task Omar describes."
+        },
+        {
+          "id": "c",
+          "text": "Only on Fridays, because the skill's name mentions releases."
+        },
+        {
+          "id": "d",
+          "text": "Never on its own; skills must be pasted into the conversation by hand."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "That is the standing brief. A skill is loaded on demand, which is the whole reason a 200-line procedure belongs in a skill rather than in CLAUDE.md.",
+        "b": "Correct. A slash command invokes the skill directly; otherwise the agent compares the request against each skill's description and loads a match on its own.",
+        "c": "The agent has no calendar. It reads the description, not the day of the week.",
+        "d": "Skills exist so that nobody has to paste the procedure again. The file is read by the agent when invoked or matched."
+      }
+    },
+    {
+      "id": "l2-q2",
+      "type": "mc",
+      "prompt": "What is the description field in a SKILL.md's frontmatter for?",
+      "options": [
+        {
+          "id": "a",
+          "text": "It is a comment for humans only; the agent ignores it."
+        },
+        {
+          "id": "b",
+          "text": "It is the text shown as the release notes heading."
+        },
+        {
+          "id": "c",
+          "text": "It tells the agent what the skill does and when to use it, so the agent can decide whether the skill applies to a request."
+        },
+        {
+          "id": "d",
+          "text": "It lists the files the skill is allowed to edit."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "People do read it, but the agent reads it too. It is the matching rule that lets Quill pick the skill when Omar asks for a changelog without typing a slash command.",
+        "b": "The output shape lives in the procedure or a supporting file such as template.md, not in the description.",
+        "c": "Correct. A description with a \"Use when\" sentence holding the words a person would type is what makes the skill findable.",
+        "d": "Skills do not carry a tools or file list. A subagent's frontmatter has a tools line; a skill's does not."
+      }
+    },
+    {
+      "id": "l2-q3",
+      "type": "mc",
+      "prompt": "Omar types /release-notes v2.4. Where does v2.4 appear, and what does Quill see?",
+      "options": [
+        {
+          "id": "a",
+          "text": "It replaces $ARGUMENTS in the skill body, so step 1 becomes git log <previous-tag>..v2.4 --merges --oneline."
+        },
+        {
+          "id": "b",
+          "text": "It is written into CLAUDE.md so future sessions remember the tag."
+        },
+        {
+          "id": "c",
+          "text": "It renames the skill folder to release-notes-v2.4."
+        },
+        {
+          "id": "d",
+          "text": "It is ignored; skills cannot take input."
+        }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. The text after the skill name is the arguments, and every $ARGUMENTS in the body is replaced before the agent reads it. The tag is the one thing that changes per run.",
+        "b": "CLAUDE.md is the standing brief. A tag that changes every week is exactly what should not be in it.",
+        "c": "The folder name is the skill's name and never changes. Arguments are substituted into the body, not the path.",
+        "d": "Skills take input through $ARGUMENTS. Without it, the release-notes skill could not know which tag to summarize."
+      }
+    },
+    {
+      "id": "l2-q4",
+      "type": "mc",
+      "prompt": "Which job is the best fit for a subagent in .claude/agents/ rather than a skill?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Implementing CR-111, the async/await refactor, faster by running it in parallel with the main session."
+        },
+        {
+          "id": "b",
+          "text": "Reviewing the CR-110 diff with a fixed checklist, where a fresh view and a read-only tool set help."
+        },
+        {
+          "id": "c",
+          "text": "Writing Friday's release notes from the merged PRs."
+        },
+        {
+          "id": "d",
+          "text": "Reminding the agent that tests live in tests/<area>/."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A subagent starts with no knowledge of the conversation, the plan, or the decisions made so far. That is a weakness for implementation. Keep building in the main session.",
+        "b": "Correct. A fixed job, a fresh context, a bounded tool set without Edit, and a report back: that is what a subagent is for.",
+        "c": "That is recurring steps the main session follows with what it already knows. It is a skill.",
+        "d": "That is true on every task, so it is a line in CLAUDE.md, the standing brief."
+      }
+    },
+    {
+      "id": "l2-q5",
+      "type": "mc",
+      "prompt": "\"Do not open a PR for this one; I want to see the diff first.\" Which layer does this line belong in?",
+      "options": [
+        {
+          "id": "a",
+          "text": "CLAUDE.md, because it is about pull requests."
+        },
+        {
+          "id": "b",
+          "text": "The release-notes skill, because it says what to do at the end."
+        },
+        {
+          "id": "c",
+          "text": "The task brief, because it is true for this task only."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "If it were in the brief, every task would end without a PR, including the ones where Omar wants one. It is not always true.",
+        "b": "The release-notes skill has its own last step, and this line is about a code change, not release notes.",
+        "c": "Correct. The task brief holds what is true today: the goal, definition of done, constraints, do-not-touch, and how to verify. Ask when the line is needed, and the layer answers itself."
+      }
+    },
+    {
+      "id": "l2-q6",
+      "type": "mc",
+      "prompt": "Why did Jun add a fifth step to the new-endpoint skill that says \"no file outside src/<area>/, tests/<area>/, and docs/api.md changed; print git status --short as proof\"?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Because a procedure without a done check lets the agent decide for itself when it is finished, and Quill kept reformatting unrelated files."
+        },
+        {
+          "id": "b",
+          "text": "Because git status is required by Claude Code before a skill can end."
+        },
+        {
+          "id": "c",
+          "text": "Because the docs line cannot be written without it."
+        },
+        {
+          "id": "d",
+          "text": "Because skills must have exactly five steps."
+        }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. A done check turns \"finished\" into something visible. Ending with evidence, the file list, rather than a claim is the same habit the review lessons build on.",
+        "b": "There is no such requirement. The command is there because it produces proof a person can read.",
+        "c": "Step 4 writes the docs line on its own. Step 5 checks the whole result, including that nothing else moved.",
+        "d": "Skills can have any number of steps. What every procedure needs is numbered steps, exact commands, an output format, and a done check."
+      }
+    },
+    {
+      "id": "l2-q7",
+      "type": "short",
+      "prompt": "Pick one thing you re-explain to a tool or a colleague every week. Write the skill's name and its description line, in the SKILL.md frontmatter shape.",
+      "rubric": [
+        "Gives a skill name in lowercase with hyphens, suitable for a slash command",
+        "The description says what the skill does in one sentence",
+        "The description includes a \"Use when\" sentence naming the words a person would type",
+        "The task described is recurring, not a one-off",
+        "The task is a procedure with steps, not a fact that belongs in CLAUDE.md"
+      ],
+      "modelAnswer": "Every Monday I rebuild the weekly on-call handover: which alerts fired, which are open, who owns each. The skill:\n\n```markdown\n---\nname: oncall-handover\ndescription: Write the weekly on-call handover from last week's alerts and open incidents, grouped by service with an owner per item. Use when asked for the handover, the on-call summary, or what fired last week.\n---\n```\n\nThe name is short and works after a slash. The first sentence says what it produces and its shape. The \"Use when\" sentence lists the phrasings people actually use, so the agent can match a request that never says the word handover. The procedure would take the week as $ARGUMENTS, fill a template.md, and end with a done check: every incident has an owner; print, do not commit.",
+      "maxWords": 150
+    },
+    {
+      "id": "l2-q8",
+      "type": "free",
+      "prompt": "Write the task brief for CR-112, the nightly job that emails each store manager a sales summary. Include the goal, the definition of done, three constraints, a do-not-touch list, and how Quill should verify.",
+      "rubric": [
+        "States the goal in one or two sentences that name the nightly job and the sales summary email to store managers",
+        "Gives a definition of done that names an observable result and a test that proves it",
+        "Lists at least three constraints, each an instruction rather than a wish",
+        "Includes a do-not-touch list naming at least two paths or areas (for example src/giftcards/, migrations/, existing tests)",
+        "Says how Quill verifies, naming make test and asking for the output to be pasted",
+        "Mentions that sending real email or editing src/email/ needs Priya, or otherwise routes the email boundary to a person"
+      ],
+      "modelAnswer": "Goal: add a nightly job that sends each store manager one email summarizing the previous day's sales for their store. One email per manager, one store per email.\n\nDone: running the job for a fixed date produces exactly one message per store manager containing that store's order count and revenue for that day; a Vitest test proves the count and the recipients using a fake mailer, and a second test proves that a store with zero sales still gets a summary that says so.\n\nConstraints:\n1. Use the existing mailer in src/email/; do not add a new email library or a retry loop.\n2. Read store-to-manager mapping from the store table; do not hard-code addresses.\n3. Schedule the job in one place, the existing job runner, and keep the run idempotent so a second run for the same date sends nothing.\n\nDo not touch: src/giftcards/, src/orders/ (read only), migrations/, any existing test, vitest.config.ts. Any edit under src/email/ beyond calling the existing mailer needs Priya; stop and ask before making one.\n\nVerify: run make test and paste the full output. Run the job once against the fake mailer for yesterday's date and paste the list of recipients and subject lines. Then stop. Do not open a PR and do not send real email.\n\nThe eight lines above close the gaps that a one-line request leaves open: how many emails, what happens on a quiet day, whether a retry is welcome (it is not, since Jun found a five-times retry loop in the first attempt), and where the edges are."
+    }
+  ]
+}

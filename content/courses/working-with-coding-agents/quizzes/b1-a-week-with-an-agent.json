@@ -1,0 +1,121 @@
+{
+  "lessonSlug": "b1-a-week-with-an-agent",
+  "questions": [
+    {
+      "id": "b1-q1",
+      "type": "mc",
+      "prompt": "Jun records two numbers for every task Quill works on. What are they?",
+      "options": [
+        { "id": "a", "text": "Lines of code produced and number of files touched." },
+        { "id": "b", "text": "Wait time (agent working while you are idle) and review time (you reading the diff)." },
+        { "id": "c", "text": "Tokens consumed and dollars spent per session." },
+        { "id": "d", "text": "Number of tests added and number of tests passing." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Lines and files describe the diff's size, which is a useful signal in a review, but they do not say whether the agent saved anyone time.",
+        "b": "Correct. Wait time answers whether tasks are the right size; review time answers whether the brief is good enough. Both are minutes anyone can note down.",
+        "c": "Cost matters, but a cheap session that produces a diff nobody can review is not a win. The two numbers measure the human's time, which is the scarce thing.",
+        "d": "Test counts are easy to game: CR-112 had passing tests that asserted true. The lesson's numbers measure the person's time, not the agent's output."
+      }
+    },
+    {
+      "id": "b1-q2",
+      "type": "mc",
+      "prompt": "A task's wait time is 40 minutes and its review time is 10 minutes. What does the lesson say this most likely means?",
+      "options": [
+        { "id": "a", "text": "The brief is missing a convention." },
+        { "id": "b", "text": "The task is too big and should be split." },
+        { "id": "c", "text": "The reviewer is not reading carefully enough." },
+        { "id": "d", "text": "The agent needs a faster model." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A missing brief line shows up as review time that exceeds the time to write the change yourself. Here review time is the small number.",
+        "b": "Correct. When wait exceeds review, you sat idle for most of the task and the diff was probably large enough to hide problems. Task sizing from L3 is the fix.",
+        "c": "A short review of a large diff might be a careless review, but the lesson's first reading of this pattern is that the task was too big, which is what to fix first.",
+        "d": "Speed is not the problem. A faster agent producing the same forty-minute-sized diff would still hand you a diff too large to review well."
+      }
+    },
+    {
+      "id": "b1-q3",
+      "type": "mc",
+      "prompt": "Which of these is one of the six team conventions from the lesson?",
+      "options": [
+        { "id": "a", "text": "Each engineer keeps a personal CLAUDE.local.md with the rules they prefer." },
+        { "id": "b", "text": "PR descriptions separate what was asked from what was done." },
+        { "id": "c", "text": "The review checklist is kept in each reviewer's notes app." },
+        { "id": "d", "text": "Related change requests are bundled into one PR to save review time." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "CLAUDE.local.md is a real file, but it is personal and ignored by git. A convention is something in the repository that every engineer's agent reads.",
+        "b": "Correct. Two headings, asked and done, let a reviewer read the gap between them first and treat the agent's summary as a claim.",
+        "c": "The checklist lives in docs/review-checklist.md so every reviewer, and the agent's self-review, uses the same ten questions.",
+        "d": "The convention is one task per PR. Two change requests in one PR are two reviews tangled together."
+      }
+    },
+    {
+      "id": "b1-q4",
+      "type": "mc",
+      "prompt": "Omar corrects Quill for the fourth time about re-introducing callbacks in the orders refactor. Which anti-pattern is this, and what is the fix?",
+      "options": [
+        { "id": "a", "text": "The walk-away prompt; the fix is to add a definition of done." },
+        { "id": "b", "text": "The argue-with-it session; the fix is to restart with the lesson added to the brief." },
+        { "id": "c", "text": "The shared checkout; the fix is a worktree per session." },
+        { "id": "d", "text": "The 900-line brief; the fix is to prune CLAUDE.md." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Omar is present and correcting, not absent. The walk-away prompt is sending a task without a definition of done and leaving.",
+        "b": "Correct. A correction that does not hold after one or two tries is a sign the session has drifted. Restart with a fresh context and one new line in the brief.",
+        "c": "The shared checkout is two sessions editing one working tree. Nothing here involves a second session.",
+        "d": "A bloated brief buries the rules that matter, but the symptom here is a session ignoring a correction, not a brief that is too long."
+      }
+    },
+    {
+      "id": "b1-q5",
+      "type": "mc",
+      "prompt": "When explaining the practice to a skeptical senior engineer, what does the lesson suggest you lead with?",
+      "options": [
+        { "id": "a", "text": "How many tokens the agent processes per minute." },
+        { "id": "b", "text": "That the agent is smarter than a junior engineer, so its code needs less review." },
+        { "id": "c", "text": "The guardrails in the repo, the stranger review with a checklist, and last week's review times, then an invitation to review a PR." },
+        { "id": "d", "text": "That Nadia has already approved the rollout." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Throughput does not address the skeptic's concern, which is whether the code can be trusted.",
+        "b": "The course's position is the opposite: the agent's code gets more careful review, not less, because the agent has no memory and no model of consequences.",
+        "c": "Correct. Skeptics are persuaded by enforced guardrails and evidence of review, and inviting them to review a PR themselves turns the argument into a test they can run.",
+        "d": "Authority does not persuade a skeptic. Evidence and an invitation to check it do."
+      }
+    },
+    {
+      "id": "b1-q6",
+      "type": "short",
+      "prompt": "Which of the five anti-patterns have you seen, in your own work or a colleague's? Name it, describe what it looked like, and say what you would change first.",
+      "rubric": [
+        "Names one of the five anti-patterns from the lesson (walk-away prompt, 900-line brief, argue-with-it session, trust-the-green-checks review, shared checkout)",
+        "Describes a concrete situation, not a generic definition",
+        "Names the fix the lesson gives for that anti-pattern",
+        "Says which change would come first and why"
+      ],
+      "modelAnswer": "The trust-the-green-checks review. A colleague merged an agent PR that added a caching layer because CI was green and the description said all tests pass. Two weeks later we found the new test mocked the cache function it was supposed to exercise, so it could never fail. The fix is the stranger rule from L5: read the tests before the code, and treat the PR description as a claim. The first change I would make is to add docs/review-checklist.md to the repo, with the question 'would this test fail if the function body were replaced with return undefined?', and ask the agent to self-review against it before opening the PR. That is one file and one habit, and it catches the hollow test before a person spends time on the rest of the diff.",
+      "maxWords": 150
+    },
+    {
+      "id": "b1-q7",
+      "type": "free",
+      "prompt": "Plan next week for a team you know. List five tasks, say which verb (Brief, Drive, Review) each leans on and why, and describe how you will record wait time and review time for each.",
+      "rubric": [
+        "Lists five distinct tasks",
+        "Assigns a verb (Brief, Drive, or Review) to each task with a one-line reason",
+        "At least one task is split into more than one session or explicitly sized to fit one session",
+        "States how wait time and review time will be recorded (where the timestamps come from and where the numbers are written)",
+        "Says what a high wait time or a high review time would lead the team to change"
+      ],
+      "modelAnswer": "Team: a three-person team on a Node service with a Vitest suite and a committed CLAUDE.md.\n\nMonday, add a 'last synced' column to the admin list. Brief: it is small and well bounded, so the work is in writing an eight-line task brief with a definition of done (test seen failing, then passing; make test green). One session.\n\nTuesday and Wednesday, move the export module from promises-with-then to async/await. Drive: it is a refactor across a dozen files, so it starts in plan mode, I edit the plan to keep the public API, and it is split into three sessions, each ending green. Each session gets its own wait and review numbers.\n\nThursday, a bug where the CSV export drops the last row. Review: I ask for the failing test first, then the fix, and I read the test before the code.\n\nThursday afternoon, add a deny rule for reading .env and an ask rule for edits under src/billing/. Drive: settings in .claude/settings.json, committed.\n\nFriday, release notes with the skill, one command. Brief.\n\nRecording: I note the time I send each task, the time the diff arrives, and the time I finish reviewing, and write 'Wait: N min. Review: M min.' at the bottom of each PR description. On Friday I put the rows in a table in the team channel.\n\nIf wait exceeds review on any row, that task was too big and next time it gets split. If review exceeds the time to write the change by hand, I find the mistake that cost the time and add one line to CLAUDE.md that would have prevented it."
+    }
+  ]
+}

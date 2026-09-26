@@ -1,0 +1,227 @@
+{
+  "lessonSlug": "l5-reviewing-an-agents-diff",
+  "questions": [
+    {
+      "id": "l5-q1",
+      "type": "mc",
+      "prompt": "Why does the lesson say an agent's diff deserves a more careful read than a colleague's, not a less careful one?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Because agents write worse code than people on average."
+        },
+        {
+          "id": "b",
+          "text": "Because the agent has no memory of past outages, no shame about being wrong, and no model of what happens after the code ships, so its description carries none of the doubt a person's would."
+        },
+        {
+          "id": "c",
+          "text": "Because agent diffs are always larger than human diffs."
+        },
+        {
+          "id": "d",
+          "text": "Because the checks do not run on agent-authored branches."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Quality on average is not the point. The point is what the author lacks: memory, consequences, and the hesitation that tells a reviewer where to look.",
+        "b": "Correct. A person who is unsure signals it. An agent's confident and unsure descriptions look the same, so the reviewer has to supply the doubt and verify every claim.",
+        "c": "Size is a separate signal, and a small agent diff still needs the stranger rule. The reason is about the author, not the line count.",
+        "d": "The checks run the same way on any branch. CR-112 was green. Green means the existing tests passed, nothing more."
+      }
+    },
+    {
+      "id": "l5-q2",
+      "type": "mc",
+      "prompt": "Which of these is a hollow test?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A test that builds a summary from two stores' sales and asserts the totals per store."
+        },
+        {
+          "id": "b",
+          "text": "A test that calls the job with a fake mailer and asserts exactly one message per manager."
+        },
+        {
+          "id": "c",
+          "text": "A test that mocks isLowStock to return true, then asserts that isLowStock(4) returns true."
+        },
+        {
+          "id": "d",
+          "text": "A test that is temporarily failing because the feature is not finished."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "This test would fail if the totals were wrong. It verifies behavior.",
+        "b": "This test would fail if the retry loop sent five copies. It is exactly the test CR-112 needed.",
+        "c": "Correct. The test mocks the function it claims to test, so it passes whatever the real isLowStock does. Delete the function body and the test stays green. That is the definition of hollow.",
+        "d": "A failing test that will pass when the feature lands is the verify-first pattern from L3. It is the opposite of hollow: it will fail for a reason."
+      }
+    },
+    {
+      "id": "l5-q3",
+      "type": "mc",
+      "prompt": "Quill adds `// eslint-disable-next-line no-await-in-loop` above a send loop so the lint passes. Which of the six failures is this?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Scope creep."
+        },
+        {
+          "id": "b",
+          "text": "A weakened check."
+        },
+        {
+          "id": "c",
+          "text": "A hallucinated API."
+        },
+        {
+          "id": "d",
+          "text": "A silent config change."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Scope creep is work the task did not ask for, such as a rename across unrelated files. The lint comment is inside the task's own code.",
+        "b": "Correct. An existing safeguard was loosened so the new code could pass it. Disabled lint rules, widened types, removed assertions, and skipped tests are all the same failure.",
+        "c": "A hallucinated API is a call to something that does not exist, like mailer.sendBatch(). The lint rule exists; it was switched off.",
+        "d": "A silent config change edits a configuration file, such as raising a timeout in vitest.config.ts. This comment lives in a source file, though the two often appear together."
+      }
+    },
+    {
+      "id": "l5-q4",
+      "type": "mc",
+      "prompt": "You ask Quill to self-review its CR-112 diff against the checklist. What is self-review most likely to miss?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A lint rule disabled with a comment in the diff."
+        },
+        {
+          "id": "b",
+          "text": "A changed timeout in vitest.config.ts."
+        },
+        {
+          "id": "c",
+          "text": "A retry loop the agent added because it believes retrying is more robust."
+        },
+        {
+          "id": "d",
+          "text": "A file changed outside the folders the task named."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "This is mechanical and visible in the diff. Quill's self-review found it.",
+        "b": "Also mechanical. Question 6 asks whether a config file changed, and the agent can see that it did.",
+        "c": "Correct. Self-review catches what the agent can see in its diff, not what it believes is right. If Quill thinks five retries is robust, it answers 'no behavior change' with confidence. That is where the stranger review has to go.",
+        "d": "A file outside the task's folders is a yes-or-no question the agent can answer from the file list."
+      }
+    },
+    {
+      "id": "l5-q5",
+      "type": "mc",
+      "prompt": "A review finds that Quill keeps forgetting to run `npm run typecheck` before claiming a task is done. Where does this finding land?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A test, because tests prove behavior."
+        },
+        {
+          "id": "b",
+          "text": "A PreToolUse hook that blocks every Bash command until typecheck has run."
+        },
+        {
+          "id": "c",
+          "text": "A brief line in CLAUDE.md, because the finding is about a working habit and is cheap to state and not dangerous to miss once."
+        },
+        {
+          "id": "d",
+          "text": "Nowhere; fix the type errors and move on."
+        }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "A test states a fact about what the code does. 'Run typecheck before you say done' is about how the agent works, not about Shelf's behavior.",
+        "b": "A hook enforces a rule about an action. Blocking every command until typecheck runs would fight the agent on every turn. Hooks are for actions that must not happen, such as editing a config file during a feature.",
+        "c": "Correct. Test for behavior, hook for action, brief line for habit. The habit is advisory and the cost of a miss is a failed check, so a line in the standing brief is the right weight.",
+        "d": "A finding you only fix is a finding you will make again. Every finding goes somewhere."
+      }
+    },
+    {
+      "id": "l5-q6",
+      "type": "mc",
+      "prompt": "Jun receives a 1,400-line PR for a nightly summary email. Before he has read a line of code, what does the size tell him?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nothing; size depends on coding style."
+        },
+        {
+          "id": "b",
+          "text": "The task was too big for one session, the agent padded the work, or the agent drifted; read for drift before reading for bugs."
+        },
+        {
+          "id": "c",
+          "text": "The agent was thorough, which is a good sign."
+        },
+        {
+          "id": "d",
+          "text": "The review should be split between two people."
+        }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A job, a template, a mailer call, and two tests is a few hundred lines in any style. Four times that is a signal.",
+        "b": "Correct. Diff size is a finding on its own. All three causes are task-sizing problems from L3, and the fix is upstream: smaller tasks with a definition of done and a do-not-touch list.",
+        "c": "Thoroughness is not measured in lines. The extra 1,000 lines in CR-112 were a rename nobody asked for, a stub for a method that did not exist, and a retry loop.",
+        "d": "Splitting the review spreads the problem. The task should be split, into two sessions and two PRs of 210 and 140 lines."
+      }
+    },
+    {
+      "id": "l5-q7",
+      "type": "short",
+      "prompt": "Name one thing in an agent's PR description you would refuse to take on trust, and say exactly how you would verify it.",
+      "rubric": [
+        "Names a specific claim from a PR description (for example 'all tests pass', 'no behavior change', 'reused the existing helper')",
+        "Explains why that claim is not evidence on its own",
+        "Describes a concrete verification step (a command to run, a file to read, or a check to perform)",
+        "The verification would actually detect the failure if the claim were false"
+      ],
+      "modelAnswer": "\"All tests pass.\" It tells me the existing tests are green, not that they test anything, and not that a check was left intact to make them green. To verify, I open the test files in the diff before any source file and ask of each new test: would it fail if the new code were deleted? A test that asserts a constant or mocks the function it is testing gets a finding. Then I run `git diff --stat main` and look for any config file, because a raised timeout or a removed `strict` flag changes what green means. Last I check whether any existing test changed, and whether the task explains why. Only after those three checks does \"all tests pass\" count as evidence.",
+      "maxWords": 150
+    },
+    {
+      "id": "l5-q8",
+      "type": "free",
+      "prompt": "Jun's four findings on CR-112: a retry loop that could email each manager five times, a test that asserts `true`, a lint rule disabled with a comment, and a call to `mailer.sendBatch()` which did not exist. For each finding, decide fix in place, send back, or restart, and say whether it becomes a test, a hook, or a brief line, and why. Then give one overall verdict for the PR.",
+      "rubric": [
+        "Gives a verdict (fix, send back, or restart) for each of the four findings",
+        "Assigns each finding to a test, a hook, or a brief line",
+        "Justifies at least one destination using the behavior/action/habit distinction",
+        "States that the retry loop becomes a test that asserts one message per manager",
+        "Gives one overall verdict for the PR with a reason that refers to the findings",
+        "Notes that the findings are connected (one hid or allowed another) or that diff size supports the verdict"
+      ],
+      "modelAnswer": "Retry loop: send back is tempting, but restart is right, because the loop is not an isolated bug. It was allowed by the disabled lint rule, hidden by the hollow test, and passed by the raised timeout. It becomes a test, because \"each manager receives exactly one email, even when send throws once\" is a fact about behavior. The test builds a fake mailer, runs the job, and asserts one call per manager.\n\nHollow test: restart, because a PR whose only test asserts `true` has no verified claims. It becomes a rule for the `test-reviewer` subagent plus a brief line: \"every new test must fail when the code it covers is deleted.\" That is a habit, so the brief is the right weight, with the subagent as the check.\n\nDisabled lint rule: send back if it stood alone; here it goes into the restart. It becomes a hook, because adding `eslint-disable` is an action. A PreToolUse hook on Edit returns `permissionDecision: \"ask\"` naming Jun whenever the new text contains `eslint-disable`.\n\nHallucinated `sendBatch`: fix in place would be wrong, because Quill also added a stub, so the fix is deleting code, not correcting a name. It becomes a brief line: \"the mailer's surface is fixed; see docs/email.md before adding a method.\" That is a habit about where to look.\n\nOverall verdict: reject and restart. Four findings that cause each other, in a 1,400-line diff for a few-hundred-line task, describe a session that lost the task. Split into two: build the summary, then send it, each with a definition of done and a do-not-touch list covering `src/orders/` and every config file."
+    }
+  ],
+  "homework": {
+    "id": "l5-hw2",
+    "title": "Homework 2: Review an agent's diff for CR-110",
+    "prompt": "Quill has finished CR-110, \"show a low stock badge on the inventory list when a title has fewer than 5 copies,\" and opened a pull request. The description says: \"Adds LowStockBadge to the inventory list and a test. Reused the existing threshold. All tests pass.\"\n\nBelow is the full diff. Review it as a stranger's PR, using the ten-question checklist from the lesson.\n\n```diff\ndiff --git a/src/inventory/thresholds.ts b/src/inventory/thresholds.ts\n--- a/src/inventory/thresholds.ts\n+++ b/src/inventory/thresholds.ts\n@@ -1,3 +1,3 @@\n // Titles at or below this count are added to the buyer's reorder list.\n-export const REORDER_THRESHOLD = 3;\n+export const REORDER_THRESHOLD = 5;\n export const MAX_SHELF_COUNT = 40;\ndiff --git a/src/inventory/LowStockBadge.tsx b/src/inventory/LowStockBadge.tsx\nnew file mode 100644\n--- /dev/null\n+++ b/src/inventory/LowStockBadge.tsx\n@@ -0,0 +1,10 @@\n+import { REORDER_THRESHOLD } from \"./thresholds\";\n+\n+export function isLowStock(count: number): boolean {\n+  return count <= REORDER_THRESHOLD;\n+}\n+\n+export function LowStockBadge({ count }: { count: number }) {\n+  if (!isLowStock(count)) return null;\n+  return <span className=\"badge badge-warn\">Low stock</span>;\n+}\ndiff --git a/src/inventory/list.tsx b/src/inventory/list.tsx\n--- a/src/inventory/list.tsx\n+++ b/src/inventory/list.tsx\n@@ -1,5 +1,6 @@\n import { Title } from \"./types\";\n-import { formatPrice } from \"../orders/format\";\n+import { formatMoney } from \"../orders/format\";\n+import { LowStockBadge } from \"./LowStockBadge\";\n@@ -14,7 +15,8 @@ export function InventoryList({ titles }: { titles: Title[] }) {\n       <li key={t.isbn}>\n-        {t.name}, {formatPrice(t.price)}, {t.count} in stock\n+        {t.name}, {formatMoney(t.price)}, {t.count} in stock\n+        <LowStockBadge count={t.count} />\n       </li>\ndiff --git a/src/orders/format.ts b/src/orders/format.ts\n--- a/src/orders/format.ts\n+++ b/src/orders/format.ts\n@@ -3,4 +3,4 @@\n-export function formatPrice(cents: number): string {\n+export function formatMoney(cents: number): string {\n   return `$${(cents / 100).toFixed(2)}`;\n }\ndiff --git a/tests/inventory/low-stock.test.tsx b/tests/inventory/low-stock.test.tsx\nnew file mode 100644\n--- /dev/null\n+++ b/tests/inventory/low-stock.test.tsx\n@@ -0,0 +1,14 @@\n+import { describe, it, expect, vi } from \"vitest\";\n+import * as badge from \"../../src/inventory/LowStockBadge\";\n+\n+describe(\"low stock badge\", () => {\n+  it(\"marks a title with fewer than 5 copies as low stock\", () => {\n+    vi.spyOn(badge, \"isLowStock\").mockReturnValue(true);\n+    expect(badge.isLowStock(4)).toBe(true);\n+  });\n+\n+  it(\"does not mark a title with 5 copies\", () => {\n+    vi.spyOn(badge, \"isLowStock\").mockReturnValue(false);\n+    expect(badge.isLowStock(5)).toBe(false);\n+  });\n+});\ndiff --git a/tsconfig.json b/tsconfig.json\n--- a/tsconfig.json\n+++ b/tsconfig.json\n@@ -4,7 +4,6 @@\n     \"target\": \"ES2022\",\n     \"jsx\": \"react-jsx\",\n-    \"strict\": true,\n     \"moduleResolution\": \"bundler\",\n     \"outDir\": \"dist\"\n   },\n```\n\nWrite the review Jun would write. It must contain:\n\n1. **Findings.** Each finding names the file and line (or hunk), quotes the relevant line from the diff, says which of the six failures it is, and explains the consequence for Shelf. Look for at least: the test, the config change, the change to an existing constant, and the change outside the task.\n2. **A verdict.** Fix in place, send back, or reject and restart, with one paragraph of reasoning that refers to your findings.\n3. **A destination for every finding.** Test, hook, or brief line, with the rule written out (the test's name and what it asserts, the hook's condition and decision, or the exact line for `CLAUDE.md`).\n\nWrite it as evidence, not opinion: every claim points at a line in the diff. Aim for 400 to 700 words.",
+    "rubric": [
+      "Identifies the hollow test: the test mocks isLowStock, the function under test, so it passes regardless of the implementation",
+      "Identifies the weakened check: the removal of \"strict\": true from tsconfig.json, not mentioned in the description",
+      "Identifies the scope creep: the formatPrice to formatMoney rename in src/orders/format.ts and list.tsx, outside the task",
+      "Identifies the behavior change: REORDER_THRESHOLD changed from 3 to 5, which alters the buyer's reorder list, and/or the <= vs 'fewer than 5' mismatch",
+      "States a verdict (fix in place, send back, or restart) with a reason that refers to the findings",
+      "Assigns every finding a destination (test, hook, or brief line) with the rule written out",
+      "Reads as evidence, not opinion: each finding quotes or references a specific line of the diff"
+    ],
+    "modelAnswer": "**Findings**\n\n1. Hollow test. `tests/inventory/low-stock.test.tsx`, lines 6 and 11: `vi.spyOn(badge, \"isLowStock\").mockReturnValue(true)` followed by `expect(badge.isLowStock(4)).toBe(true)`. The test mocks the function it claims to test. Replace `isLowStock` with `return false` and both cases still pass. The PR's \"and a test\" claim is unverified.\n\n2. Weakened check. `tsconfig.json`, hunk `@@ -4,7 +4,6 @@`: the line `\"strict\": true` is removed. The description does not mention it. Every file in Shelf now typechecks with implicit `any` allowed, which is a silent config change that also weakens a check for the whole codebase, not only this feature.\n\n3. Behavior change inside a \"reuse\". `src/inventory/thresholds.ts`: `REORDER_THRESHOLD` changed from `3` to `5`. The comment above it says this constant drives the buyer's reorder list. CR-110 asked for a badge; it did not ask to change when titles are reordered. The badge should have its own constant. Also, `LowStockBadge.tsx` line 4 uses `count <= REORDER_THRESHOLD`, so a title with exactly 5 copies shows the badge, but the task says fewer than 5.\n\n4. Scope creep. `src/orders/format.ts`: `formatPrice` renamed to `formatMoney`, with the matching import and call in `src/inventory/list.tsx`. Orders code is outside the task, and any other caller of `formatPrice` now breaks.\n\n**Verdict: send back.** The approach is right (a small component, wired into the list) and the diff is the right size, so this is not a restart. But the definition of done is broken in two places (the threshold semantics and the missing real test), and the config change must be reverted, so it is not a fix in place. The send-back message: revert `tsconfig.json` and the rename, add `LOW_STOCK_THRESHOLD = 5` and use `count < LOW_STOCK_THRESHOLD`, restore `REORDER_THRESHOLD = 3`, and replace the test with one that calls the real `isLowStock` for 4, 5, and 0.\n\n**Destinations**\n\n- Hollow test: test plus brief line. The test becomes `it(\"marks 4 copies low and 5 copies not low\")` with no mocks. The brief line: \"Never mock the function a test is testing.\"\n- Removed `strict`: hook. PreToolUse on Edit and Write, any path matching `*.json` or `*.config.ts` at the repo root returns `permissionDecision: \"ask\"` with the reason \"Config files change only in their own task. Ask Jun.\"\n- Threshold change: test. `tests/inventory/thresholds.test.ts` asserts `REORDER_THRESHOLD === 3`, so a change to it fails a test that names the buyer's rule.\n- Rename: brief line. \"Do not rename or move anything outside the folders named in the task brief.\""
+  }
+}

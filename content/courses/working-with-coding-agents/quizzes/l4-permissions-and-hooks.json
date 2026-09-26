@@ -1,0 +1,141 @@
+{
+  "lessonSlug": "l4-permissions-and-hooks",
+  "questions": [
+    {
+      "id": "l4-q1",
+      "type": "mc",
+      "prompt": "Omar wants Quill to read all of src/orders/ and propose the four steps for CR-111 without touching a file. Which permission mode should he use?",
+      "options": [
+        { "id": "a", "text": "Accept edits, because reading is free in that mode." },
+        { "id": "b", "text": "Plan mode, because it allows reading and searching but no edits or changing commands." },
+        { "id": "c", "text": "Bypass mode, because planning is harmless and questions slow it down." },
+        { "id": "d", "text": "Default mode with an empty allow list, because that asks for everything." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Accept edits lets Quill change files freely. That is the opposite of what a planning session needs; one stray edit and the plan is already half built.",
+        "b": "Correct. Plan mode is the guarantee that nothing changes while the plan is written. Omar reads the proposal, edits it, approves it, and only then does the session leave plan mode.",
+        "c": "Bypass skips every question, including the ones that protect a real database. It belongs in a disposable sandbox, never in a planning session on a laptop.",
+        "d": "Default mode asks for edits, so it would work, but it relies on Omar saying no to each one. Plan mode forbids them, so Omar's attention is not the safeguard."
+      }
+    },
+    {
+      "id": "l4-q2",
+      "type": "mc",
+      "prompt": "Shelf's .claude/settings.json has Edit(src/**) in allow and Edit(src/email/**) in ask. Quill proposes an edit to src/email/send.ts. What happens?",
+      "options": [
+        { "id": "a", "text": "The edit runs, because the allow rule matched first." },
+        { "id": "b", "text": "The edit is refused, because two rules conflict." },
+        { "id": "c", "text": "The edit pauses for a person, because ask wins over allow when both match." },
+        { "id": "d", "text": "It depends on the permission mode set with Shift+Tab." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Rule order in the file does not matter. The lists have a fixed priority: deny wins over ask, and ask wins over allow.",
+        "b": "A conflict does not refuse. Only a deny rule refuses. When allow and ask both match, the stricter one, ask, applies.",
+        "c": "Correct. Both rules match the path, and ask beats allow, so the edit pauses. This is how you keep edits free across src/ while fencing off one folder.",
+        "d": "The mode is the default for actions no rule covers. A matching rule always wins over the mode."
+      }
+    },
+    {
+      "id": "l4-q3",
+      "type": "mc",
+      "prompt": "A PreToolUse hook wants to block a command and tell Quill why. In the Claude Code shape, how does it do that?",
+      "options": [
+        { "id": "a", "text": "Exit 1 and print the reason to stdout." },
+        { "id": "b", "text": "Exit 2 and print the reason to stderr." },
+        { "id": "c", "text": "Exit 0 and print the word BLOCK." },
+        { "id": "d", "text": "Delete the command from tool_input and exit 0." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Exit 1 is a generic error, not a decision. The reason on stdout is not what the agent is shown for a block.",
+        "b": "Correct. Exit 2 blocks the action, and the text the hook wrote to stderr is shown to the agent as the reason, which is why the reason should say what to do instead.",
+        "c": "Exit 0 allows. Printing a word does nothing unless it is the JSON shape with a permissionDecision, and BLOCK is not one of allow, deny, or ask.",
+        "d": "A hook cannot rewrite the action it receives. It reads the JSON and answers with an exit code or a JSON decision."
+      }
+    },
+    {
+      "id": "l4-q4",
+      "type": "mc",
+      "prompt": "How does a PreToolUse hook make an action pause for a person instead of blocking it outright?",
+      "options": [
+        { "id": "a", "text": "It prints JSON with permissionDecision set to \"ask\" and a reason, and exits 0." },
+        { "id": "b", "text": "It exits 2 with the word ask on stderr." },
+        { "id": "c", "text": "It sends an email to the approver and exits 0." },
+        { "id": "d", "text": "It adds the path to the ask list in settings.json and exits 0." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. The hookSpecificOutput JSON with permissionDecision \"ask\" pauses the action, and permissionDecisionReason is shown in the terminal, so it should name the person and the document.",
+        "b": "Exit 2 always blocks. The word on stderr becomes the reason for the block, not a request to pause.",
+        "c": "Nothing in the hook shape sends email, and an email would not pause the action. The pause comes from the JSON decision.",
+        "d": "Editing settings.json mid-session does not affect the action already proposed. The hook answers for this one action."
+      }
+    },
+    {
+      "id": "l4-q5",
+      "type": "mc",
+      "prompt": "Jun added a brief line saying \"never edit files under tests/ during a fix.\" Two weeks later Quill did it anyway after a long session. What is the right next step on the finding-to-guardrail ladder?",
+      "options": [
+        { "id": "a", "text": "Write the same line in capital letters at the top of CLAUDE.md." },
+        { "id": "b", "text": "Move the rule up a rung: a hook that blocks any Edit or Write under tests/ on a fix/ branch." },
+        { "id": "c", "text": "Switch every session to bypass mode so Quill finishes faster and Jun reviews more carefully." },
+        { "id": "d", "text": "Delete the tests so there is nothing for Quill to edit." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A louder brief line is still advisory. It can be compacted away in a long session exactly like the quiet one was.",
+        "b": "Correct. The brief line failed, so the finding climbs to the enforced rung. A hook runs on every action, costs no context, and cannot be forgotten.",
+        "c": "Bypass removes guardrails; it is the opposite of the ladder. Review is the last line, not a substitute for enforcement.",
+        "d": "The tests are the proof that the behavior is right. Removing them turns every future fix into an unverified claim."
+      }
+    },
+    {
+      "id": "l4-q6",
+      "type": "mc",
+      "prompt": "Priya asks whether Quill touched the email table while building CR-112. Omar shows her .gates/log.jsonl. What does the log prove?",
+      "options": [
+        { "id": "a", "text": "That the code is correct, because every allowed action was reviewed." },
+        { "id": "b", "text": "Which actions were proposed, which rule handled each, what was decided, and when." },
+        { "id": "c", "text": "Only which actions were blocked, since allows are not worth logging." },
+        { "id": "d", "text": "That Quill never proposes risky actions, because the log is short." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A log records decisions about actions. It says nothing about whether the resulting code is right; that is what tests are for.",
+        "b": "Correct. Each line has a timestamp, a tool, an input summary, a decision, and a rule. Together they answer \"what happened, which rule saw it, and when.\"",
+        "c": "Logging only blocks leaves a hole: a missing line looks the same as a gate that never ran. Every decision, including allow, is logged.",
+        "d": "A short log could mean few actions or a hook that was switched off. The log proves what it contains, not what it lacks."
+      }
+    },
+    {
+      "id": "l4-q7",
+      "type": "short",
+      "prompt": "Name one command you would deny outright in a project you know, and one you would make ask. Explain why the two get different treatment.",
+      "rubric": [
+        "Names a specific command for the deny list",
+        "Names a specific command for the ask list",
+        "Explains that the denied command has no legitimate use in an agent session (must never happen)",
+        "Explains that the asked command is fine in principle but a person should see it",
+        "Uses the Bash(...) rule shape or describes where the rules live (.claude/settings.json)"
+      ],
+      "modelAnswer": "Deny: `Bash(rm -rf:*)`. There is no task in Shelf where Quill needs to delete a tree recursively, so no reason it could give would change my mind, and a deny rule means the session cannot override it. Ask: `Bash(git push:*)`. Pushing is a normal part of finishing a task, so blocking it would break the workflow, but a person should see the branch name and confirm it is not main before anything leaves the laptop. The difference is whether a legitimate case exists. If none exists, deny, because a rule that cannot be argued with is the cheapest guardrail. If one exists but deserves a glance, ask. Both rules live in `.claude/settings.json`, committed so every session gets them.",
+      "maxWords": 150
+    },
+    {
+      "id": "l4-q8",
+      "type": "free",
+      "prompt": "Write the settings rules and one hook for CR-112 so that: test commands run freely, .env is never read, edits under src/email/ ask and name Priya, and every decision is logged. Explain each line.",
+      "rubric": [
+        "Allow list includes the test commands (make test or npm test, plus lint or typecheck) in the Bash(...) shape",
+        "Deny list includes Read(./.env), and the answer says why deny rather than ask",
+        "Edits under src/email/ ask, either as Edit(src/email/**) in the ask list or as a hook rule",
+        "The hook is wired in settings.json under PreToolUse with a matcher and a command",
+        "The ask reason names Priya and a document, using permissionDecision \"ask\" in JSON with exit 0",
+        "Every decision (allow, ask, block) is appended to .gates/log.jsonl with a timestamp, tool, input, decision, and rule"
+      ],
+      "modelAnswer": "Settings, in the Claude Code shape:\n\n```json\n{\n  \"permissions\": {\n    \"allow\": [\"Bash(make test)\", \"Bash(npm run lint)\", \"Bash(npm run typecheck)\", \"Edit(src/**)\"],\n    \"ask\": [\"Bash(git push:*)\"],\n    \"deny\": [\"Read(./.env)\"]\n  },\n  \"hooks\": {\n    \"PreToolUse\": [\n      { \"matcher\": \"Bash|Edit|Write\", \"hooks\": [{ \"type\": \"command\", \"command\": \"./gate.sh hook\" }] }\n    ]\n  }\n}\n```\n\nThe allow list holds the test, lint, and typecheck commands because they are safe and run many times an hour; asking each time would train Omar to approve without reading. `Edit(src/**)` keeps feature work flowing. `Read(./.env)` is denied, not asked, because secrets never belong in the context and there is no case where Quill needs them. `git push` asks so a person sees the branch.\n\nThe hook covers Bash, Edit, and Write so a shell command cannot reach a path the Edit rules fence off. Inside `gate.sh hook`, the email rule reads `tool_input.file_path`, and if it starts with `src/email/` it logs an ask and prints `{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"Edits under src/email/ need Priya. See docs/email.md.\"}}` with exit 0. The reason names Priya and the runbook, so Omar knows who to ask and what to read while the action is paused. Every branch of the hook, including the default allow at the bottom, calls `./gate.sh log <decision> <rule> <tool> <input>`, which appends one JSON line with a UTC timestamp to `.gates/log.jsonl`. Allows are logged too, so a missing line cannot be mistaken for an allow. When Priya asks whether Quill touched email, the answer is a grep over that file."
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "lessonSlug": "l1-claude-md-the-standing-brief",
+  "questions": [
+    {
+      "id": "l1-q1",
+      "type": "mc",
+      "prompt": "When does Quill read the project CLAUDE.md, and what does that make it?",
+      "options": [
+        { "id": "a", "text": "Only when Omar types /init, which loads the file into the session." },
+        { "id": "b", "text": "At the start of every session, before it reads any code, which makes it the only thing Quill knows about Shelf up front." },
+        { "id": "c", "text": "After it finishes a task, so it can check its work against the conventions." },
+        { "id": "d", "text": "Once, the first time the repository is opened, and the contents are remembered across future sessions." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "/init drafts a first CLAUDE.md by reading the repository. It does not control when the file is read. The file is read at the start of every session automatically.",
+        "b": "Correct. The brief is loaded when a session starts and stays in the context for the whole session. Before Quill opens a file, the brief is all it knows about the project.",
+        "c": "The brief shapes the work before it happens. A rule read after the task is finished cannot stop a test landing in the wrong folder.",
+        "d": "The agent has no memory between sessions (L0). The brief is read again every session, which is the point: it replaces the memory the agent does not have."
+      }
+    },
+    {
+      "id": "l1-q2",
+      "type": "mc",
+      "prompt": "Omar wants to note that his dev database lives at ~/shelf-dev.sqlite. Which file should hold that line?",
+      "options": [
+        { "id": "a", "text": "CLAUDE.md in the repository root, so every session can find the database." },
+        { "id": "b", "text": "~/.claude/CLAUDE.md, because it is Omar's own preference." },
+        { "id": "c", "text": "CLAUDE.local.md in the repository root, because it is true for Omar on this project and ignored by git." },
+        { "id": "d", "text": "docs/testing.md, imported into the brief with @docs/testing.md." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "The project file is committed and shared. Every teammate's session would then believe a path that is only true on Omar's laptop.",
+        "b": "The user file applies to every repository Omar opens. A path for the Shelf dev database is about this project, not about Omar's habits everywhere.",
+        "c": "Correct. Local memory is for facts that are true for you on this project and for nobody else. It stays out of git, so it never misleads a teammate.",
+        "d": "Importing it puts the line into the shared brief for everyone, which is the same problem as option a with an extra step."
+      }
+    },
+    {
+      "id": "l1-q3",
+      "type": "mc",
+      "prompt": "Which of these lines belongs in the Boundaries section of Shelf's brief?",
+      "options": [
+        { "id": "a", "text": "Tests live in tests/<area>/, never in __tests__." },
+        { "id": "b", "text": "Ask before touching src/email/. Priya owns it. Read docs/email.md first." },
+        { "id": "c", "text": "make test runs build, tests, and lint." },
+        { "id": "d", "text": "src/orders/, src/giftcards/, src/inventory/, src/email/: one folder per area." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "That says how to do something (where a test goes), so it is a convention. A boundary says whether the agent may act at all.",
+        "b": "Correct. It starts with \"ask before\", names the area, names the person, and points at the runbook. That is an ask-first boundary with a route.",
+        "c": "That is an exact command, so it belongs in the run-and-test section, the command reference.",
+        "d": "That tells the agent where to look. It is a pointer to the layout, not a rule about what the agent may do."
+      }
+    },
+    {
+      "id": "l1-q4",
+      "type": "mc",
+      "prompt": "docs/testing.md is 25 lines and applies to every task. docs/email.md is 140 lines and applies only to email work. How should the brief handle each?",
+      "options": [
+        { "id": "a", "text": "Import both with @docs/testing.md and @docs/email.md, so Quill always has the full picture." },
+        { "id": "b", "text": "Import docs/testing.md; point at docs/email.md with a sentence that says when to read it." },
+        { "id": "c", "text": "Point at both; imports are for code files, not docs." },
+        { "id": "d", "text": "Paste both into CLAUDE.md so there is one file to maintain." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Importing the email runbook makes CR-110 and CR-111 pay 140 lines of context on every turn for rules they never use.",
+        "b": "Correct. Import what every task needs, so it is always loaded. Point at what only some tasks need, so the agent fetches it when the task is relevant and other tasks pay nothing.",
+        "c": "Imports work on any file. The testing guide is needed in every session, so importing it saves Quill from having to remember to open it.",
+        "d": "Pasting is an import without the separate file, and it puts 165 lines into the brief. It also drifts: the pasted copy and the doc stop matching."
+      }
+    },
+    {
+      "id": "l1-q5",
+      "type": "mc",
+      "prompt": "What does the rule-the-agent-breaks test say about a line in CLAUDE.md?",
+      "options": [
+        { "id": "a", "text": "Every line must be a rule the agent has already broken at least three times." },
+        { "id": "b", "text": "A line earns its place by naming a mistake the agent made, or would make, without it; if you cannot name the mistake, delete the line." },
+        { "id": "c", "text": "Every line must be enforceable by a hook, or it does not belong in the brief." },
+        { "id": "d", "text": "Lines the agent breaks should be removed, because the agent will not follow them anyway." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "One mistake is enough, and so is a mistake the agent would clearly make. Waiting for three repeats is three sessions of wrong work.",
+        "b": "Correct. The test attaches a reason to every line. \"Shelf uses strict TypeScript\" prevents no mistake, because the compiler enforces it, so it goes. \"Tests live in tests/<area>/\" prevents a mistake Quill made, so it stays.",
+        "c": "Hooks enforce; the brief advises. Plenty of useful brief lines, such as where a threshold constant lives, are not worth a hook. The test is about mistakes, not enforceability.",
+        "d": "A rule the agent keeps breaking after the line is in place should be promoted to a hook, not deleted. The line was right; it needs enforcement."
+      }
+    },
+    {
+      "id": "l1-q6",
+      "type": "mc",
+      "prompt": "Omar's 900-line brief hurt CR-110 in two ways. What were they?",
+      "options": [
+        { "id": "a", "text": "It took Quill several minutes to read, and it was hard for Jun to review." },
+        { "id": "b", "text": "It consumed a large share of the context window on every turn, and it buried the four rules that mattered among hundreds that did not." },
+        { "id": "c", "text": "It exceeded a file size limit, so Claude Code skipped it and Quill had no brief at all." },
+        { "id": "d", "text": "It contained the style guide, which contradicted the linter." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Reading speed is not the problem; the model reads fast. The costs are context and attention, and both are paid on every turn, not once.",
+        "b": "Correct. Bloat costs twice. Context: a third of the window was gone before work started, so the session drifted sooner. Attention: \"never touch migrations/\" was one line among 900, and Quill missed the ones that mattered.",
+        "c": "The file was read. The lesson's problem is that it was read and mostly useless, not that it was ignored by the tool.",
+        "d": "The style guide was deleted because the formatter and linter already enforce it, not because it contradicted them. Redundant, not wrong."
+      }
+    },
+    {
+      "id": "l1-q7",
+      "type": "short",
+      "prompt": "Name two lines you would add to a CLAUDE.md for a project you know, and the mistake each prevents.",
+      "rubric": [
+        "Gives two distinct lines written as they would appear in the brief",
+        "Names a specific mistake for each line (not a vague benefit such as \"better code\")",
+        "At least one line is an exact command, a convention no tool enforces, or a boundary with a named person",
+        "Neither line states something the code or a tool already shows or enforces"
+      ],
+      "modelAnswer": "Line one, under Run and test: \"Run `make check` before saying a task is done. It runs the build, the unit tests, and the schema lint; `npm test` runs only the unit tests.\" Mistake prevented: the agent runs `npm test`, sees green, and reports done while the schema lint would have failed. Line two, under Boundaries: \"Never edit files under `db/migrations/`. Ask Dana for a migration and describe the column you need.\" Mistake prevented: the agent writes a migration with no rollback to make a test pass, and the next deploy cannot be reverted. Neither line is visible in the code. The Makefile does not say which command is the gate, and nothing in the repository says who owns migrations.",
+      "maxWords": 150
+    },
+    {
+      "id": "l1-q8",
+      "type": "free",
+      "prompt": "Jun's four-line rewrite kept: the test command, the test folder rule, the email boundary, and the low-stock threshold source. Explain why each earned its place under the rule-the-agent-breaks test, and name one thing from the 900-line version that did not.",
+      "rubric": [
+        "Names the mistake the test command line prevents (running npm test and skipping lint or the build)",
+        "Names the mistake the test folder rule prevents (tests placed in __tests__ or another folder CI does not report)",
+        "Explains the email boundary in terms of a named person (Priya) and a cost that is not visible in code",
+        "Explains the threshold line as a fact the code does not reveal until you know to look",
+        "Names one deleted item and says which pruning cut it fails (code shows it, a tool enforces it, or only true today)"
+      ],
+      "modelAnswer": "The test command line, \"`make test` runs build, tests, and lint; run it before you say a task is done,\" earns its place because Quill did the wrong thing without it: it ran `npm test`, saw green, and reported done while lint had never run. Nothing in the code says which command is the gate, so the brief has to.\n\nThe test folder rule, \"tests live in `tests/<area>/`, never in `__tests__`,\" earns its place because Quill put three tests in `src/inventory/__tests__/`. Vitest ran them, so no tool complained, but Jun's checklist and CI coverage only look under `tests/`. A rule no tool enforces has to live in the brief.\n\nThe email boundary, \"ask before touching `src/email/`; Priya owns it; read `docs/email.md` first,\" earns its place because the cost of the mistake is a customer complaint and a privacy problem, and because the code cannot tell Quill that a person must be asked. It also names the person and points at the runbook, so an ask has a route.\n\nThe threshold line, \"thresholds live in `src/<area>/config.ts`, not in components,\" earns its place because Quill hard-coded `5` in the badge component. The convention is visible in the code only if you already know to look at `config.ts`, and a new session does not.\n\nOne thing that did not earn its place: the pasted style guide, 280 lines on indentation, quotes, and import order. It fails the second pruning cut, because the formatter and the linter enforce every one of those rules on every run. The line \"Shelf uses TypeScript with strict mode\" fails the same way: `tsconfig.json` shows it and the compiler enforces it."
+    }
+  ],
+  "homework": {
+    "id": "l1-hw1",
+    "title": "Homework 1 - Write the CLAUDE.md for Shelf",
+    "prompt": "Write a complete `CLAUDE.md` for Shelf, Bramble Books' web app, in **under 60 lines**.\n\nShelf is a TypeScript app with `src/orders/`, `src/giftcards/`, `src/inventory/`, `src/email/`, `tests/` (Vitest), `migrations/`, a `Makefile` with `make test` (build, tests, lint), and `npm run dev`, `npm run lint`, `npm run typecheck`, `npm test`. Gift cards hold money, so Priya's payment rules apply. Customer email holds personal data, so Priya's privacy rules apply. Jun reviews every PR. Quill runs on Claude Code.\n\nYour brief must have:\n\n1. **The five sections**: what it is, how to run and test, conventions, boundaries, where to look.\n2. **Exact commands** in the run-and-test section, not descriptions of commands.\n3. **At least one import** of the form `@docs/<file>.md`, and a sentence saying why that file is imported rather than pointed at.\n4. **At least two boundaries**: one that starts with \"never\" and one that starts with \"ask before\". The ask-first boundary names the person to ask.\n5. **A short note under each section** (a comment line or an indented sentence) saying which mistake the lines in that section prevent. Use the rule-the-agent-breaks test: if you cannot name the mistake, cut the line.\n\nDo not include anything the code already shows (the folder layout beyond the where-to-look pointers, the language, the framework) or anything a tool already enforces (formatting, types, lint rules).\n\nPaste the file below as a single markdown code block, followed by a two-sentence note on what you left out and why.",
+    "rubric": [
+      "All five sections are present with recognizable headings: what it is, run and test, conventions, boundaries, where to look",
+      "The run-and-test section uses exact command strings (make test, npm run dev, npm run lint, npm run typecheck, or npm test)",
+      "At least one @docs/<file>.md import is present, with a reason for importing rather than pointing",
+      "At least one boundary starts with \"never\" and at least one starts with \"ask before\", and the ask-first boundary names a person",
+      "Every section has a note naming the mistake its lines prevent, and no line is left without a reason",
+      "The file is under 60 lines",
+      "No line states something the code shows or a tool enforces (language, framework, formatting, strict mode, lint rules)"
+    ],
+    "modelAnswer": "A strong submission is a 35 to 50 line file. It opens with two sentences: Shelf is Bramble Books' web app for inventory, orders, gift cards, and customer email across three stores; TypeScript, Vitest, one Makefile. The run-and-test section lists `npm run dev`, `make test` (with the note \"run before saying done; `npm test` alone skips lint and the build\"), and `npm run typecheck`. Its note says: prevents Quill running `npm test` and reporting green with lint unrun.\n\nConventions hold three or four lines: tests in `tests/<area>/` and never in `__tests__` (prevents tests CI does not report); thresholds and limits in `src/<area>/config.ts` (prevents hard-coded numbers in components); stock counted per store (prevents summing across stores); and `@docs/testing.md`, with the note that every task touches tests, so the guide is imported rather than pointed at.\n\nBoundaries hold at least: \"Never edit files under `migrations/`; ask Jun for a migration\" (prevents a migration with no rollback), and \"Ask before touching `src/email/`; Priya owns it; read `docs/email.md` first\" (prevents a privacy mistake nobody can see in code). A second ask-first line, \"ask before adding a dependency,\" is common and fine.\n\nWhere to look names the four `src/` areas, `docs/email.md`, and `docs/review-checklist.md`, with the note that these are pointers, fetched only when needed.\n\nThe closing two sentences name what was left out: the style guide, because the formatter and linter enforce it, and the folder tree, because Quill reads it faster than prose about it. A submission that pastes the README, describes TypeScript strict mode, or exceeds 60 lines fails the pruning criteria even if the five sections are present."
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "lessonSlug": "l3-driving-a-session",
+  "questions": [
+    {
+      "id": "l3-q1",
+      "type": "mc",
+      "prompt": "Omar is about to hand a task to Quill. Which of these is the clearest sign that the task is too big for one session?",
+      "options": [
+        { "id": "a", "text": "The task touches a file in src/ and a file in tests/." },
+        { "id": "b", "text": "Omar cannot name the files the task will touch, and no single command proves it is done." },
+        { "id": "c", "text": "The definition of done mentions make test." },
+        { "id": "d", "text": "The task is a refactor rather than a new feature." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A source file plus its test is the normal shape of a well-sized task. CR-110 touches exactly that and fits in one session.",
+        "b": "Correct. A well-sized task has a definition of done, touches a handful of files you can list, and is verified with one command. When you cannot list the files or name the command, size it first: one plan, several sessions.",
+        "c": "Naming the verifying command is a sign the task is well-sized, not too big. It is the one command that proves the work is done.",
+        "d": "Refactors can be small. CR-111 is too big because it spans a whole module, not because it is a refactor. Step 1 of its plan, one file and its test, is a fine single session."
+      }
+    },
+    {
+      "id": "l3-q2",
+      "type": "mc",
+      "prompt": "In plan mode, what can the agent do and what can it not do?",
+      "options": [
+        { "id": "a", "text": "It can read and search the repository and propose steps, but it cannot edit files or run commands that change anything." },
+        { "id": "b", "text": "It can edit files but cannot run tests until the plan is approved." },
+        { "id": "c", "text": "It can do everything it normally does, but it writes a plan first." },
+        { "id": "d", "text": "It cannot read files; it plans from the task message alone." }
+      ],
+      "answer": "a",
+      "explanations": {
+        "a": "Correct. Plan mode is read-only for the codebase. The agent reads and searches, proposes a plan, and only after you edit and approve does the session leave plan mode and start changing files.",
+        "b": "Edits are exactly what plan mode forbids. The point is that nothing is built until you have read and edited the plan.",
+        "c": "If the agent could edit while planning, the plan would be a description of work already done. Plan mode holds the edits until you approve.",
+        "d": "A plan written without reading the code would be a guess. Quill read src/orders/ before listing the four steps and the files each one touches."
+      }
+    },
+    {
+      "id": "l3-q3",
+      "type": "mc",
+      "prompt": "Quill's third action on step 1 changes the signature of createOrder. Which message is the best steer?",
+      "options": [
+        { "id": "a", "text": "Three paragraphs explaining the history of the orders module and why the public API matters to the gift card code." },
+        { "id": "b", "text": "\"Please be more careful with this refactor.\"" },
+        { "id": "c", "text": "\"Stop. Do not change the function signatures; only the bodies.\"" },
+        { "id": "d", "text": "Say nothing now and mention it in the pull request review." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "A long explanation goes into the context and competes with the brief. In Omar's failed session, Quill acknowledged three paragraphs and kept changing signatures.",
+        "b": "\"Careful\" is not an instruction. It names no action to stop and no action to take instead, so the agent cannot act on it.",
+        "c": "Correct. One sentence, early, naming what to stop and what to do instead. Quill reverted the signature and rewrote only the body.",
+        "d": "By review time the wrong signature may have spread to every caller. The cheapest correction is the one made before the wrong edit lands."
+      }
+    },
+    {
+      "id": "l3-q4",
+      "type": "mc",
+      "prompt": "When should Omar restart the session rather than steer it again?",
+      "options": [
+        { "id": "a", "text": "As soon as the agent makes its first mistake." },
+        { "id": "b", "text": "When he has corrected the same thing twice and the agent has done it a third time." },
+        { "id": "c", "text": "Only when the tests are all red." },
+        { "id": "d", "text": "Never; restarting loses all the work done so far." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "A first mistake is what steering is for. One specific sentence usually fixes it. Restarting on every slip throws away good context.",
+        "b": "Correct. A correction that has to be repeated has failed; the session has drifted. Restart with the lesson written into the task message or the brief, as Jun did with the callback adapters.",
+        "c": "Red tests are one signal, but a session can drift with tests half green. Repeated corrections, growing diffs, and losing track of what changed are the signs.",
+        "d": "Committed work survives a restart, and the plan survives because it is a file. What is lost is the drifted context, which is the thing you want to lose."
+      }
+    },
+    {
+      "id": "l3-q5",
+      "type": "mc",
+      "prompt": "Omar runs /compact at turn 30 of a long session. What is the risk?",
+      "options": [
+        { "id": "a", "text": "The agent loses access to the repository and must re-read every file." },
+        { "id": "b", "text": "The summary keeps what looks important and may drop a constraint typed early, such as \"keep the public API.\"" },
+        { "id": "c", "text": "The session is closed and a new one starts." },
+        { "id": "d", "text": "Nothing; compaction is lossless." }
+      ],
+      "answer": "b",
+      "explanations": {
+        "a": "Files are still on disk and the agent can read them again. What compaction changes is the conversation history, not the repository.",
+        "b": "Correct. Compaction is a summary written by the model. It cannot know that the sentence at turn 3 was the whole point. Put constraints in plan.md, the task message, or CLAUDE.md, where a file is read again instead of summarized away.",
+        "c": "That describes /clear. Compaction keeps the session open with a shorter history.",
+        "d": "A summary is shorter than the original, so something is always dropped. The compaction in Omar's failed session dropped the signature constraint."
+      }
+    },
+    {
+      "id": "l3-q6",
+      "type": "mc",
+      "prompt": "Why does Omar create a git worktree before running CR-112 in parallel with CR-110?",
+      "options": [
+        { "id": "a", "text": "So the two sessions can share one set of files and see each other's progress." },
+        { "id": "b", "text": "Because Claude Code refuses to start a second session in the same folder." },
+        { "id": "c", "text": "So each session has its own files, its own branch, and its own test runs, and neither sees the other's half-finished edits." },
+        { "id": "d", "text": "To make make test run faster." }
+      ],
+      "answer": "c",
+      "explanations": {
+        "a": "Sharing is the problem, not the goal. Two sessions in one checkout see each other's uncommitted edits and may \"fix\" them.",
+        "b": "There is no such refusal. Two sessions in one checkout will run; they will also race. The worktree is a git safeguard, not an agent rule.",
+        "c": "Correct. git worktree add ../shelf-cr112 -b cr-112 gives the second session its own working directory on its own branch. Plain git, no agent flag.",
+        "d": "Test speed is unchanged. The worktree exists so that one session's make test does not pick up the other session's broken file."
+      }
+    },
+    {
+      "id": "l3-q7",
+      "type": "short",
+      "prompt": "Describe a session you would restart rather than steer, and say what you would add to the brief or the task message before restarting.",
+      "rubric": [
+        "Describes a specific session with a repeated or drifting mistake (not a first mistake)",
+        "Gives a reason restart beats another correction (drift, repeated correction, growing diff, or lost track of changes)",
+        "Names a concrete line to add to the brief, plan.md, or the opening task message",
+        "The added line names an action to stop or take, not a request to be careful"
+      ],
+      "modelAnswer": "I would restart the CR-111 session where Quill added a callback adapter for compatibility, removed it when told, then added another two edits later, and a third in util.ts. Two corrections had already failed, the diff was growing, and each correction added turns that pushed the original constraint further back in the context. Before restarting I would put one line in the task message: \"Do not add callback adapters or compatibility wrappers anywhere. If a caller still passes a callback, stop and tell me which one.\" That line names the action to stop and the action to take instead. If the same thing happened on a later task, it would earn a line in CLAUDE.md under conventions. The fresh session then starts with the rule in front of it rather than under forty turns of history.",
+      "maxWords": 150
+    },
+    {
+      "id": "l3-q8",
+      "type": "free",
+      "prompt": "Split CR-112 (a nightly job that emails each store manager a sales summary) into sessions. For each session give the goal, the files, the done check, and what the next session must not touch.",
+      "rubric": [
+        "Defines at least three sessions, each with one goal",
+        "Every session names the files it touches",
+        "Every session has a done check that is a command or a test (for example make test green)",
+        "Each session states what it must not touch, and src/email/ or migrations/ appears as a boundary at least once",
+        "The failing test or the reproduction comes before the implementation in at least one session",
+        "Sessions are ordered so that each one starts from the previous one's committed, green state"
+      ],
+      "modelAnswer": "Session 1: the summary query. Goal: a function that returns yesterday's sales per store. Files: src/orders/summary.ts and tests/orders/summary.test.ts. Start with the test, run make test, and see it fail before writing the function. Done: make test green, committed. Must not touch: src/email/, anything under scheduling, migrations/.\n\nSession 2: the email template. Goal: render one manager's summary as an email body. Files: src/email/sales-summary.ts and tests/email/sales-summary.test.ts. This session will ask before editing under src/email/, and Omar answers in this terminal. Done: make test green, the rendered body matches a fixture, committed. Must not touch: src/orders/, the scheduler, and no sending, only rendering.\n\nSession 3: the nightly schedule. Goal: a job that runs at 02:00, calls the summary, renders the email, and hands it to the existing mailer once per manager. Files: src/email/nightly.ts, tests/email/nightly.test.ts. The test asserts one send per manager with the clock mocked. Done: make test green, committed. Must not touch: the summary query, the template, migrations/, and no retry logic.\n\nSession 4: wiring and docs. Goal: register the job at startup and add a line to docs/email.md. Files: src/email/index.ts, docs/email.md. Done: make test green, npm run lint clean, committed. Must not touch: anything in sessions 1 to 3.\n\nEach session opens with /clear and \"Read plan.md. Do step N only. Stop when make test is green.\" If Omar runs session 1 alongside CR-110, he uses git worktree add ../shelf-cr112 -b cr-112 first."
+    }
+  ]
+}
